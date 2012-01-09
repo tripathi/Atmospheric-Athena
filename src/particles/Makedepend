@@ -1,0 +1,119 @@
+bvals_particle.o: bvals_particle.c ../copyright.h ../defs.h ../athena.h \
+  ../defs.h ../prototypes.h ../copyright.h ../athena.h ../config.h \
+  ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h ../globals.h
+dump_particle_history.o: dump_particle_history.c ../copyright.h ../defs.h \
+  ../athena.h ../defs.h ../prototypes.h ../copyright.h ../athena.h \
+  ../config.h ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h
+feedback.o: feedback.c ../copyright.h ../defs.h ../athena.h ../defs.h \
+  ../prototypes.h ../copyright.h ../athena.h ../config.h \
+  ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h ../globals.h
+init_particle.o: init_particle.c ../copyright.h ../defs.h ../athena.h \
+  ../defs.h ../prototypes.h ../copyright.h ../athena.h ../config.h \
+  ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h ../globals.h
+integrators_particle.o: integrators_particle.c ../copyright.h ../defs.h \
+  ../athena.h ../defs.h ../prototypes.h ../copyright.h ../athena.h \
+  ../config.h ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h ../globals.h
+output_particle.o: output_particle.c ../copyright.h ../defs.h ../athena.h \
+  ../defs.h ../prototypes.h ../copyright.h ../athena.h ../config.h \
+  ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h ../globals.h
+utils_particle.o: utils_particle.c ../copyright.h ../defs.h ../athena.h \
+  ../defs.h ../prototypes.h ../copyright.h ../athena.h ../config.h \
+  ../gravity/prototypes.h ../gravity/../copyright.h \
+  ../gravity/../athena.h ../gravity/../defs.h ../gravity/../config.h \
+  ../integrators/prototypes.h ../integrators/../copyright.h \
+  ../integrators/../athena.h ../integrators/../defs.h \
+  ../integrators/../config.h ../microphysics/prototypes.h \
+  ../microphysics/../copyright.h ../microphysics/../athena.h \
+  ../microphysics/../defs.h ../microphysics/../config.h \
+  ../particles/prototypes.h ../particles/../copyright.h \
+  ../particles/../athena.h ../particles/../defs.h \
+  ../particles/../config.h ../reconstruction/prototypes.h \
+  ../reconstruction/../copyright.h ../reconstruction/../athena.h \
+  ../reconstruction/../defs.h ../reconstruction/../config.h \
+  ../rsolvers/prototypes.h ../rsolvers/../copyright.h \
+  ../rsolvers/../athena.h ../rsolvers/../defs.h ../rsolvers/../config.h \
+  prototypes.h particle.h ../config.h ../globals.h
