@@ -16,12 +16,17 @@
 #include "fftsrc/prototypes.h"
 #endif
 
+#ifdef ION_RADIATION
+#include "ionradiation/prototypes.h"
+#endif
+
 #include "gravity/prototypes.h"
 #include "integrators/prototypes.h"
 #include "microphysics/prototypes.h"
 #include "particles/prototypes.h"
 #include "reconstruction/prototypes.h"
 #include "rsolvers/prototypes.h"
+
 
 /*----------------------------------------------------------------------------*/
 /* main.c */
