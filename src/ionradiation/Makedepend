@@ -1,0 +1,27 @@
+ionrad.o: ionrad.c ../copyright.h ../defs.h ../athena.h ../prototypes.h \
+ ../copyright.h ../config.h /usr/mpi/intel/openmpi-1.2.8/include/mpi.h \
+ ../ionradiation/prototypes.h ../ionradiation/../copyright.h \
+ ../ionradiation/../config.h ../microphysics/prototypes.h \
+ ../microphysics/../copyright.h ../microphysics/../config.h ionrad.h ../globals.h
+ionrad_3d.o: ionrad_3d.c ../copyright.h ionrad.h ../defs.h ../athena.h \
+ ../prototypes.h ../copyright.h ../config.h \
+ /usr/mpi/intel/openmpi-1.2.8/include/mpi.h ../ionradiation/prototypes.h \
+ ../ionradiation/../copyright.h ../ionradiation/../config.h \
+ ../microphysics/prototypes.h ../microphysics/../copyright.h \
+ ../microphysics/../config.h ../globals.h
+ionrad_chemistry.o: ionrad_chemistry.c ../copyright.h ../prototypes.h \
+ ../copyright.h ../athena.h ../defs.h ../config.h \
+ /usr/mpi/intel/openmpi-1.2.8/include/mpi.h ../ionradiation/prototypes.h \
+ ../ionradiation/../copyright.h ../ionradiation/../config.h \
+ ../microphysics/prototypes.h ../microphysics/../copyright.h \
+ ../microphysics/../config.h
+ionradplane_3d.o: ionradplane_3d.c ../copyright.h ../defs.h ../athena.h \
+ prototypes.h ../copyright.h ../config.h \
+ /usr/mpi/intel/openmpi-1.2.8/include/mpi.h ../prototypes.h ../copyright.h \
+ ../config.h ../microphysics/prototypes.h ../microphysics/../copyright.h \
+ ../microphysics/../config.h ../globals.h ionrad.h
+ionradpoint_3d.o: ionradpoint_3d.c ../copyright.h ../defs.h ../athena.h \
+ prototypes.h ../copyright.h ../config.h \
+ /usr/mpi/intel/openmpi-1.2.8/include/mpi.h ../prototypes.h ../copyright.h \
+ ../config.h ../microphysics/prototypes.h ../microphysics/../copyright.h \
+ ../microphysics/../config.h ../globals.h chealpix.h ionrad.h
