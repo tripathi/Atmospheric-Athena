@@ -83,6 +83,10 @@ int main(int argc, char *argv[])
 #ifdef SELF_GRAVITY
   VDFun_t SelfGrav;      /* function pointer to self-gravity, set at runtime */
 #endif
+/*Added A. Tripathi 01/10/12*/
+#ifdef ION_RADIATION 
+  VGFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
+#endif
   int nl,nd;
   char *definput = "athinput";  /* default input filename */
   char *athinput = definput;
@@ -339,7 +343,10 @@ int main(int argc, char *argv[])
 #ifdef PARTICLES
   init_particle(&Mesh);
 #endif
-
+#ifdef ION_RADIATION
+  /*ion_radtransfer_init_domain(&Mesh); Note - FIX! ion_radtransfer_int_domain not yet ready to handle this type*/
+  /* ion_radtransfer_init_domain(&level0_Grid, &level0_Domain);  Original Athena v3 version*/
+#endif
 /*--- Step 5. ----------------------------------------------------------------*/
 /* Set initial conditions, either by reading from restart or calling problem
  * generator.  But first start by setting variables in <time> block (these
@@ -443,6 +450,9 @@ int main(int argc, char *argv[])
     }
   }
 #endif
+#ifdef ION_RADIATION
+  /*IonRadTransfer = ion_radtransfer_init(&Mesh);*/
+#endif
 #if defined(RESISTIVITY) || defined(VISCOSITY) || defined(THERMAL_CONDUCTION)
   integrate_diff_init(&Mesh);
 #endif
@@ -509,6 +519,14 @@ int main(int argc, char *argv[])
     }
 #endif
 
+/*FIX needed to convert from old version - A. Tripathi !!!!!*/
+/* #ifdef ION_RADIATION */
+/*     /\* Note that we do the ionizing radiative transfer step first */
+/*        because it is capable of decreasing the time step relative to */
+/*        the value computed by Courant. *\/ */
+/*     (*IonRadTransfer)(&level0_Grid); */
+/*     set_bvals_mhd(&level0_Grid, &level0_Domain); /\* Re-apply hydro bc's *\/ */
+/* #endif */
 /*--- Step 9c. ---------------------------------------------------------------*/
 /* Loop over all Domains and call Integrator */
 
