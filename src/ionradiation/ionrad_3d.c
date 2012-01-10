@@ -736,12 +736,6 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
     }
   }
 
-#ifdef ION_RADPOINT
-  /* Initialize random number generator if this is not a restart. If
-     this is a restart, we have already set up the random number
-     generator from the restart file. */
-  if (ires==0) ion_radpoint_init_ranstate();
-#endif /* ION_RADPOINT */
 
   /* What's the smallest area a cell face can have? */
   area1 = pGrid->dx1 * pGrid->dx2;
@@ -776,9 +770,6 @@ void ion_radtransfer_init_domain_3d(Grid *pGrid, Domain *pDomain) {
 #endif
 
   /* Store information specific to point sources and planes */
-#ifdef ION_RADPOINT
-  ion_radpoint_init_domain_3d(pGrid, pDomain);
-#endif
 #ifdef ION_RADPLANE
   ion_radplane_init_domain_3d(pGrid, pDomain);
 #endif
@@ -799,10 +790,6 @@ void ion_radtransfer_3d(Grid *pGrid)
   int n, niter, hydro_done;
   int nchem, ntherm;
 
-#ifdef ION_RADPOINT
-  /* Build or rebuild trees */
-  refresh_trees(pGrid);
-#endif /* ION_RADPOINT */
 
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
@@ -816,20 +803,6 @@ void ion_radtransfer_3d(Grid *pGrid)
      and sign_count arrays */
   save_energy_and_x(pGrid);
 
-#if defined(MPI_PARALLEL) && defined(ION_RADPOINT)
-  /* Allocate buffer for MPI communication and attach here. Note that
-     we detatch below, to ensure that the buffer we use here doesn't
-     get tangled up with buffers that may be used in other
-     modules. This is necessary because only one MPI buffer is allowed
-     per process. We only use the buffer for point sources, since it     
-     is easier to handle plane fronts using non-buffered communication. */
-  if (mpi_bufsize==0) {
-    mpi_bufsize = INIT_MPI_BUFSIZE;
-    mpi_buffer = malloc(mpi_bufsize);
-  }
-  MPI_Buffer_attach(mpi_buffer, mpi_bufsize);
-#endif
-
   /* Begin the radiation sub-cycle */
   dt_done = 0.0;
   hydro_done = 0;
@@ -840,12 +813,6 @@ void ion_radtransfer_3d(Grid *pGrid)
     ph_rate_init(pGrid);
 
     /* Compute photoionization rate from all sources */
-#ifdef ION_RADPOINT
-    for (n=0; n<pGrid->nradpoint; n++) 
-      get_ph_rate_point(pGrid->radpointlist[n].s, 
-			&(pGrid->radpointlist[n].tree),
-			ph_rate, pGrid);
-#endif
 #ifdef ION_RADPLANE
     for (n=0; n<pGrid->nradplane; n++) 
       get_ph_rate_plane(pGrid->radplanelist[n].flux,
@@ -909,10 +876,6 @@ void ion_radtransfer_3d(Grid *pGrid)
   if (niter==maxiter)
     pGrid->dt = dt_done;
 
-#if defined(MPI_PARALLEL) && defined(ION_RADPOINT)
-  /* Deallocate MPI buffer */
-  MPI_Buffer_detach(&mpi_buffer, &mpi_bufsize);
-#endif
 
   /* Write status */
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", 
