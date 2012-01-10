@@ -53,6 +53,18 @@ void show_config(void)
   ath_pout(0," Self-gravity:            OFF\n");
 #endif
 
+#ifdef ION_RADIATION
+  ath_pout(0," Ionizing radiation:      ON\n");
+#else
+  ath_pout(0," Ionizing radiation:      OFF\n");
+#endif
+
+#ifdef ION_RADPLANE
+  ath_pout(0,"   Ionizing plane sources:  ON\n");
+#else
+  ath_pout(0,"   Ionizing plane sources:  OFF\n");
+#endif
+
 #if defined(RESISTIVITY)
   ath_pout(0," Resistivity:             ON\n");
 #else

@@ -42,6 +42,9 @@ compile:
 ifeq (@FFT_MODE@,FFT_ENABLED)
 	(cd src/fftsrc; $(MAKE) compile)
 endif
+ifeq (@ION_RADIATION_MODE@,ION_RADIATION)
+	(cd src/ionradiation; $(MAKE) compile)
+endif
 	(cd src/gravity; $(MAKE) compile)
 	(cd src/integrators; $(MAKE) compile)
 	(cd src/microphysics; $(MAKE) compile)
@@ -54,6 +57,7 @@ endif
 #  target clean:
 clean:
 	(cd src/fftsrc; $(MAKE) clean)
+	(cd src/ionradiation; $(MAKE) clean)
 	(cd src/gravity; $(MAKE) clean)
 	(cd src/integrators; $(MAKE) clean)
 	(cd src/microphysics; $(MAKE) clean)

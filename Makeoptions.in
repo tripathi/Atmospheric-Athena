@@ -33,6 +33,10 @@ ifeq (@FFT_MODE@,FFT_ENABLED)
   FFTWINC = -I/usr/include
 endif
 
+ifeq (@ION_RADIATION_MODE@,ION_RADIATION)
+   IONRADINC = -I ionradiation -I .. -I .
+endif
+
 ifeq (@MPI_MODE@,MPI_PARALLEL)
   CC = mpicc 
   LDR = mpicc 
@@ -98,5 +102,5 @@ ifeq (@FFT_MODE@,NO_FFT)
   FFTWLIB = 
 endif
 
-CFLAGS = $(OPT) $(BLOCKINC) $(MPIINC) $(FFTWINC)
+CFLAGS = $(OPT) $(BLOCKINC) $(MPIINC) $(FFTWINC) $(IONRADINC)
 LIB = $(BLOCKLIB) $(MPILIB) $(FFTWLIB) $(CUSTLIBS)

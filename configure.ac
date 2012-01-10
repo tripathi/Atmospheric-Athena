@@ -22,6 +22,8 @@
 #   --with-coord=[cartesian,cylindrical]                     (coordinate system)
 #
 # PHYSICS "features":
+#   --enable-ion-radiation                         (ionizing radiative transfer)
+#   --enable-ion-plane             (ionizing radiation from simulation boundary)
 #   --enable-conduction                            (explicit thermal conduction)
 #   --enable-resistivity                                  (explicit resistivity)
 #   --enable-special-relativity              (special relativistic hydro or MHD)
@@ -193,6 +195,39 @@ elif test "$with_coord" = "cylindrical"; then
   COORD="CYLINDRICAL"
 else
   AC_MSG_ERROR([expected --with-coord=cartesian or cylindrical])
+fi
+
+#-------------------------------------------------------------------------------
+# PHYSICS FEATURE: ionizing radiative transfer
+#  --enable-ion-radiation
+
+AC_SUBST(ION_RADIATION_MODE)
+AC_ARG_ENABLE(ion-radiation, [  --enable-ion-radiation  do ionizing radiative transfer (default is no)],
+                                ok=$enableval, ok=no)
+if test "$ok" = "yes"; then
+  ION_RADIATION_MODE="ION_RADIATION"
+  ION_RADIATION_MODE_USER="ON"
+  echo "Ionizing radiation enabled... increasing number of passive scalars by 1"
+  nscalars=$@<:@nscalars+1@:>@
+  NSCALARS=$nscalars
+else
+  ION_RADIATION_MODE="NO_ION_RADIATION"
+  ION_RADIATION_MODE_USER="OFF"
+fi
+
+#-------------------------------------------------------------------------------
+# PHYSICS FEATURE: plane-parallel sources of ionization
+#  --enable-ion-plane
+
+AC_SUBST(ION_PLANE_MODE)
+AC_ARG_ENABLE(ion-plane, [  --enable-ion-plane  enable plane-parallel sources of ionization (default is no)],
+                                ok=$enableval, ok=no)
+if test "$ok" = "yes"; then
+  ION_PLANE_MODE="ION_RADPLANE"
+  ION_PLANE_MODE_USER="ON"
+else
+  ION_PLANE_MODE="NO_ION_RADPLANE"
+  ION_PLANE_MODE_USER="OFF"
 fi
 
 #-------------------------------------------------------------------------------

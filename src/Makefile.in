@@ -64,6 +64,15 @@ INTEGRATORS_OBJ = integrators/integrate.o \
                   integrators/integrate_2d_vl_sr.o \
                   integrators/integrate_3d_vl_sr.o
 
+IONRAD_OBJ =
+ifeq (@ION_RADIATION_MODE@,ION_RADIATION)
+   IONRAD_OBJ = ionradiation/ionrad.o \
+		ionradiation/ionrad_3d.o \
+		ionradiation/ionrad_chemistry.o \
+		ionradiation/ionradplane_3d.o \
+		ionradiation/ionradpoint_3d.o
+endif
+
 GRAVITY_OBJ = gravity/bvals_grav.o \
               gravity/selfg.o \
               gravity/selfg_fft.o \
@@ -105,7 +114,7 @@ RSOLVERS_OBJ = rsolvers/esystem_roe.o \
 	       rsolvers/roe.o \
 	       rsolvers/two_shock.o
 
-ALL_OBJ = ${CORE_OBJ} ${FFT_OBJ} ${GRAVITY_OBJ} ${INTEGRATORS_OBJ} ${MICROPHYS_OBJ} ${PARTICLES_OBJ} ${RECONSTRUCTION_OBJ} ${RSOLVERS_OBJ}
+ALL_OBJ = ${CORE_OBJ} ${FFT_OBJ} ${GRAVITY_OBJ} ${INTEGRATORS_OBJ} ${IONRAD_OBJ} ${MICROPHYS_OBJ} ${PARTICLES_OBJ} ${RECONSTRUCTION_OBJ} ${RSOLVERS_OBJ}
 
 #-------------------  macro definitions  ---------------------------------------
 

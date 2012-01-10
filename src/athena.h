@@ -121,6 +121,27 @@ typedef struct Prim_s{
 #endif
 }PrimS;
 
+//ADDED IN BY A.TRIPATHI 01/09/12
+//COPIED FROM M.KRUMHOLZ'S CODE
+#ifdef ION_RADPLANE
+/*----------------------------------------------------------------------------*/
+/* structure Radplane:  An object that describes source of
+ * plane-parallel ionizing radiation entering the grid on one side.
+ */
+typedef struct Radplane_s {
+  int dir;                   /* Direction of radiation propagation: -1
+				= -x direction, +1 = +x direction, -2
+				= -y direction, +2 = +y direction,
+				etc. */
+  Real flux;                 /* Ionizing flux, in units
+				of 1/time/area (i.e. photons / sec /
+				cm^2, not erg /sec / cm^2 */
+} Radplane;
+
+#endif /* ION_RADPLANE */
+
+
+
 /*----------------------------------------------------------------------------*/
 /*! \struct Cons1DS
  *  \brief Conserved variables in 1D (does not contain Bx).
@@ -288,6 +309,11 @@ typedef struct Grid_s{
   int rx1_id, lx1_id;  /*!< ID of Grid to R/L in x1-dir (default=-1; no Grid) */
   int rx2_id, lx2_id;  /*!< ID of Grid to R/L in x2-dir (default=-1; no Grid) */
   int rx3_id, lx3_id;  /*!< ID of Grid to R/L in x3-dir (default=-1; no Grid) */
+
+#ifdef ION_RADPLANE
+  int nradplane;            /* number of planar rad fronts */
+  Radplane *radplanelist;   /* list of radiation plane sources */
+#endif /*ION_RADPLANE*/
 
 #ifdef PARTICLES
   int partypes;              /*!< number of particle types */
