@@ -207,9 +207,9 @@ AC_ARG_ENABLE(ion-radiation, [  --enable-ion-radiation  do ionizing radiative tr
 if test "$ok" = "yes"; then
   ION_RADIATION_MODE="ION_RADIATION"
   ION_RADIATION_MODE_USER="ON"
-  echo "Ionizing radiation enabled... increasing number of passive scalars by 1"
-  nscalars=$@<:@nscalars+1@:>@
-  NSCALARS=$nscalars
+#  echo "Ionizing radiation enabled... increasing number of passive scalars by 1"
+#  nscalars=$@<:@nscalars+1@:>@
+#  NSCALARS=$nscalars
 else
   ION_RADIATION_MODE="NO_ION_RADIATION"
   ION_RADIATION_MODE_USER="OFF"
@@ -637,6 +637,8 @@ echo "Viscosity:               $VISCOSITY_MODE_USER"
 echo "Thermal conduction:      $CONDUCTION_MODE_USER"
 echo "Particles:               $PARTICLES_USER"
 echo "Special Relativity:      $SPECIAL_RELATIVITY_MODE_USER"
+echo "Ionizing radiation:      $ION_RADIATION_MODE_USER"
+echo "Plane parallel ioniz.:   $ION_PLANE_MODE_USER"
 echo ""
 echo "--- Algorithm Options ----"
 echo ""
