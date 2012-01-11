@@ -626,11 +626,11 @@ Real compute_dt_hydro(Grid *pGrid) {
 #endif /* MHD */
 
 	/* compute maximum inverse of dt (corresponding to minimum dt) */
-	if (pGrid->Nx1 > 1)
+	if (pGrid->Nx[0] > 1)
 	  max_dti = MAX(max_dti,(fabs(v1)+sqrt((double)cf1sq))/pGrid->dx1);
-	if (pGrid->Nx2 > 1)
+	if (pGrid->Nx[1] > 1)
 	  max_dti = MAX(max_dti,(fabs(v2)+sqrt((double)cf2sq))/pGrid->dx2);
-	if (pGrid->Nx3 > 1)
+	if (pGrid->Nx[2] > 1)
 	  max_dti = MAX(max_dti,(fabs(v3)+sqrt((double)cf3sq))/pGrid->dx3);
       }
     }
@@ -682,28 +682,28 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
 
   /* Allocate memory for rate arrays */
   ph_rate = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   edot = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   nHdot = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   last_sign = (int***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(int));
   sign_count = (int***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(int));
   e_init = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1,  
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0],  
 		    sizeof(Real));
   e_th_init = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   x_init = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
 
   /* Offset pointers to account for ghost cells */
@@ -761,6 +761,7 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
 
 void ion_radtransfer_init_domain_3d(Grid *pGrid, Domain *pDomain) {
 
+  /*A Tripathi 01/10/12: CHECK to see if deprecated*/
   /* Store parallel grid information for internal use */
 #ifdef MPI_PARALLEL
   pD = pDomain;
