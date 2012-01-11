@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
   init_particle(&Mesh);
 #endif
 #ifdef ION_RADIATION
-  /*ion_radtransfer_init_domain(&Mesh); Note - FIX! ion_radtransfer_int_domain not yet ready to handle this type*/
+  ion_radtransfer_init_domain(&Mesh); /*Note - FIX for MPI and SMR*/
   /* ion_radtransfer_init_domain(&level0_Grid, &level0_Domain);  Original Athena v3 version*/
 #endif
 /*--- Step 5. ----------------------------------------------------------------*/
@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
   }
 #endif
 #ifdef ION_RADIATION
-  /*IonRadTransfer = ion_radtransfer_init(&Mesh);*/
+  IonRadTransfer = ion_radtransfer_init(&Mesh, ires);
 #endif
 #if defined(RESISTIVITY) || defined(VISCOSITY) || defined(THERMAL_CONDUCTION)
   integrate_diff_init(&Mesh);
@@ -519,14 +519,13 @@ int main(int argc, char *argv[])
     }
 #endif
 
-/*FIX needed to convert from old version - A. Tripathi !!!!!*/
-/* #ifdef ION_RADIATION */
-/*     /\* Note that we do the ionizing radiative transfer step first */
-/*        because it is capable of decreasing the time step relative to */
-/*        the value computed by Courant. *\/ */
-/*     (*IonRadTransfer)(&level0_Grid); */
-/*     set_bvals_mhd(&level0_Grid, &level0_Domain); /\* Re-apply hydro bc's *\/ */
-/* #endif */
+#ifdef ION_RADIATION 
+    /* Note that we do the ionizing radiative transfer step first
+       because it is capable of decreasing the time step relative to
+       the value computed by Courant. */
+    (*IonRadTransfer)(&(Mesh.Domain[0][0].Grid)); /*CHECK! Currently carrying out for root domain ONLY*/
+    bvals_mhd(&(Mesh.Domain[0][0])); /* Re-apply hydro bc's.  Again, I think a FOR LOOP is NEEDED */
+#endif
 /*--- Step 9c. ---------------------------------------------------------------*/
 /* Loop over all Domains and call Integrator */
 
