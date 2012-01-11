@@ -23,10 +23,11 @@
 #ifdef ION_RADIATION
 static int dim=0;
 
-void ion_radtransfer_init_domain(DomainS *pD) {
+void ion_radtransfer_init_domain(MeshS *pM) {
 
-  /*Set grid - new to Athena v4*/
-  GridS *pG = (pD->Grid);
+  /*Set grid and domain for Athena v4*/
+  DomainS *pD = &(pM->Domain[0][0]); /*Temporarily using root domain. Will need FIXing with SMR/MPI*/
+  GridS *pG = (pD.Grid);
 
   /* Calculate the dimensionality and error check */
   dim = 0;
@@ -46,9 +47,10 @@ void ion_radtransfer_init_domain(DomainS *pD) {
 	    pG->Nx[0],pG->Nx[1],pG->Nx[2]);
 }
 
-VGFun_t ion_radtransfer_init(DomainS *pD, int ires){
+VGFun_t ion_radtransfer_init(MeshS *pM, int ires){
 
-  /*Set grid - new to Athena v4*/
+  /*Set grid and domain for Athena v4*/
+  DomainS *pD = &(pM->Domain[0][0]); /*Temporarily using root domain. Will need FIXing with SMR/MPI*/
   GridS *pG = (pD->Grid);
 
   /* Calcualte the dimensionality and error check */
