@@ -26,8 +26,8 @@
 #ifdef ION_RADIATION
 /*----------------------------------------------------------------------------*/
 /* ionrad.c */
-void ion_radtransfer_init_domain(Grid *pG, Domain *pD);
-VGFun_t ion_radtransfer_init(Grid *pG, Domain *pD, int ires);
+void ion_radtransfer_init_domain(MeshS *pM);
+VGFun_t ion_radtransfer_init(MeshS *pM, int ires);
 
 /*----------------------------------------------------------------------------*/
 /* ionrad_3d.c */
