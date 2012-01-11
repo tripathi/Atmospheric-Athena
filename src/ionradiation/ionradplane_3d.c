@@ -136,7 +136,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	  case -1: case 1: {
 	    nGrid=NGrid_x1;
 	    myrank = lr > 0 ? i : nGrid - i - 1;
-	    planesize=pGrid->Nx2*pGrid->Nx3;
+	    planesize=pGrid->Nx[1]*pGrid->Nx[2];
 	    if ((i-lr >= 0) && (i-lr <= NGrid_x1-1))
 	      prevproc = pD->GridArray[k][j][i-lr].id;
 	    else
@@ -150,7 +150,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	  case -2: case 2: {
 	    nGrid=NGrid_x2;
 	    myrank = lr > 0 ? j : nGrid - j - 1;
-	    planesize=pGrid->Nx1*pGrid->Nx2;
+	    planesize=pGrid->Nx[0]*pGrid->Nx[1];
 	    if ((j-lr >= 0) && (j-lr <= NGrid_x2-1))
 	      prevproc = pD->GridArray[k][j-lr][i].id;
 	    else
@@ -164,7 +164,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	  case -3: case 3: {
 	    nGrid=NGrid_x3;
 	    myrank = lr > 0 ? k : nGrid - k - 1;
-	    planesize=pGrid->Nx1*pGrid->Nx2;
+	    planesize=pGrid->Nx[0]*pGrid->Nx[1];
 	    if ((k-lr >= 0) && (k-lr <= NGrid_x3-1))
 	      prevproc = pD->GridArray[k-lr][j][i].id;
 	    else
@@ -224,7 +224,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    /* Get initial flux from passed information or boundary
 	       conditions */
 	    if (prevproc != -1) 
-	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx2+j-pGrid->js];
+	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js];
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = initflux;
@@ -242,7 +242,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    /* Store final flux to pass to next processor, or 0 if we
 	       ended the loop early because we were below the minimum
 	       fraction. */
-	    planeflux[(k-pGrid->ks)*pGrid->Nx2+j-pGrid->js] = 
+	    planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js] = 
 	      flux_frac < MINFLUXFRAC ? 0.0 : flux;
 	    max_flux_frac = (flux_frac > max_flux_frac) ?
 	      flux_frac : max_flux_frac;
@@ -258,7 +258,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    /* Get initial flux from passed information or boundary
 	       conditions */
 	    if (prevproc != -1) 
-	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx1+i-pGrid->is];
+	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx[0]+i-pGrid->is];
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = initflux;
@@ -274,7 +274,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    }
 #ifdef MPI_PARALLEL
 	    /* Store final flux to pass to next processor */
-	    planeflux[(k-pGrid->ks)*pGrid->Nx1+i-pGrid->is] = 
+	    planeflux[(k-pGrid->ks)*pGrid->Nx[0]+i-pGrid->is] = 
 	      flux_frac < MINFLUXFRAC ? 0.0 : flux;
 	    max_flux_frac = (flux_frac > max_flux_frac) ?
 	      flux_frac : max_flux_frac;
@@ -290,7 +290,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    /* Get initial flux from passed information or boundary
 	       conditions */
 	    if (prevproc != -1) 
-	      flux = planeflux[(j-pGrid->js)*pGrid->Nx1+i-pGrid->is];
+	      flux = planeflux[(j-pGrid->js)*pGrid->Nx[0]+i-pGrid->is];
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = initflux;
@@ -306,7 +306,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    }
 #ifdef MPI_PARALLEL
 	    /* Store final flux to pass to next processor */
-	    planeflux[(j-pGrid->js)*pGrid->Nx1+i-pGrid->is] = 
+	    planeflux[(j-pGrid->js)*pGrid->Nx[0]+i-pGrid->is] = 
 	      flux_frac < MINFLUXFRAC ? 0.0 : flux;
 	    max_flux_frac = (flux_frac > max_flux_frac) ?
 	      flux_frac : max_flux_frac;
