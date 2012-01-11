@@ -14,8 +14,9 @@
 #define TII 1.0e4
 #define ALPHA4 2.59e-13
 
-void problem(Grid *pGrid, Domain *pDomain)
+void problem(DomainS *pDomain)
 {
+  GridS *pGrid = pDomain->Grid;
   int i, is = pGrid->is, ie = pGrid->ie;
   int j, js = pGrid->js, je = pGrid->je;
   int k, ks = pGrid->ks, ke = pGrid->ke;
@@ -77,25 +78,26 @@ void problem(Grid *pGrid, Domain *pDomain)
  * before and after the main integration loop.
  */
 
-void Userwork_before_loop(Grid *pGrid, Domain *pDomain)
+/*Not sure if before loop need, so temporarily commenting out - 01/10/12*/
+/* void Userwork_before_loop(Grid *pGrid, Domain *pDomain) */
+/* { */
+/* } */
+
+void Userwork_in_loop(MeshS *pM)
 {
 }
 
-void Userwork_in_loop(Grid *pGrid, Domain *pDomain)
-{
-}
-
-void Userwork_after_loop(Grid *pGrid, Domain *pDomain)
+void Userwork_after_loop(MeshS *pM)
 {
 }
 
 
-void problem_write_restart(Grid *pG, Domain *pDomain, FILE *fp){
+void problem_write_restart(MeshS *pM, FILE *fp){
   return;
 }
 
 
-void problem_read_restart(Grid *pG, Domain *pDomain, FILE *fp){
+void problem_read_restart(MeshS *pM, FILE *fp){
   return;
 }
 
