@@ -32,7 +32,7 @@
 #ifdef ION_RADPLANE
 
 /* Initialized number of radiation planes to zero */
-void ion_radplane_init_domain_3d(Grid *pGrid, Domain *pDomain) {
+void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
   pGrid->nradplane = 0;
   return;
 }
@@ -42,7 +42,7 @@ void ion_radplane_init_domain_3d(Grid *pGrid, Domain *pDomain) {
  * --------------------------------------------------------------
  */
 
-void add_radplane_3d(Grid *pGrid, int dir, Real flux) {
+void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
   int n;
 
   /* Add radiator to pgrid structure */
@@ -72,7 +72,7 @@ void add_radplane_3d(Grid *pGrid, int dir, Real flux) {
  */
 
 void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, 
-		       Grid *pGrid) {
+		       GridS *pGrid) {
   int n;
   int lr;
   Real tau, n_H, kph, etau, cell_len;

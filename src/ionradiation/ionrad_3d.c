@@ -56,7 +56,7 @@ static Real ***x_init;             /* Ionization fraction on entry to
  */
 
 /* Routine to zero out initial photoionization rates */
-void ph_rate_init(Grid *pGrid)
+void ph_rate_init(GridS *pGrid)
 {
   int i,j,k;
 
@@ -68,7 +68,7 @@ void ph_rate_init(Grid *pGrid)
 }
 
 /* Routine to floor temperatures */
-void apply_temp_floor(Grid *pGrid) {
+void apply_temp_floor(GridS *pGrid) {
   int i,j,k;
   Real e_sp, e_thermal, ke, T, x, n_H, n_Hplus, n_e;
 #ifdef MHD
@@ -138,7 +138,7 @@ void apply_temp_floor(Grid *pGrid) {
 
 
 /* Routine to keep d_n > floor and d_n < d. */
-void apply_neutral_floor(Grid *pGrid) {
+void apply_neutral_floor(GridS *pGrid) {
   int i,j,k;
   Real d_nlim;
 
@@ -160,7 +160,7 @@ void apply_neutral_floor(Grid *pGrid) {
 
 /* Routine to save energy, thermal energy, and ionization fraction
    passed to routine -- used for time step constraint. */
-void save_energy_and_x(Grid *pGrid)
+void save_energy_and_x(GridS *pGrid)
 {
   int i, j, k;
   Real e_thermal, n_H, n_Hplus, n_e, x;
@@ -204,7 +204,7 @@ void save_energy_and_x(Grid *pGrid)
 
 /* Routine to check if we have changed the total energy, thermal
    energy, or x_n as much as we are allowed. */
-int check_range(Grid *pGrid) {
+int check_range(GridS *pGrid) {
   int i, j, k;
   Real e_thermal, n_H, n_Hplus, n_e, x;
   long cellcount = 0;
@@ -284,7 +284,7 @@ int check_range(Grid *pGrid) {
 
 #define MAXSIGNCOUNT 4
 #define DAMPFACTOR 0.5
-Real compute_chem_rates(Grid *pGrid)
+Real compute_chem_rates(GridS *pGrid)
 {
   int i, j, k, n;
   Real n_H, n_Hplus, n_e, d_nlim;
@@ -397,7 +397,7 @@ Real compute_chem_rates(Grid *pGrid)
 #undef DAMPFACTOR
 
 
-Real compute_therm_rates(Grid *pGrid)
+Real compute_therm_rates(GridS *pGrid)
 {
   int i, j, k;
   Real n_H, n_Hplus, n_e, e_thermal;
@@ -535,7 +535,7 @@ Real compute_therm_rates(Grid *pGrid)
 }
 
 
-void ionization_update(Grid *pGrid, Real dt)
+void ionization_update(GridS *pGrid, Real dt)
 {
   int i, j, k;
   Real d_nlim;
@@ -563,7 +563,7 @@ void ionization_update(Grid *pGrid, Real dt)
 }
 
 
-Real compute_dt_hydro(Grid *pGrid) {
+Real compute_dt_hydro(GridS *pGrid) {
   int i,j,k;
   Real di,v1,v2,v3,qsq,p,asq,cf1sq,cf2sq,cf3sq,max_dti=0.0,dt;
 #ifdef MHD
@@ -658,7 +658,7 @@ Real compute_dt_hydro(Grid *pGrid) {
  *
  */
 
-void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
+void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
   Real area1, area2, area3, maxdx;
   int j, k;
 
@@ -759,7 +759,7 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
 }
 
 
-void ion_radtransfer_init_domain_3d(Grid *pGrid, Domain *pDomain) {
+void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 
   /*A Tripathi 01/10/12: CHECK to see if deprecated*/
   /* Store parallel grid information for internal use */
@@ -785,7 +785,7 @@ void ion_radtransfer_init_domain_3d(Grid *pGrid, Domain *pDomain) {
  *
  */
 
-void ion_radtransfer_3d(Grid *pGrid) 
+void ion_radtransfer_3d(GridS *pGrid) 
 {
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
   int n, niter, hydro_done;

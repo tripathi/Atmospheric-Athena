@@ -31,9 +31,9 @@ VGFun_t ion_radtransfer_init(MeshS *pM, int ires);
 
 /*----------------------------------------------------------------------------*/
 /* ionrad_3d.c */
-void ion_radtransfer_3d(Grid *pG);
-void ion_radtransfer_init_3d(Grid *pG, Domain *pD, int ires);
-void ion_radtransfer_init_domain_3d(Grid *pG, Domain *pD);
+void ion_radtransfer_3d(GridS *pG);
+void ion_radtransfer_init_3d(GridS *pG, DomainS *pD, int ires);
+void ion_radtransfer_init_domain_3d(GridS *pG, DomainS *pD);
 
 /*----------------------------------------------------------------------------*/
 /* ionrad_chemistry.c */
@@ -49,25 +49,9 @@ Real ki_heat_rate(void);
 #ifdef ION_RADPLANE
 /*----------------------------------------------------------------------------*/
 /* ionradplane_3d.c */
-void add_radplane_3d(Grid *pGrid, int dir, Real flux);
-void ion_radplane_init_domain_3d(Grid *pGrid, Domain *pDomain);
-void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, 
-		       Grid *pGrid);
+void add_radplane_3d(GridS *pGrid, int dir, Real flux);
+void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain);
+void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid);
 #endif /* ION_RADPLANE */
-
-/*----------------------------------------------------------------------------*/
-/* ionradpoint_3d.c */
-#ifdef ION_RADPOINT
-void get_ph_rate_point(Real s, Ray_Tree *tree, Real ***ph_rate,
-		       Grid *pGrid);
-void add_radpoint_3d(Grid *pG, Real x1, Real x2, Real x3, Real s);
-void restore_radpoint_3d(Grid *pG, Real x1, Real x2, Real x3, Real s, 
-			 int rebuild_ctr, float rotation[3][3]);
-void refresh_trees(Grid *pG);
-void ion_radpoint_init_domain_3d(Grid *pGrid, Domain *pDomain);
-Rad_Ran2_State ion_radpoint_get_ranstate(void);
-void ion_radpoint_set_ranstate(Rad_Ran2_State newstate);
-void ion_radpoint_init_ranstate(void);
-#endif /* ION_RADPOINT */
 
 #endif /* IONRAD_PROTOTYPES_H */
