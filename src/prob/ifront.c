@@ -102,10 +102,10 @@ void problem_read_restart(MeshS *pM, FILE *fp){
 }
 
 
-Gasfun_t get_usr_expr(const char *expr){
+ConsFun_t get_usr_expr(const char *expr){
   return NULL;
 }
 
-VGFunout_t get_usr_out_fun(const char *name){
+VOutFun_t get_usr_out_fun(const char *name){
   return NULL;
 }
