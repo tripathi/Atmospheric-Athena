@@ -30,9 +30,9 @@ void ion_radtransfer_init_domain(DomainS *pD) {
 
   /* Calculate the dimensionality and error check */
   dim = 0;
-  if(pG->N[0] > 1) dim++;
-  if(pG->N[1] > 1) dim++;
-  if(pG->N[2] > 1) dim++;
+  if(pG->Nx[0] > 1) dim++;
+  if(pG->Nx[1] > 1) dim++;
+  if(pG->Nx[2] > 1) dim++;
 
   switch(dim) {
   case 1: break;
@@ -42,8 +42,8 @@ void ion_radtransfer_init_domain(DomainS *pD) {
     return;
   }
 
-  ath_error("[ion_radtransfer_init_domain]: Unsupported dim. N[0]=%d, N[1]=%d, N[2]=%d\n",
-	    pG->N[0],pG->N[1],pG->N[2]);
+  ath_error("[ion_radtransfer_init_domain]: Unsupported dim. Nx[0]=%d, Nx[1]=%d, Nx[2]=%d\n",
+	    pG->Nx[0],pG->Nx[1],pG->Nx[2]);
 }
 
 VGFun_t ion_radtransfer_init(DomainS *pD, int ires){
@@ -53,9 +53,9 @@ VGFun_t ion_radtransfer_init(DomainS *pD, int ires){
 
   /* Calcualte the dimensionality and error check */
   dim = 0;
-  if(pG->N[0] > 1) dim++;
-  if(pG->N[1] > 1) dim++;
-  if(pG->N[2] > 1) dim++;
+  if(pG->Nx[0] > 1) dim++;
+  if(pG->Nx[1] > 1) dim++;
+  if(pG->Nx[2] > 1) dim++;
 
   switch(dim){
   case 1: break;
@@ -65,8 +65,8 @@ VGFun_t ion_radtransfer_init(DomainS *pD, int ires){
     return ion_radtransfer_3d;
   }
 
-  ath_error("[ion_radtransfer_init]: Unsupported dim. N[0]=%d, N[1]=%d, N[2]=%d\n",
-	    pG->N[0],pG->N[1],pG->N[2]);
+  ath_error("[ion_radtransfer_init]: Unsupported dim. Nx[0]=%d, Nx[1]=%d, Nx[2]=%d\n",
+	    pG->Nx[0],pG->Nx[1],pG->Nx[2]);
 
   /* This is never executed, but lack of a return statement generates
      a warning on some compilers. */
