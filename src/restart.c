@@ -69,6 +69,10 @@ void restart_grids(char *res_file, MeshS *pM)
 #ifdef PARTICLES
   long p;
 #endif
+#ifdef ION_RADPLANE
+  int dir, nradplane;
+  Real flux;
+#endif
 
 /* Open the restart file */
 
@@ -260,6 +264,20 @@ void restart_grids(char *res_file, MeshS *pM)
         if(kb==1) pG->U[k][j][i].B3c=0.5*(pG->B3i[k][j][i] +pG->B3i[k+1][j][i]);
       }}}
 #endif
+
+#ifdef ION_RADPLANE
+  /* Read list of radiator planes */
+  fgets(line,MAXLEN,fp);/* Read the '\n' preceeding the next string */
+  fgets(line,MAXLEN,fp);
+  if(strncmp(line,"RADIATOR PLANE LIST",19) != 0)
+    ath_error("[restart_grid_block]: Expected RADIATOR PLANE LIST, found %s",line);
+  fread(&nradplane,sizeof(int),1,fp);
+  for (n=0; n<nradplane; n++) {
+    fread(&dir,sizeof(int),1,fp);
+    fread(&flux,sizeof(Real),1,fp);
+    add_radplane_3d(pG, dir, flux);
+  }
+#endif /* ION_RADPLANE */
 
 #if (NSCALARS > 0)
 /* Read any passively advected scalars */
@@ -685,6 +703,16 @@ void dump_restart(MeshS *pM, OutputS *pout)
         nbuf = 0;
       }
 #endif
+
+#ifdef ION_RADPLANE
+  /* Write out properties of radiator planes */
+  fprintf(fp,"\nRADIATOR PLANE LIST\n");
+  fwrite(&(pG->nradplane),sizeof(int),1,fp);
+  for (n=0; n<pG->nradplane; n++) {
+    fwrite(&(pG->radplanelist[n].dir),sizeof(int),1,fp);
+    fwrite(&(pG->radplanelist[n].flux),sizeof(Real),1,fp);
+  }
+#endif /* ION_RADPLANE */
 
 /* Write out passively advected scalars */
 
