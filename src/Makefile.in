@@ -73,11 +73,14 @@ ifeq (@ION_RADIATION_MODE@,ION_RADIATION)
 		ionradiation/ionradpoint_3d.o
 endif
 
-GRAVITY_OBJ = gravity/bvals_grav.o \
+GRAVITY_OBJ =
+ifeq (@SELF_GRAVITY_DEFINE@,SELF_GRAVITY)
+   GRAVITY_OBJ = gravity/bvals_grav.o \
               gravity/selfg.o \
               gravity/selfg_fft.o \
               gravity/selfg_fft_obc.o \
               gravity/selfg_multigrid.o
+endif
 
 MICROPHYS_OBJ = microphysics/conduction.o \
 	        microphysics/diff_dt.o \

@@ -45,7 +45,9 @@ endif
 ifeq (@ION_RADIATION_MODE@,ION_RADIATION)
 	(cd src/ionradiation; $(MAKE) compile)
 endif
+ifeq (@SELF_GRAVITY_DEFINE@,SELF_GRAVITY)
 	(cd src/gravity; $(MAKE) compile)
+endif
 	(cd src/integrators; $(MAKE) compile)
 	(cd src/microphysics; $(MAKE) compile)
 	(cd src/particles; $(MAKE) compile)
