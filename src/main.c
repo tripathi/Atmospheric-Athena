@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
     /* Note that we do the ionizing radiative transfer step first
        because it is capable of decreasing the time step relative to
        the value computed by Courant. */
-    (*IonRadTransfer)(&(Mesh.Domain[0][0]).Grid); /*CHECK! Currently carrying out for root domain ONLY*/
+    (*IonRadTransfer)((Mesh.Domain[0][0]).Grid); /*CHECK! Currently carrying out for root domain ONLY*/
     bvals_mhd(&(Mesh.Domain[0][0])); /* Re-apply hydro bc's.  Again, I think a FOR LOOP is NEEDED */
 #endif
 /*--- Step 9c. ---------------------------------------------------------------*/
