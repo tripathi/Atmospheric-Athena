@@ -121,8 +121,6 @@ typedef struct Prim_s{
 #endif
 }PrimS;
 
-//ADDED IN BY A.TRIPATHI 01/09/12
-//COPIED FROM M.KRUMHOLZ'S CODE
 #ifdef ION_RADPLANE
 /*----------------------------------------------------------------------------*/
 /* structure Radplane:  An object that describes source of
