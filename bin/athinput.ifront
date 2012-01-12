@@ -8,39 +8,39 @@ num_domains     = 1          # number of Domains in Mesh
 
 <time>
 cour_no         = 0.4		 # The Courant, Friedrichs, & Lewy (CFL) Number
-nlim            = 1000000000 	 # cycle limit
-tlim            = 3.0e5  	 # time limit
+nlim            = 100000000000 	 # cycle limit
+tlim            = 1.5778463e14	 # time limit
 
 <output1>
 out_fmt = hst               # History data dump
-dt      = 3.0e3              # time increment between outputs
+dt      = 2.89e11              # time increment between outputs
 
 <output2>
 out_fmt = vtk      # bin image
-dt      = 3.0e3    # time step between outputs
+dt      = 2.89e11    # time step between outputs
 
 <output3>
 out_fmt = rst      # Restart dump
-dt      = 3.0e3      #time increment between outputs
+dt      = 2.89e11      #time increment between outputs
 
 
 <domain1>
 level           = 0         # refinement level this Domain (root=0)
-Nx1             = 32        # Number of zones in X1-direction
-x1min           = -2.5e10   # minimum value of X
-x1max           = 2.5e10    # maximum value of X
+Nx1             = 64        # Number of zones in X1-direction
+x1min           = -1.5e19   # minimum value of X
+x1max           = 1.5e19    # maximum value of X
 bc_ix1          = 2         # boundary condition flag for inner-I (X1)
 bc_ox1          = 2         # boundary condition flag for outer-I (X1)
 
-Nx2             = 32        # Number of zones in X2-direction
-x2min           = -2.5e10   # minimum value of X2
-x2max           = 2.5e10    # maximum value of X2
+Nx2             = 64        # Number of zones in X2-direction
+x2min           = -1.5e19   # minimum value of X2
+x2max           = 1.5e19    # maximum value of X2
 bc_ix2          = 2         # boundary condition flag for inner-J (X2)
 bc_ox2          = 2         # boundary condition flag for outer-J (X2)
 
-Nx3             = 32         # Number of zones in X3-direction
-x3min           = -2.5e10    # minimum value of X3
-x3max           = 2.5e10     # maximum value of X3
+Nx3             = 64         # Number of zones in X3-direction
+x3min           = -1.5e19    # minimum value of X3
+x3max           = 1.5e19     # maximum value of X3
 bc_ix3          = 2          # boundary condition flag for inner-K (X3)
 bc_ox3          = 2          # boundary condition flag for outer-K (X3)
 
@@ -63,7 +63,7 @@ tceil = 10e5
 maxiter = 100
 
 <problem>
-n_H = 6.0e8
-cs = 1.0e6
-flux = 500.0
+n_H = 63.0
+cs = 5.74e4
+flux = 3.67e8
 gamma = 1.666666666667
