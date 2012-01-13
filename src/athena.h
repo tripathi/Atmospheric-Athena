@@ -311,6 +311,7 @@ typedef struct Grid_s{
 #ifdef ION_RADPLANE
   int nradplane;            /* number of planar rad fronts */
   Radplane *radplanelist;   /* list of radiation plane sources */
+  Real ***ph_rate_g;           /*photoionization rate*/
 #endif /*ION_RADPLANE*/
 
 #ifdef PARTICLES
