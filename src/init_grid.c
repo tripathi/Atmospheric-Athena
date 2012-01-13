@@ -231,6 +231,11 @@ void init_grid(MeshS *pM)
       }
 #endif /* CYLINDRICAL */
 
+/* Allocate and initialize photoionization rate array */
+#ifdef ION_RADPLANE
+      pG->ph_rate = (Real***)calloc_3d_array(n3z, n2z, n1z, sizeof(Real));
+      if (pG->ph_rate == NULL) goto on_error16;
+#endif /*ION_RADPLANE*/
 
 /*-- Get IDs of neighboring Grids in Domain communicator ---------------------*/
 /* If Grid is at the edge of the Domain (so it is either a physical boundary,
@@ -1132,6 +1137,11 @@ printf("Parent_ID=%d DomN=%d nWordsRC=%d nWordsP=%d\n",
   return;
 
 /*--- Error messages ---------------------------------------------------------*/
+
+#ifdef ION_RADPLANE
+  on_error16:
+    free_3d_array(pG->ph_rate);
+#endif
 
 #ifdef CYLINDRICAL
   on_error15:
