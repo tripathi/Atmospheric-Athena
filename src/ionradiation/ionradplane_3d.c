@@ -71,8 +71,7 @@ void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
  * --------------------------------------------------------------
  */
 
-void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, 
-		       GridS *pGrid) {
+void get_ph_rate_plane(Real initflux, int dir, GridS *pGrid) {
   int n;
   int lr;
   Real tau, n_H, kph, etau, cell_len;
@@ -233,7 +232,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
-	      ph_rate[k][j][i] += kph;
+	      pGrid->ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / initflux;
 	      if (flux_frac < MINFLUXFRAC) break;
@@ -267,7 +266,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
-	      ph_rate[k][j][i] += kph;
+	      pGrid->ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / initflux;
 	      if (flux_frac < MINFLUXFRAC) break;
@@ -299,7 +298,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
-	      ph_rate[k][j][i] += kph;
+	      pGrid->ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / initflux;
 	      if (flux_frac < MINFLUXFRAC) break;

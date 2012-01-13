@@ -28,7 +28,7 @@
 #ifdef ION_RADIATION
 
 /* Global storage arrays */
-static Real ***ph_rate;            /* Photoionization rate */
+/*static Real ***ph_rate;             Photoionization rate */
 static Real ***edot;               /* Rate of change of energy */
 static Real ***nHdot;              /* Rate of change of neutral
 				      density */
@@ -59,10 +59,9 @@ static Real ***x_init;             /* Ionization fraction on entry to
 void ph_rate_init(GridS *pGrid)
 {
   int i,j,k;
-
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
     for (j=pGrid->js; j<=pGrid->je; j++) {
-      for (i=pGrid->is; i<=pGrid->ie; i++) ph_rate[k][j][i] = 0.0;
+      for (i=pGrid->is; i<=pGrid->ie; i++) pGrid->ph_rate[k][j][i] = 0.0;
     }
   }
 }
@@ -220,7 +219,7 @@ int check_range(GridS *pGrid) {
 
 	/* Check D type condition */
 	n_H = pGrid->U[k][j][i].s[0] / m_H;
-	if (ph_rate[k][j][i] / (min_area * n_H) > 2.0*CION) continue;
+	if (pGrid->ph_rate[k][j][i] / (min_area * n_H) > 2.0*CION) continue;
 
 	/* Check thermal energy condition */
 	if (max_de_therm_step > 0) {
@@ -327,7 +326,7 @@ Real compute_chem_rates(GridS *pGrid)
 	/* Get rate of change of neutral density */
 	nHdot[k][j][i] = 
 	  recomb_rate_coef(T) * time_unit * n_e * n_Hplus
-	  - ph_rate[k][j][i] * n_H
+	  - pGrid->ph_rate[k][j][i] * n_H
 	  - coll_ion_rate_coef(T) * time_unit * n_e * n_H;
 
 	/* Check if the sign has flipped -- oscillatory overstability
@@ -458,7 +457,7 @@ Real compute_therm_rates(GridS *pGrid)
 	/* Get rate of change of gas energy. Only use molecular cooling
 	   in cells with < COOLFRAC or > 1 - COOLFRAC ionization fraction, to
 	   avoid artificial over-cooling in mixed or transition cells. */
-	edot[k][j][i] = ph_rate[k][j][i] * e_gamma * n_H
+	edot[k][j][i] = pGrid->ph_rate[k][j][i] * e_gamma * n_H
 	  - osterbrock_cool_rate(T) * n_e*n_Hplus
 	  + recomb_cool_rate_coef(T) * time_unit * n_Hplus * n_e;
 	if ((n_Hplus / (n_H+n_Hplus) < COOLFRAC) || 
@@ -681,9 +680,8 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
   maxiter = par_getd("ionradiation", "maxiter");
 
   /* Allocate memory for rate arrays */
-  ph_rate = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(Real));
+  /*  ph_rate = (Real***) 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], sizeof(Real));*/
   edot = (Real***) 
     calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
@@ -707,7 +705,7 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
 		    sizeof(Real));
 
   /* Offset pointers to account for ghost cells */
-  ph_rate -= pGrid->ks;
+  pGrid->ph_rate -= pGrid->ks;
   edot -= pGrid->ks;
   nHdot -= pGrid->ks;
   last_sign -= pGrid->ks;
@@ -716,7 +714,7 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
   e_th_init -= pGrid->ks;
   x_init -= pGrid->ks;
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
-    ph_rate[k] -= pGrid->js;
+    pGrid->ph_rate[k] -= pGrid->js;
     edot[k] -= pGrid->js;
     nHdot[k] -= pGrid->js;
     last_sign[k] -= pGrid->js;
@@ -725,7 +723,7 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
     e_th_init[k] -= pGrid->js;
     x_init[k] -= pGrid->js;
     for (j=pGrid->js; j<=pGrid->je; j++) {
-      ph_rate[k][j] -= pGrid->is;
+      pGrid->ph_rate[k][j] -= pGrid->is;
       edot[k][j] -= pGrid->is;
       nHdot[k][j] -= pGrid->is;
       last_sign[k][j] -= pGrid->is;
@@ -818,7 +816,7 @@ void ion_radtransfer_3d(GridS *pGrid)
     for (n=0; n<pGrid->nradplane; n++) 
       get_ph_rate_plane(pGrid->radplanelist[n].flux,
 			pGrid->radplanelist[n].dir,
-			ph_rate, pGrid);
+			pGrid);
 #endif
 
     /* Compute rates and time step for chemistry update */
