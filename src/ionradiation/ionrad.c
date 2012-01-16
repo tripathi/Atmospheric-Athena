@@ -26,8 +26,18 @@ static int dim=0;
 void ion_radtransfer_init_domain(MeshS *pM) {
 
   /*Set grid and domain for Athena v4*/
+
   DomainS *pD = &(pM->Domain[0][0]); /*Temporarily using root domain. Will need FIXing with SMR/MPI*/
   GridS *pG = pM->Domain[0][0].Grid;
+
+  /* Loop over all levels and domains per level */
+/*   DomainS *pD; */
+/*   GridS *pG; */
+/*   for (nl=0; nl<pM->NLevels; nl++){ */
+/*     for (nd=0; nd<pM->DomainsPerLevel[nl]; nd++){ */
+/*       if (pM->Domain[nl][nd].Grid != NULL) { */
+/* 	pD = (DomainS*)&(pM->Domain[nl][nd]);  /\* set ptr to Domain *\/ */
+/* 	pG = pM->Domain[nl][nd].Grid;          /\* set ptr to Grid *\/ */
 
   /* Calculate the dimensionality and error check */
   dim = 0;
@@ -42,7 +52,9 @@ void ion_radtransfer_init_domain(MeshS *pM) {
     ion_radtransfer_init_domain_3d(pG, pD);
     return;
   }
-
+/*       } */
+/*     } */
+/*   } */
   ath_error("[ion_radtransfer_init_domain]: Unsupported dim. Nx[0]=%d, Nx[1]=%d, Nx[2]=%d\n",
 	    pG->Nx[0],pG->Nx[1],pG->Nx[2]);
 }
