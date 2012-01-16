@@ -410,6 +410,10 @@ typedef struct Mesh_s{
   char *outfilename;         /*!< basename for output files containing -id#  */
 }MeshS;
 
+/*! \fn void (*VMFun_t)(MeshS *pM)
+ *  \brief Generic void function of Domain. */
+/*typedef void (*VMFun_t)(MeshS *pM);   generic void function of Mesh */
+
 /*----------------------------------------------------------------------------*/
 /* OutputS: Everything for outputs. */
 
