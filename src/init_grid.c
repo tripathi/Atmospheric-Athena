@@ -231,6 +231,11 @@ void init_grid(MeshS *pM)
       }
 #endif /* CYLINDRICAL */
 
+/*Allocate and initialize radiation flux if using SMR*/
+#if defined(ION_RADPLANE) && defined(STATIC_MESH_REFINEMENT)
+      pG->Flux_g = (Real***)calloc_3d_array(n3z, n2z, n1z, sizeof(Real));
+      if (pG->Flux_g == NULL) goto on_error16;
+#endif /*ION_RADPLANE + STATIC_MESH_REFINEMENT*/
 
 /*-- Get IDs of neighboring Grids in Domain communicator ---------------------*/
 /* If Grid is at the edge of the Domain (so it is either a physical boundary,
@@ -1132,6 +1137,11 @@ printf("Parent_ID=%d DomN=%d nWordsRC=%d nWordsP=%d\n",
   return;
 
 /*--- Error messages ---------------------------------------------------------*/
+
+#if defined(ION_RADPLANE) && defined(STATIC_MESH_REFINEMENT)
+  on_error16:
+    free_1d_array(pG->Flux_g);
+#endif
 
 #ifdef CYLINDRICAL
   on_error15:
