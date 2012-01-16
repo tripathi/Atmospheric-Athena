@@ -284,7 +284,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	break;
       }
       case -3: case 3: {
-	for (j=pGrid->ks; j<=pGrid->ke; j++) {
+	for (j=pGrid->js; j<=pGrid->je; j++) {
 	  for (i=pGrid->is; i<=pGrid->ie; i++) {
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
