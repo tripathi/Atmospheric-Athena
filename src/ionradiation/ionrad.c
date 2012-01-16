@@ -31,6 +31,7 @@ void ion_radtransfer_init_domain(MeshS *pM) {
 /*   GridS *pG = pM->Domain[0][0].Grid; */
 
   /* Loop over all levels and domains per level */
+  int nl,nd;
   DomainS *pD;
   GridS *pG;
   for (nl=0; nl<pM->NLevels; nl++){
@@ -64,7 +65,7 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
   /*Set grid and domain for Athena v4*/
 /*   DomainS *pD = &(pM->Domain[0][0]); /\*This works only for root domain. Use loop for more domains*\/ */
 /*   GridS *pG = pM->Domain[0][0].Grid; */
-
+  int nl,nd;
   DomainS *pD;
   GridS *pG;
   for (nl=0; nl<pM->NLevels; nl++){
