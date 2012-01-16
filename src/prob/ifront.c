@@ -67,9 +67,12 @@ void problem(DomainS *pDomain)
     }
   }
 
-  /* Radiation originating from domain edge */
-  add_radplane_3d(pGrid, -1, flux);
-
+  /* Radiation originating from root domain edge */
+  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){
+/*     ath_pout(0,"On domain level %d, number %d: Adding radiator on root domain \n",  */pDomain->Level, pDomain->DomNumber);
+    add_radplane_3d(pGrid, -1, flux);
+  }
+/*   else {ath_pout(0,"On domain level %d, number %d: Not adding a radiator plane\n", pDomain->Level, pDomain->DomNumber);} */
   return;
 }
 
