@@ -223,9 +223,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 #ifdef STATIC_MESH_REFINEMENT
 	    /* Get initial flux from passed information or boundary
 	       conditions */
-	    if (pGrid->lx1_id != -1) 
-	      flux = pGrid->Flux_g[k][j][i-1]; /*CHECK to see that you're pulling the correct flux*/
-	    else
+	    if (pGrid->lx1_id != -1)
+	      initflux = pGrid->Flux_g[k][j][i-1]; /*CHECK to see that you're pulling the correct flux*/
 #endif /* STATIC_MESH_REFINEMENT */
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
@@ -270,9 +269,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 #ifdef STATIC_MESH_REFINEMENT
 	    /* Get initial flux from passed information or boundary
 	       conditions */
-	    if (pGrid->lx2_id != -1) 
-	      flux = pGrid->Flux_g[k][j-1][i]; /*CHECK to see that you're pulling the correct flux*/
-	    else
+	    if (pGrid->lx2_id != -1)
+	      initflux = pGrid->Flux_g[k][j-1][i]; /*CHECK to see that you're pulling the correct flux*/
 #endif /* STATIC_MESH_REFINEMENT */
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
@@ -316,8 +314,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    /* Get initial flux from passed information or boundary
 	       conditions */
 	    if (pGrid->lx3_id != -1) 
-	      flux = pGrid->Flux_g[k-1][j][i]; /*CHECK to see that you're pulling the correct flux*/
-	    else
+	      initflux = pGrid->Flux_g[k-1][j][i]; /*CHECK to see that you're pulling the correct flux*/
 #endif /* STATIC_MESH_REFINEMENT */
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
