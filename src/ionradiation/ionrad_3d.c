@@ -45,6 +45,9 @@ static Real ***e_th_init;          /* Thermal energies on entry to
 				      routine */
 static Real ***x_init;             /* Ionization fraction on entry to
 				      routine */
+#ifdef ION_RADPLANE
+static int numradplane; 
+#endif
 
 /* ------------------------------------------------------------
  * Photoionization routines
@@ -809,7 +812,11 @@ void ion_radtransfer_3d(DomainS *pDomain)
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
   int n, niter, hydro_done;
   int nchem, ntherm;
-
+  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){
+    numradplane = pGrid->nradplane;
+  }
+      
+  /*!!!!!Note that currently this is run on just 1 grid for the domain*/
 
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
@@ -834,7 +841,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
     /* Compute photoionization rate from all sources */
 #ifdef ION_RADPLANE
-    for (n=0; n<pGrid->nradplane; n++) 
+    for (n=0; n<numradplane; n++) 
       get_ph_rate_plane(pGrid->radplanelist[n].flux,
 			pGrid->radplanelist[n].dir,
 			ph_rate, pGrid);
