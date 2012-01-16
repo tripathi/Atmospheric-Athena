@@ -67,6 +67,24 @@ void ph_rate_init(GridS *pGrid)
   }
 }
 
+/* /\*Routine to fetch ionization flux 2d array for plane of interest*\/ */
+/* void flux_init(MeshS *pM, Real **fluxarray, int dir) */
+/* { */
+/*   DomainS *pD = &(pM->Domain[0][0]); /\*Temporarily using root domain. Will need FIXing with SMR/MPI*\/ */
+/*   GridS *pG = pM->Domain[0][0].Grid; */
+/*   /\*To know which 2D array to use, need to know radplane direction*\/ */
+
+/*   fluxarray[][] = ; */
+
+/*   ph_rate = (Real***)  */
+/*     calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0],  */
+/* 		    sizeof(Real)); */
+
+
+/* } */
+
+/*Routine to populate array with fluxes*/
+
 /* Routine to floor temperatures */
 void apply_temp_floor(GridS *pGrid) {
   int i,j,k;
