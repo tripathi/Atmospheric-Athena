@@ -803,8 +803,9 @@ void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
  *
  */
 
-void ion_radtransfer_3d(GridS *pGrid) 
+void ion_radtransfer_3d(DomainS *pDomain) 
 {
+  GridS *pGrid = pDomain->Grid;
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
   int n, niter, hydro_done;
   int nchem, ntherm;

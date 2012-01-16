@@ -27,7 +27,7 @@
 /*----------------------------------------------------------------------------*/
 /* ionrad.c */
 void ion_radtransfer_init_domain(MeshS *pM);
-VGFun_t ion_radtransfer_init(MeshS *pM, int ires);
+VDFun_t ion_radtransfer_init(MeshS *pM, int ires);
 
 /*----------------------------------------------------------------------------*/
 /* ionrad_3d.c */

@@ -33,7 +33,9 @@
 
 /* Initialized number of radiation planes to zero */
 void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
-  pGrid->nradplane = 0;
+  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){
+    pGrid->nradplane = 0;
+  }
   return;
 }
 

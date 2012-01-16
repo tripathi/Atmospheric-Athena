@@ -59,7 +59,7 @@ void ion_radtransfer_init_domain(MeshS *pM) {
 	    pG->Nx[0],pG->Nx[1],pG->Nx[2]);
 }
 
-VGFun_t ion_radtransfer_init(MeshS *pM, int ires){
+VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
 
   /*Set grid and domain for Athena v4*/
   DomainS *pD = &(pM->Domain[0][0]); /*Temporarily using root domain. Will need FIXing with SMR/MPI*/
