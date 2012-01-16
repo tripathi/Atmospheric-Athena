@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 #endif
 /*Added A. Tripathi 01/10/12*/
 #ifdef ION_RADIATION 
-  VGFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
+  VDFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
 #endif
   int nl,nd;
   char *definput = "athinput";  /* default input filename */
@@ -523,14 +523,14 @@ int main(int argc, char *argv[])
     /* Note that we do the ionizing radiative transfer step first
        because it is capable of decreasing the time step relative to
        the value computed by Courant. */
-/*     for (nl=0; nl<(Mesh.NLevels); nl++){  */
-/*       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){   */
-/* 	(*IonRadTransfer)((Mesh.Domain[nl][nd]).Grid); */
-/* 	bvals_mhd(&(Mesh.Domain[nl][nd])); */
-	(*IonRadTransfer)((Mesh.Domain[0][0]).Grid); /*CHECK! Currently carrying out for root domain ONLY*/
-	bvals_mhd(&(Mesh.Domain[0][0])); /* Re-apply hydro bc's.  Again, I think a FOR LOOP is NEEDED */
-/*       } */
-/*     } */
+    for (nl=0; nl<(Mesh.NLevels); nl++){
+      for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
+	(*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
+	bvals_mhd(&(Mesh.Domain[nl][nd]));
+/* 	(*IonRadTransfer)((Mesh.Domain[0][0]).Grid); /\*CHECK! Currently carrying out for root domain ONLY*\/ */
+/* 	bvals_mhd(&(Mesh.Domain[0][0])); /\* Re-apply hydro bc's.  Again, I think a FOR LOOP is NEEDED *\/ */
+      }
+    }
 #endif
 /*--- Step 9c. ---------------------------------------------------------------*/
 /* Loop over all Domains and call Integrator */
