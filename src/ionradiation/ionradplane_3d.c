@@ -220,6 +220,13 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       case -1: case 1: {
 	for (k=pGrid->ks; k<=pGrid->ke; k++) {
 	  for (j=pGrid->js; j<=pGrid->je; j++) {
+#ifdef STATIC_MESH_REFINEMENT
+	    /* Get initial flux from passed information or boundary
+	       conditions */
+	    if (pGrid->lx1_id != -1) 
+	      flux = pGrid->Flux_g[k][j][i-1]; /*CHECK to see that you're pulling the correct flux*/
+	    else
+#endif /* STATIC_MESH_REFINEMENT */
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
 	       conditions */
@@ -236,6 +243,12 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / initflux;
+#ifdef STATIC_MESH_REFINEMENT
+	    /* Store final flux to pass to next grid cell, or 0 if we
+	       ended the loop early because we were below the minimum
+	       fraction. */
+	      pGrid->Flux_g[k][j][i] = flux_frac < MINFLUXFRAC ? 0.0 : flux;
+#endif /*STATIC_MESH_REFINEMENT*/
 	      if (flux_frac < MINFLUXFRAC) break;
 	    }
 #ifdef MPI_PARALLEL
@@ -254,6 +267,13 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       case -2: case 2: {
 	for (k=pGrid->ks; k<=pGrid->ke; k++) {
 	  for (i=pGrid->is; i<=pGrid->ie; i++) {
+#ifdef STATIC_MESH_REFINEMENT
+	    /* Get initial flux from passed information or boundary
+	       conditions */
+	    if (pGrid->lx2_id != -1) 
+	      flux = pGrid->Flux_g[k][j-1][i]; /*CHECK to see that you're pulling the correct flux*/
+	    else
+#endif /* STATIC_MESH_REFINEMENT */
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
 	       conditions */
@@ -270,6 +290,12 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / initflux;
+#ifdef STATIC_MESH_REFINEMENT
+	    /* Store final flux to pass to next grid cell, or 0 if we
+	       ended the loop early because we were below the minimum
+	       fraction. */
+	      pGrid->Flux_g[k][j][i] = flux_frac < MINFLUXFRAC ? 0.0 : flux;
+#endif /*STATIC_MESH_REFINEMENT*/
 	      if (flux_frac < MINFLUXFRAC) break;
 	    }
 #ifdef MPI_PARALLEL
@@ -284,8 +310,15 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	break;
       }
       case -3: case 3: {
-	for (j=pGrid->ks; j<=pGrid->ke; j++) {
+	for (j=pGrid->js; j<=pGrid->je; j++) { /*Changed ks and ke to js and je - A.Tripathi*/
 	  for (i=pGrid->is; i<=pGrid->ie; i++) {
+#ifdef STATIC_MESH_REFINEMENT
+	    /* Get initial flux from passed information or boundary
+	       conditions */
+	    if (pGrid->lx3_id != -1) 
+	      flux = pGrid->Flux_g[k-1][j][i]; /*CHECK to see that you're pulling the correct flux*/
+	    else
+#endif /* STATIC_MESH_REFINEMENT */
 #ifdef MPI_PARALLEL
 	    /* Get initial flux from passed information or boundary
 	       conditions */
@@ -302,6 +335,12 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / initflux;
+#ifdef STATIC_MESH_REFINEMENT
+	    /* Store final flux to pass to next grid cell, or 0 if we
+	       ended the loop early because we were below the minimum
+	       fraction. */
+	      pGrid->Flux_g[k][j][i] = flux_frac < MINFLUXFRAC ? 0.0 : flux;
+#endif /*STATIC_MESH_REFINEMENT*/
 	      if (flux_frac < MINFLUXFRAC) break;
 	    }
 #ifdef MPI_PARALLEL
