@@ -525,8 +525,10 @@ int main(int argc, char *argv[])
        the value computed by Courant. */
     for (nl=0; nl<(Mesh.NLevels); nl++){
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
-	(*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
-	bvals_mhd(&(Mesh.Domain[nl][nd]));
+	if (Mesh.Domain[nl][nd].Grid != NULL){
+	  (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
+	  bvals_mhd(&(Mesh.Domain[nl][nd]));
+	}
 /* 	(*IonRadTransfer)((Mesh.Domain[0][0]).Grid); /\*CHECK! Currently carrying out for root domain ONLY*\/ */
 /* 	bvals_mhd(&(Mesh.Domain[0][0])); /\* Re-apply hydro bc's.  Again, I think a FOR LOOP is NEEDED *\/ */
       }
@@ -720,6 +722,11 @@ int main(int argc, char *argv[])
 #if defined(SHEARING_BOX) || (defined(FARGO) && defined(CYLINDRICAL))
   bvals_shear_destruct();
 #endif
+
+#ifdef ION_RADIATION
+  ion_radtransfer_destruct_3d(); 
+#endif
+
 #if defined(RESISTIVITY) || defined(VISCOSITY) || defined(THERMAL_CONDUCTION)
   integrate_diff_destruct();
 #endif

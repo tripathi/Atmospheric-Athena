@@ -26,6 +26,7 @@
 #ifdef ION_RADIATION
 /*----------------------------------------------------------------------------*/
 /* ionrad.c */
+void ion_radtransfer_destruct_3d();
 void ion_radtransfer_init_domain(MeshS *pM);
 VDFun_t ion_radtransfer_init(MeshS *pM, int ires);
 

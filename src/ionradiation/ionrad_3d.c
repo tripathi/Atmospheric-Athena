@@ -678,6 +678,16 @@ Real compute_dt_hydro(GridS *pGrid) {
  * needed on restart.
  *
  */
+void ion_radtransfer_destruct_3d(){
+  free_3d_array(ph_rate);
+  free_3d_array(edot);
+  free_3d_array(nHdot);
+  free_3d_array(last_sign);
+  free_3d_array(sign_count);
+  free_3d_array(e_init);
+  free_3d_array(e_th_init);
+  free_3d_array(x_init);
+}
 
 void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
   Real area1, area2, area3, maxdx;
