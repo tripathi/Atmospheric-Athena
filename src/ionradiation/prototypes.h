@@ -49,6 +49,8 @@ Real ki_heat_rate(void);
 #ifdef ION_RADPLANE
 /*----------------------------------------------------------------------------*/
 /* ionradplane_3d.c */
+/* void fluxarr_init(GridS *pGrid, Real **fluxarr, int dir, Real flux); */
+/* void add_flux_array(DomainS *pDomain, int dir, Real flux); */
 void add_radplane_3d(GridS *pGrid, int dir, Real flux);
 void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain);
 void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid);

@@ -31,6 +31,8 @@
 
 #ifdef ION_RADPLANE
 
+/* Real **fluxarr;            /\* Array of fluxes perpendicular to propagation direction *\/ */
+
 /* Initialized number of radiation planes to zero */
 void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
   if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){
@@ -38,6 +40,59 @@ void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
   }
   return;
 }
+
+/* void fluxarr_init(GridS *pGrid, Real **fluxarr, int dir, Real flux){ */
+/*   int i,j,k; */
+/*   switch(dir) { */
+/*   case -1: case 1: { */
+/*     for (k=pGrid->ks; k<=pGrid->ke; k++) { */
+/*       for (j=pGrid->js; j<=pGrid->je; j++) { */
+/* 	fluxarr[k][j] = flux; */
+/*       } */
+/*     } */
+/*     break; */
+/*   } */
+/*   case -2: case 2: { */
+/*     for (i=pGrid->is; i<=pGrid->ie; i++) { */
+/*       for (k=pGrid->ks; k<=pGrid->ke; k++) { */
+/* 	fluxarr[i][k] = flux; */
+/*       } */
+/*     } */
+/*     break; */
+/*   } */
+/*   case -3: case 3: { */
+/*     for (j=pGrid->js; j<=pGrid->je; j++) { */
+/*       for (i=pGrid->is; i<=pGrid->ie; i++) { */
+/* 	fluxarr[j][i] = flux; */
+/*       } */
+/*     } */
+/*     break; */
+/*   } */
+/*   } */
+/* } */
+
+/* void add_flux_array(DomainS *pDomain, int dir, Real flux){ */
+/*   GridS *pGrid = pDomain->Grid; */
+
+/*   switch(dir) { */
+/*   case -1: case 1: { */
+/*     fluxarr = (Real **) calloc_2d_array(pGrid->Nx[2], pGrid->Nx[1], sizeof(Real)); */
+/*     break; */
+/*   } */
+/*   case -2: case 2: { */
+/*     fluxarr = (Real **) calloc_2d_array(pGrid->Nx[0], pGrid->Nx[2], sizeof(Real)); */
+/*     break; */
+/*   } */
+/*   case -3: case 3: { */
+/*     fluxarr = (Real **) calloc_2d_array(pGrid->Nx[1], pGrid->Nx[0], sizeof(Real)); */
+/*     break; */
+/*   } */
+/*   } */
+
+/*     fluxarr_init(pGrid, fluxarr, dir, flux); */
+/* } */
+
+
 
 /* --------------------------------------------------------------
  * Routine to add new radiator plane
@@ -229,7 +284,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js];
 	    else
 #endif /* MPI_PARALLEL */
-	      flux = initflux;
+/* 	      flux =  fluxtable[k][j];*/
+	      flux =  initflux;
 	    for (i=s; i<=e; i+=lr) {
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 	      tau = sigma_ph * n_H * pGrid->dx1;
