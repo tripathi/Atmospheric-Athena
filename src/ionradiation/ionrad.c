@@ -68,11 +68,16 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
   int nl,nd;
   DomainS *pD;
   GridS *pG;
+  MeshS *pM2;
+
   for (nl=0; nl<pM->NLevels; nl++){
     for (nd=0; nd<pM->DomainsPerLevel[nl]; nd++){
       if (pM->Domain[nl][nd].Grid != NULL) {
 	pD = (DomainS*)&(pM->Domain[nl][nd]);  /* set ptr to Domain */
 	pG = pM->Domain[nl][nd].Grid;          /* set ptr to Grid */
+
+	pM2 = (pG->Mesh);
+	ath_pout(0,"Real: %d !!Mine: %d \n", pM->BCFlag_ix1, pM2->BCFlag_ix1);
 
   /* Calcualte the dimensionality and error check */
   dim = 0;

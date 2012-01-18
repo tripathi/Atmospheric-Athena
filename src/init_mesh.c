@@ -266,6 +266,10 @@ nl,next_domainid[nl],pM->DomainsPerLevel[nl]);
 /* Initialize level, number, input <domain> block number, and total number of
  * cells in this Domain */
 
+#ifdef ION_RADPLANE
+    pM->Domain[nl][nd].Mesh = pM; /*Attempt to set Mesh pointer to current mesh*/
+#endif
+
     pM->Domain[nl][nd].Level = nl;
     pM->Domain[nl][nd].DomNumber = nd;
     pM->Domain[nl][nd].InputBlock = nblock;

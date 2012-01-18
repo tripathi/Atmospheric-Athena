@@ -75,6 +75,10 @@ void init_grid(MeshS *pM)
 
       pG->time = pM->time;
 
+#ifdef ION_RADPLANE
+      pG->Mesh = pM; /*set ptr to Mesh*/
+#endif
+
 /* get (l,m,n) coordinates of Grid being updated on this processor */
 
       get_myGridIndex(pD, myID_Comm_world, &myL, &myM, &myN);

@@ -35,6 +35,7 @@ typedef double Real;
 #else
 # error "Not a valid precision flag"
 #endif
+struct Mesh_s;
 
 /*! \struct Real3Vect
  *  \brief General 3-vectors of Reals.
@@ -311,6 +312,7 @@ typedef struct Grid_s{
 #ifdef ION_RADPLANE
   int nradplane;            /* number of planar rad fronts */
   Radplane *radplanelist;   /* list of radiation plane sources */
+  struct Mesh_s *Mesh;
 #endif /*ION_RADPLANE*/
 
 #ifdef PARTICLES
@@ -373,6 +375,10 @@ typedef struct Domain_s{
   VGFun_t ix1_BCFun, ox1_BCFun;/*!< ix1/ox1 BC function pointers for this Dom */
   VGFun_t ix2_BCFun, ox2_BCFun;/*!< ix1/ox1 BC function pointers for this Dom */
   VGFun_t ix3_BCFun, ox3_BCFun;/*!< ix1/ox1 BC function pointers for this Dom */
+
+#ifdef ION_RADPLANE
+  struct Mesh_s *Mesh;
+#endif /*ION_RADPLANE*/
 
 #ifdef MPI_PARALLEL
   MPI_Comm Comm_Domain;      /*!< MPI communicator between Grids on this Dom */
