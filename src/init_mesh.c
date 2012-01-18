@@ -85,6 +85,9 @@ void init_mesh(MeshS *pM)
 {
   int nblock,num_domains,nd,nl,level,maxlevel=0,nd_this_level;
   int nDim,nDim_test,dim;
+#ifdef ION_RADPLANE 
+  int numberradplanes;
+#endif
   int *next_domainid;
   char block[80];
   int ncd,ir,irefine,l,m,n,roffset;
@@ -107,6 +110,19 @@ void init_mesh(MeshS *pM)
   pM->time = 0.0;
   pM->nstep = 0;
   pM->outfilename = par_gets("job","problem_id");
+
+#ifdef ION_RADPLANE
+  pM->radplanelist=(Radplane*)calloc(1,sizeof(Radplane));
+  if ((pM->radplanelist) == NULL)
+    ath_error("[init_mesh]: malloc returned a NULL pointer\n");
+
+  numberradplanes = par_geti("problem","nradplanes");
+  printf("nradplanes %d \n", numberradplanes);
+  (pM->radplanelist)->nradplane = numberradplanes;
+  (pM->radplanelist)->dir = (int*)calloc_1d_array(numberradplanes,sizeof(int));
+  if ((pM->radplanelist)->dir == NULL)
+    ath_error("[init_mesh]: malloc returned a NULL pointer\n");
+#endif
 
 /*--- Step 1: Figure out how many levels and domains there are. --------------*/
 /* read levels of each domain block in input file and calculate max level */

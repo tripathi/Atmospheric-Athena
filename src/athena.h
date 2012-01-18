@@ -128,13 +128,11 @@ typedef struct Prim_s{
  * plane-parallel ionizing radiation entering the grid on one side.
  */
 typedef struct Radplane_s {
-  int dir;                   /* Direction of radiation propagation: -1
+  int *dir;                   /* Array of directions of radiation propagation: -1
 				= -x direction, +1 = +x direction, -2
 				= -y direction, +2 = +y direction,
 				etc. */
-  Real flux;                 /* Ionizing flux, in units
-				of 1/time/area (i.e. photons / sec /
-				cm^2, not erg /sec / cm^2 */
+  int nradplane;            /* number of planar rad fronts */
 } Radplane;
 
 #endif /* ION_RADPLANE */
@@ -310,8 +308,6 @@ typedef struct Grid_s{
   int rx3_id, lx3_id;  /*!< ID of Grid to R/L in x3-dir (default=-1; no Grid) */
 
 #ifdef ION_RADPLANE
-  int nradplane;            /* number of planar rad fronts */
-  Radplane *radplanelist;   /* list of radiation plane sources */
   struct Mesh_s *Mesh;
 #endif /*ION_RADPLANE*/
 
@@ -414,6 +410,10 @@ typedef struct Mesh_s{
   int *DomainsPerLevel;      /*!< number of Domains per level (DPL) */
   DomainS **Domain;        /*!< array of Domains, indexed over levels and DPL */
   char *outfilename;         /*!< basename for output files containing -id#  */
+#ifdef ION_RADPLANE
+  Radplane *radplanelist;   /* list of radiation plane sources */
+#endif /*ION_RADPLANE*/
+
 }MeshS;
 
 /*----------------------------------------------------------------------------*/

@@ -805,11 +805,11 @@ void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 
 void ion_radtransfer_3d(DomainS *pDomain) 
 {
+  MeshS *pMesh = pDomain->Mesh;
   GridS *pGrid = pDomain->Grid;
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
   int n, niter, hydro_done;
   int nchem, ntherm;
-
 
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
@@ -834,9 +834,9 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
     /* Compute photoionization rate from all sources */
 #ifdef ION_RADPLANE
-    for (n=0; n<pGrid->nradplane; n++) 
-      get_ph_rate_plane(pGrid->radplanelist[n].flux,
-			pGrid->radplanelist[n].dir,
+    for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
+      get_ph_rate_plane(5e8,
+			(pMesh->radplanelist)->dir[n],
 			ph_rate, pGrid);
 #endif
 
