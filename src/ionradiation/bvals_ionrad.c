@@ -138,85 +138,28 @@ void bvals_ionrad_init(MeshS *pM)
 
       if(ix1_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
-/* Domain boundary is in interior of root */
+	/* Domain boundary is in interior of root */
         if(pD->Disp[0] != 0) {      
           ix1_radBCFun = ProlongateLater;
 	  
-/* Domain is at L-edge of root Domain, but not R-edge and periodic BC  */
-        } else {
-          if(((pD->Disp[0] + pD->Nx[0])/irefine != pM->Nx[0]) && 
-               pM->BCFlag_ix1 == 4) {
-            ath_error("[bvals_init]:level=%d Domain touching ix1b but not ox1b and periodic BC not allowed\n",nl); 
-	    
-/* Domain is at L-edge of root Domain */
-          } else {                    
-            switch(pM->BCFlag_ix1){
-
-            case 1: /* Reflecting, B_normal=0 */
-              ix1_radBCFun = reflect_ix1;
-	      break;
-	      
-            case 2: /* Outflow */
-              ix1_radBCFun = outflow_ix1;
-	      break;
-	      
-            case 4: /* Periodic. Handle with MPI calls for parallel jobs. */
-              ix1_radBCFun = periodic_ix1;
-	      break;
-	      
-            case 5: /* Reflecting, B_normal!=0 */
-              ix1_radBCFun = reflect_ix1;
-	      break;
-	      
-            default:
-              ath_perr(-1,"[bvals_init]:bc_ix1=%d unknown\n",pM->BCFlag_ix1);
-              exit(EXIT_FAILURE);
-            }
-          }
-        }
+	  /* Domain is at L-edge of root Domain */
+	} else {                    
+	  ix1_radBCFun = outflow_ix1;
+	}
       }
-
+      
 /*---- ox1 boundary ----------------------------------------------------------*/
 
       if(ox1_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
-
-/* Domain boundary is in interior of root */
+	
+	/* Domain boundary is in interior of root */
         if((pD->Disp[0] + pD->Nx[0])/irefine != pM->Nx[0]) {
           ox1_radBCFun = ProlongateLater;
-
-/* Domain is at R-edge of root Domain, but not L-edge and periodic BC */
-        } else {
-          if((pD->Disp[0] != 0) && (pM->BCFlag_ox1 == 4)) {      
-            ath_error("[bvals_init]:level=%d Domain touching ox1b but not ix1b and periodic BC not allowed\n",nl); 
-
-
-/* Domain is at R-edge of root Domain */
-          } else {
-            switch(pM->BCFlag_ox1){
-
-            case 1: /* Reflecting, B_normal=0 */
-              ox1_radBCFun = reflect_ox1;
-            break;
-
-            case 2: /* Outflow */
-              ox1_radBCFun = outflow_ox1;
-            break;
-
-            case 4: /* Periodic. Handle with MPI calls for parallel jobs. */
-              ox1_radBCFun = periodic_ox1;
-
-            break;
-
-            case 5: /* Reflecting, B_normal!=0 */
-              ox1_radBCFun = reflect_ox1;
-            break;
-
-            default:
-              ath_perr(-1,"[bvals_init]:bc_ox1=%d unknown\n",pM->BCFlag_ox1);
-              exit(EXIT_FAILURE);
-            }
-          }
-        }
+	  
+	  /* Domain is at R-edge of root Domain */
+	} else {
+	  ox1_radBCFun = outflow_ox1;
+	}
       }
     }
 
@@ -231,83 +174,26 @@ void bvals_ionrad_init(MeshS *pM)
 /* Domain boundary is in interior of root */
         if(pD->Disp[1] != 0) {
           ix2_radBCFun = ProlongateLater;
+	  
+	  /* Domain is at L-edge of root Domain */
+	} else {
+	  ix2_radBCFun = outflow_ix2;
 
-/* Domain is at L-edge of root Domain, but not R-edge and periodic BC  */
-        } else {
-          if(((pD->Disp[1] + pD->Nx[1])/irefine != pM->Nx[1]) &&
-               pM->BCFlag_ix2 == 4) {
-            ath_error("[bvals_init]:level=%d Domain touching ix2b but not ox2b and periodic BC not allowed\n",nl); 
-
-
-/* Domain is at L-edge of root Domain */
-          } else {
-            switch(pM->BCFlag_ix2){
-
-            case 1: /* Reflecting, B_normal=0 */
-              ix2_radBCFun = reflect_ix2;
-            break;
-
-            case 2: /* Outflow */
-              ix2_radBCFun = outflow_ix2;
-            break;
-
-            case 4: /* Periodic. Handle with MPI calls for parallel jobs. */
-              ix2_radBCFun = periodic_ix2;
-
-            break;
-  
-            case 5: /* Reflecting, B_normal!=0 */
-              ix2_radBCFun = reflect_ix2;
-            break;
-
-            default:
-              ath_perr(-1,"[bvals_init]:bc_ix2=%d unknown\n",pM->BCFlag_ix2);
-              exit(EXIT_FAILURE);
-            }
-          }
-        }
+	}
       }
 
 /*---- ox2 boundary ----------------------------------------------------------*/
 
       if(ox2_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
-/* Domain boundary is in interior of root */
+	/* Domain boundary is in interior of root */
         if((pD->Disp[1] + pD->Nx[1])/irefine != pM->Nx[1]) {
           ox2_radBCFun = ProlongateLater;
 
-/* Domain is at R-edge of root Domain, but not L-edge and periodic BC */
-        } else {
-          if((pD->Disp[1] != 0) && (pM->BCFlag_ox2 == 4)) {
-            ath_error("[bvals_init]:level=%d Domain touching ox2b but not ix2b and periodic BC not allowed\n",nl); 
-
-/* Domain is at R-edge of root Domain */
-          } else {
-            switch(pM->BCFlag_ox2){
-
-            case 1: /* Reflecting, B_normal=0 */
-              ox2_radBCFun = reflect_ox2;
-            break;
-
-            case 2: /* Outflow */
-              ox2_radBCFun = outflow_ox2;
-            break;
-
-            case 4: /* Periodic. Handle with MPI calls for parallel jobs. */
-              ox2_radBCFun = periodic_ox2;
-
-            break;
-
-            case 5: /* Reflecting, B_normal!=0 */
-              ox2_radBCFun = reflect_ox2;
-            break;
-
-            default:
-              ath_perr(-1,"[bvals_init]:bc_ox2=%d unknown\n",pM->BCFlag_ox2);
-              exit(EXIT_FAILURE);
-            }
-          }
-        }
+	  /* Domain is at R-edge of root Domain */
+	} else {
+	  ox2_radBCFun = outflow_ox2;
+	}
       }
     }
 
@@ -316,93 +202,32 @@ void bvals_ionrad_init(MeshS *pM)
     if(pG->Nx[2] > 1) {
 
 /*---- ix3 boundary ----------------------------------------------------------*/
-
+      
       if(ix3_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
-
+	
 /* Domain boundary is in interior of root */
         if(pD->Disp[2] != 0) {
           ix3_radBCFun = ProlongateLater;
-
-/* Domain is at L-edge of root Domain, but not R-edge and periodic BC  */
-        } else {
-          if(((pD->Disp[2] + pD->Nx[2])/irefine != pM->Nx[2]) &&
-               pM->BCFlag_ix3 == 4) {
-            ath_error("[bvals_init]:level=%d Domain touching ix3b but not ox3b and periodic BC not allowed\n",nl); 
-
-/* Domain is at L-edge of root Domain */
-          } else {
-            switch(pM->BCFlag_ix3){
-
-            case 1: /* Reflecting, B_normal=0 */
-              ix3_radBCFun = reflect_ix3;
-            break;
-
-            case 2: /* Outflow */
-              ix3_radBCFun = outflow_ix3;
-            break;
-
-            case 4: /* Periodic. Handle with MPI calls for parallel jobs. */
-              ix3_radBCFun = periodic_ix3;
-
-            break;
-
-            case 5: /* Reflecting, B_normal!=0 */
-              ix3_radBCFun = reflect_ix3;
-            break;
-
-            default:
-              ath_perr(-1,"[bvals_init]:bc_ix3=%d unknown\n",pM->BCFlag_ix3);
-              exit(EXIT_FAILURE);
-            }
-          }
-        }
+	  
+	  /* Domain is at L-edge of root Domain */
+	} else {
+	  ix3_radBCFun = outflow_ix3;
+	}
       }
-
 /*---- ox3 boundary ----------------------------------------------------------*/
 
       if(ox3_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
-/* Domain boundary is in interior of root */
+	/* Domain boundary is in interior of root */
         if((pD->Disp[2] + pD->Nx[2])/irefine != pM->Nx[2]) {
           ox3_radBCFun = ProlongateLater;
 
-/* Domain is at R-edge of root Domain, but not L-edge and periodic BC */
-        } else {
-          if((pD->Disp[2] != 0) && (pM->BCFlag_ox3 == 4)) {
-            ath_error("[bvals_init]:level=%d Domain touching ox3b but not ix3b and periodic BC not allowed\n",nl); 
-
-/* Domain is at R-edge of root Domain */
-          } else {
-            switch(pM->BCFlag_ox3){
-
-            case 1: /* Reflecting, B_normal=0 */
-              ox3_radBCFun = reflect_ox3;
-            break;
-
-            case 2: /* Outflow */
-              ox3_radBCFun = outflow_ox3;
-            break;
-
-            case 4: /* Periodic. Handle with MPI calls for parallel jobs. */
-              ox3_radBCFun = periodic_ox3;
-
-            break;
-
-            case 5: /* Reflecting, B_normal!=0 */
-              ox3_radBCFun = reflect_ox3;
-            break;
-
-            default:
-              ath_perr(-1,"[bvals_init]:bc_ox3=%d unknown\n",pM->BCFlag_ox3);
-              exit(EXIT_FAILURE);
-            }
-          }
-        }
+	  /* Domain is at R-edge of root Domain */
+	} else {
+	  ox3_radBCFun = outflow_ox3;
+	}
       }
     }
-
-/* Figure out largest size needed for send/receive buffers with MPI ----------*/
-
 
   }}}  /* End loop over all Domains with active Grids -----------------------*/
 
