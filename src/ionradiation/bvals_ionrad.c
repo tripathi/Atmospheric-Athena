@@ -13,7 +13,6 @@
  * CONTAINS PUBLIC FUNCTIONS: 
  * - bvals_ionrad() - calls appropriate functions to set ghost cells
  * - bvals_ionrad_init() - sets function pointers used by bvals_mhd()
- * - bvals_ionrad_fun() - enrolls a pointer to a user-defined BC function
 /*============================================================================*/
 
 #include <stdio.h>
@@ -235,38 +234,6 @@ void bvals_ionrad_init(MeshS *pM)
   return;
 }
 
-/*----------------------------------------------------------------------------*/
-/*! \fn void bvals_mhd_fun(DomainS *pD, enum BCDirection dir, VGFun_t prob_bc)
- *  \brief Sets function ptrs for user-defined BCs.
- */
-
-void bvals_ionrad_fun(DomainS *pD, enum BCDirection dir, VGFun_t prob_bc)
-{
-  switch(dir){
-  case left_x1:
-    ix1_radBCFun = prob_bc;
-    break;
-  case right_x1:
-    ox1_radBCFun = prob_bc;
-    break;
-  case left_x2:
-    ix2_radBCFun = prob_bc;
-    break;
-  case right_x2:
-    ox2_radBCFun = prob_bc;
-    break;
-  case left_x3:
-    ix3_radBCFun = prob_bc;
-    break;
-  case right_x3:
-    ox3_radBCFun = prob_bc;
-    break;
-  default:
-    ath_perr(-1,"[bvals_fun]: Unknown direction = %d\n",dir);
-    exit(EXIT_FAILURE);
-  }
-  return;
-}
 
 /*=========================== PRIVATE FUNCTIONS ==============================*/
 /* Following are the functions:
