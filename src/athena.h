@@ -308,6 +308,7 @@ typedef struct Grid_s{
   int rx3_id, lx3_id;  /*!< ID of Grid to R/L in x3-dir (default=-1; no Grid) */
 
 #ifdef ION_RADPLANE
+  Real ***EdgeFlux;
   struct Mesh_s *Mesh;
 #endif /*ION_RADPLANE*/
 

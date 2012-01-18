@@ -235,6 +235,11 @@ void init_grid(MeshS *pM)
       }
 #endif /* CYLINDRICAL */
 
+      /*Allocate and initialize array of edge fluxes*/
+#ifdef ION_RADPLANE
+      pG->EdgeFlux = (Real***)calloc_3d_array(pG->Nx[2]+1, pG->Nx[1]+1, pG->Nx[0]+1, sizeof(Real));
+      if (pG->EdgeFlux == NULL) goto on_error16;
+#endif
 
 /*-- Get IDs of neighboring Grids in Domain communicator ---------------------*/
 /* If Grid is at the edge of the Domain (so it is either a physical boundary,
@@ -1136,7 +1141,10 @@ printf("Parent_ID=%d DomN=%d nWordsRC=%d nWordsP=%d\n",
   return;
 
 /*--- Error messages ---------------------------------------------------------*/
-
+#ifdef ION_RADPLANE
+ on_error16:
+  free_3d_array(pG->EdgeFlux);
+#endif
 #ifdef CYLINDRICAL
   on_error15:
     free_1d_array(pG->ri);

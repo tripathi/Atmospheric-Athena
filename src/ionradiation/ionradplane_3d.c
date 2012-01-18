@@ -32,10 +32,15 @@
 #ifdef ION_RADPLANE
 
 /* Initialized number of radiation planes to zero */
-void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
- /*  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){ */
-/*     pGrid->nradplane = 0; */
-/*   } */
+void ion_radplane_init_domain_3d(GridS *pG, DomainS *pD) {
+  int i, j, k;
+  for (k=0; k<pG->Nx[2]+1; k++) {
+    for (j=0; j<pG->Nx[1]+1; j++) {
+      for (i=0; i<pG->Nx[2]+1; i++) {
+	pG->EdgeFlux[k][j][i] = par_getd("problem","flux");
+      }
+    }
+  }
   return;
 }
 
