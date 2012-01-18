@@ -33,9 +33,9 @@
 
 /* Initialized number of radiation planes to zero */
 void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
-  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){
-    pGrid->nradplane = 0;
-  }
+ /*  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){ */
+/*     pGrid->nradplane = 0; */
+/*   } */
   return;
 }
 
@@ -45,26 +45,31 @@ void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
  */
 
 void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
-  int n;
+  MeshS *pMesh = pGrid->Mesh;
+  int counter = 0;
+/*   (pMesh->radplanelist)->nradplane++; */
+  (pMesh->radplanelist)->dir[counter] = dir;
+  counter++;
+ /*  int n; */
 
-  /* Add radiator to pgrid structure */
-  pGrid->nradplane++;
-  if (pGrid->nradplane==1) {
-    if (!(pGrid->radplanelist = malloc(sizeof(Radplane))))
-      goto on_error;
-  } else {
-    if (!(pGrid->radplanelist = realloc(pGrid->radplanelist, 
-					pGrid->nradplane*sizeof(Radplane))))
-      goto on_error;
-  }
-  n = pGrid->nradplane-1;
-  pGrid->radplanelist[n].dir = dir;
-  pGrid->radplanelist[n].flux = flux;
+/*   /\* Add radiator to pgrid structure *\/ */
+/*   pGrid->nradplane++; */
+/*   if (pGrid->nradplane==1) { */
+/*     if (!(pGrid->radplanelist = malloc(sizeof(Radplane)))) */
+/*       goto on_error; */
+/*   } else { */
+/*     if (!(pGrid->radplanelist = realloc(pGrid->radplanelist,  */
+/* 					pGrid->nradplane*sizeof(Radplane)))) */
+/*       goto on_error; */
+/*   } */
+/*   n = pGrid->nradplane-1; */
+/*   pGrid->radplanelist[n].dir = dir; */
+/*   pGrid->radplanelist[n].flux = flux; */
 
   return;
 
- on_error:
-  ath_error("[add_radplane_3d]: malloc returned a NULL pointer\n");
+/*  on_error: */
+/*   ath_error("[add_radplane_3d]: malloc returned a NULL pointer\n"); */
 }
 
 /* --------------------------------------------------------------
