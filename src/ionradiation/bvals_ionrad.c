@@ -143,7 +143,7 @@ void bvals_ionrad_init(MeshS *pM)
 	  
 	  /* Domain is at L-edge of root Domain */
 	} else {                    
-	  ix1_radBCFun = outflow_ix1;
+	  ix1_radBCFun = outflow_flux_ix1;
 	}
       }
       
@@ -157,7 +157,7 @@ void bvals_ionrad_init(MeshS *pM)
 	  
 	  /* Domain is at R-edge of root Domain */
 	} else {
-	  ox1_radBCFun = outflow_ox1;
+	  ox1_radBCFun = outflow_flux_ox1;
 	}
       }
     }
@@ -176,7 +176,7 @@ void bvals_ionrad_init(MeshS *pM)
 	  
 	  /* Domain is at L-edge of root Domain */
 	} else {
-	  ix2_radBCFun = outflow_ix2;
+	  ix2_radBCFun = outflow_flux_ix2;
 
 	}
       }
@@ -191,7 +191,7 @@ void bvals_ionrad_init(MeshS *pM)
 
 	  /* Domain is at R-edge of root Domain */
 	} else {
-	  ox2_radBCFun = outflow_ox2;
+	  ox2_radBCFun = outflow_flux_ox2;
 	}
       }
     }
@@ -210,7 +210,7 @@ void bvals_ionrad_init(MeshS *pM)
 	  
 	  /* Domain is at L-edge of root Domain */
 	} else {
-	  ix3_radBCFun = outflow_ix3;
+	  ix3_radBCFun = outflow_flux_ix3;
 	}
       }
 /*---- ox3 boundary ----------------------------------------------------------*/
@@ -223,7 +223,7 @@ void bvals_ionrad_init(MeshS *pM)
 
 	  /* Domain is at R-edge of root Domain */
 	} else {
-	  ox3_radBCFun = outflow_ox3;
+	  ox3_radBCFun = outflow_flux_ox3;
 	}
       }
     }
@@ -246,10 +246,10 @@ void bvals_ionrad_init(MeshS *pM)
 
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void outflow_ix1(GridS *pGrid)
+/*! \fn static void outflow_flux_ix1(GridS *pGrid)
  *  \brief OUTFLOW boundary condition, Inner x1 boundary (bc_ix1=2) */
 
-static void outflow_ix1(GridS *pGrid)
+static void outflow_flux_ix1(GridS *pGrid)
 {
   int is = pGrid->is;
   int js = pGrid->js, je = pGrid->je;
@@ -300,10 +300,10 @@ static void outflow_ix1(GridS *pGrid)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void outflow_ox1(GridS *pGrid)
+/*! \fn static void outflow_flux_ox1(GridS *pGrid)
  *  \brief OUTFLOW boundary conditions, Outer x1 boundary (bc_ox1=2) */
 
-static void outflow_ox1(GridS *pGrid)
+static void outflow_flux_ox1(GridS *pGrid)
 {
   int ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -354,10 +354,10 @@ static void outflow_ox1(GridS *pGrid)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void outflow_ix2(GridS *pGrid)
+/*! \fn static void outflow_flux_ix2(GridS *pGrid)
  *  \brief OUTFLOW boundary conditions, Inner x2 boundary (bc_ix2=2) */
 
-static void outflow_ix2(GridS *pGrid)
+static void outflow_flux_ix2(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js;
@@ -408,10 +408,10 @@ static void outflow_ix2(GridS *pGrid)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void outflow_ox2(GridS *pGrid)
+/*! \fn static void outflow_flux_ox2(GridS *pGrid)
  *  \brief OUTFLOW boundary conditions, Outer x2 boundary (bc_ox2=2) */
 
-static void outflow_ox2(GridS *pGrid)
+static void outflow_flux_ox2(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int je = pGrid->je;
@@ -462,10 +462,10 @@ static void outflow_ox2(GridS *pGrid)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void outflow_ix3(GridS *pGrid)
+/*! \fn static void outflow_flux_ix3(GridS *pGrid)
  *  \brief OUTFLOW boundary conditions, Inner x3 boundary (bc_ix3=2) */
 
-static void outflow_ix3(GridS *pGrid)
+static void outflow_flux_ix3(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
@@ -513,10 +513,10 @@ static void outflow_ix3(GridS *pGrid)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void outflow_ox3(GridS *pGrid)
+/*! \fn static void outflow_flux_ox3(GridS *pGrid)
  *  \brief OUTFLOW boundary conditions, Outer x3 boundary (bc_ox3=2) */
 
-static void outflow_ox3(GridS *pGrid)
+static void outflow_flux_ox3(GridS *pGrid)
 {
   int is = pGrid->is, ie = pGrid->ie;
   int js = pGrid->js, je = pGrid->je;
