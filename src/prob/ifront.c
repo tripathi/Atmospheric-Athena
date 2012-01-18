@@ -16,10 +16,12 @@
 
 void problem(DomainS *pDomain)
 {
+  MeshS *pMesh = pDomain->Mesh;
   GridS *pGrid = pDomain->Grid;
   int i, is = pGrid->is, ie = pGrid->ie;
   int j, js = pGrid->js, je = pGrid->je;
   int k, ks = pGrid->ks, ke = pGrid->ke;
+  int radplanecount =0;
   Real cs, n_H, m_H, flux;
   Real rho, pressure;
 #ifdef MHD
@@ -68,10 +70,21 @@ void problem(DomainS *pDomain)
   }
 
   /* Radiation originating from root domain edge */
-  if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){
+/*   if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){ */
     /*     ath_pout(0,"On domain level %d, number %d: Adding radiator on root domain \n",  pDomain->Level, pDomain->DomNumber); */
-    add_radplane_3d(pGrid, -1, flux);
-  }
+ 
+   if (radplanecount == par_geti("problem","nradplanes")) {
+      ath_error("Invalid number of radplanes specified in input file\n");
+    }
+   if (radplanecount != par_geti("problem","nradplanes")) {
+      add_radplane_3d(pGrid, -1, flux);
+      radplanecount++;
+      if (radplanecount != par_geti("problem","nradplanes")) {
+	ath_error("Invalid number of radplanes specified in input file\n");
+      }
+    }
+
+/*   } */
 /*   else {ath_pout(0,"On domain level %d, number %d: Not adding a radiator plane\n", pDomain->Level, pDomain->DomNumber);} */
   return;
 }
