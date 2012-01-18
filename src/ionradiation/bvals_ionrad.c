@@ -255,46 +255,14 @@ static void outflow_flux_ix1(GridS *pGrid)
   int js = pGrid->js, je = pGrid->je;
   int ks = pGrid->ks, ke = pGrid->ke;
   int i,j,k;
-#ifdef MHD
-  int ju, ku; /* j-upper, k-upper */
-#endif
 
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
       for (i=1; i<=nghost; i++) {
-        pGrid->U[k][j][is-i] = pGrid->U[k][j][is];
+        pGrid->EdgeFlux[k][j][is-i] = pGrid->EdgeFlux[k][j][is];
       }
     }
   }
-
-#ifdef MHD
-/* B1i is not set at i=is-nghost */
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=1; i<=nghost-1; i++) {
-        pGrid->B1i[k][j][is-i] = pGrid->B1i[k][j][is];
-      }
-    }
-  }
-
-  if (pGrid->Nx[1] > 1) ju=je+1; else ju=je;
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=ju; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->B2i[k][j][is-i] = pGrid->B2i[k][j][is];
-      }
-    }
-  }
-
-  if (pGrid->Nx[2] > 1) ku=ke+1; else ku=ke;
-  for (k=ks; k<=ku; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->B3i[k][j][is-i] = pGrid->B3i[k][j][is];
-      }
-    }
-  }
-#endif /* MHD */
 
   return;
 }
@@ -309,46 +277,15 @@ static void outflow_flux_ox1(GridS *pGrid)
   int js = pGrid->js, je = pGrid->je;
   int ks = pGrid->ks, ke = pGrid->ke;
   int i,j,k;
-#ifdef MHD
-  int ju, ku; /* j-upper, k-upper */
-#endif
 
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
       for (i=1; i<=nghost; i++) {
-        pGrid->U[k][j][ie+i] = pGrid->U[k][j][ie];
+        pGrid->EdgeFlux[k][j][ie+i] = pGrid->EdgeFlux[k][j][ie];
       }
     }
   }
 
-#ifdef MHD
-/* i=ie+1 is not a boundary condition for the interface field B1i */
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=2; i<=nghost; i++) {
-        pGrid->B1i[k][j][ie+i] = pGrid->B1i[k][j][ie];
-      }
-    }
-  }
-
-  if (pGrid->Nx[1] > 1) ju=je+1; else ju=je;
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=ju; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->B2i[k][j][ie+i] = pGrid->B2i[k][j][ie];
-      }
-    }
-  }
-
-  if (pGrid->Nx[2] > 1) ku=ke+1; else ku=ke;
-  for (k=ks; k<=ku; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->B3i[k][j][ie+i] = pGrid->B3i[k][j][ie];
-      }
-    }
-  }
-#endif /* MHD */
 
   return;
 }
@@ -363,46 +300,15 @@ static void outflow_flux_ix2(GridS *pGrid)
   int js = pGrid->js;
   int ks = pGrid->ks, ke = pGrid->ke;
   int i,j,k;
-#ifdef MHD
-  int ku; /* k-upper */
-#endif
+
 
   for (k=ks; k<=ke; k++) {
     for (j=1; j<=nghost; j++) {
       for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->U[k][js-j][i] = pGrid->U[k][js][i];
+        pGrid->EdgeFlux[k][js-j][i] = pGrid->EdgeFlux[k][js][i];
       }
     }
   }
-
-#ifdef MHD
-/* B1i is not set at i=is-nghost */
-  for (k=ks; k<=ke; k++) {
-    for (j=1; j<=nghost; j++) {
-      for (i=is-(nghost-1); i<=ie+nghost; i++) {
-        pGrid->B1i[k][js-j][i] = pGrid->B1i[k][js][i];
-      }
-    }
-  }
-
-/* B2i is not set at j=js-nghost */
-  for (k=ks; k<=ke; k++) {
-    for (j=1; j<=nghost-1; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B2i[k][js-j][i] = pGrid->B2i[k][js][i];
-      }
-    }
-  }
-
-  if (pGrid->Nx[2] > 1) ku=ke+1; else ku=ke;
-  for (k=ks; k<=ku; k++) {
-    for (j=1; j<=nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B3i[k][js-j][i] = pGrid->B3i[k][js][i];
-      }
-    }
-  }
-#endif /* MHD */
 
   return;
 }
@@ -417,46 +323,15 @@ static void outflow_flux_ox2(GridS *pGrid)
   int je = pGrid->je;
   int ks = pGrid->ks, ke = pGrid->ke;
   int i,j,k;
-#ifdef MHD
-  int ku; /* k-upper */
-#endif
 
   for (k=ks; k<=ke; k++) {
     for (j=1; j<=nghost; j++) {
       for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->U[k][je+j][i] = pGrid->U[k][je][i];
+        pGrid->EdgeFlux[k][je+j][i] = pGrid->EdgeFlux[k][je][i];
       }
     }
   }
 
-#ifdef MHD
-/* B1i is not set at i=is-nghost */
-  for (k=ks; k<=ke; k++) {
-    for (j=1; j<=nghost; j++) {
-      for (i=is-(nghost-1); i<=ie+nghost; i++) {
-        pGrid->B1i[k][je+j][i] = pGrid->B1i[k][je][i];
-      }
-    }
-  }
-
-/* j=je+1 is not a boundary condition for the interface field B2i */
-  for (k=ks; k<=ke; k++) {
-    for (j=2; j<=nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B2i[k][je+j][i] = pGrid->B2i[k][je][i];
-      }
-    }
-  }
-
-  if (pGrid->Nx[2] > 1) ku=ke+1; else ku=ke;
-  for (k=ks; k<=ku; k++) {
-    for (j=1; j<=nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B3i[k][je+j][i] = pGrid->B3i[k][je][i];
-      }
-    }
-  }
-#endif /* MHD */
 
   return;
 }
@@ -475,39 +350,11 @@ static void outflow_flux_ix3(GridS *pGrid)
   for (k=1; k<=nghost; k++) {
     for (j=js-nghost; j<=je+nghost; j++) {
       for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->U[ks-k][j][i] = pGrid->U[ks][j][i];
+        pGrid->EdgeFlux[ks-k][j][i] = pGrid->EdgeFlux[ks][j][i];
       }
     }
   }
 
-#ifdef MHD
-/* B1i is not set at i=is-nghost */
-  for (k=1; k<=nghost; k++) {
-    for (j=js-nghost; j<=je+nghost; j++) {
-      for (i=is-(nghost-1); i<=ie+nghost; i++) {
-        pGrid->B1i[ks-k][j][i] = pGrid->B1i[ks][j][i];
-      }
-    }
-  }
-
-/* B2i is not set at j=js-nghost */
-  for (k=1; k<=nghost; k++) {
-    for (j=js-(nghost-1); j<=je+nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B2i[ks-k][j][i] = pGrid->B2i[ks][j][i];
-      }
-    }
-  }
-
-/* B3i is not set at k=ks-nghost */
-  for (k=1; k<=nghost-1; k++) {
-    for (j=js-nghost; j<=je+nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B3i[ks-k][j][i] = pGrid->B3i[ks][j][i];
-      }
-    }
-  }
-#endif /* MHD */
 
   return;
 }
@@ -526,39 +373,10 @@ static void outflow_flux_ox3(GridS *pGrid)
   for (k=1; k<=nghost; k++) {
     for (j=js-nghost; j<=je+nghost; j++) {
       for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->U[ke+k][j][i] = pGrid->U[ke][j][i];
+        pGrid->EdgeFlux[ke+k][j][i] = pGrid->EdgeFlux[ke][j][i];
       }
     }
   }
-
-#ifdef MHD
-/* B1i is not set at i=is-nghost */
-  for (k=1; k<=nghost; k++) {
-    for (j=js-nghost; j<=je+nghost; j++) {
-      for (i=is-(nghost-1); i<=ie+nghost; i++) {
-        pGrid->B1i[ke+k][j][i] = pGrid->B1i[ke][j][i];
-      }
-    }
-  }
-
-/* B2i is not set at j=js-nghost */
-  for (k=1; k<=nghost; k++) {
-    for (j=js-(nghost-1); j<=je+nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B2i[ke+k][j][i] = pGrid->B2i[ke][j][i];
-      }
-    }
-  }
-
-/* k=ke+1 is not a boundary condition for the interface field B3i */
-  for (k=2; k<=nghost; k++) {
-    for (j=js-nghost; j<=je+nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->B3i[ke+k][j][i] = pGrid->B3i[ke][j][i];
-      }
-    }
-  }
-#endif /* MHD */
 
   return;
 }
