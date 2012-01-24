@@ -1,6 +1,6 @@
 #include "copyright.h"
 /*============================================================================*/
-/*! \file bvals_mhd.c
+/*! \file bvals_ionrad.c
  *  \brief Sets boundary conditions (quantities in ghost zones) 
  *   for the fluxes on each edge of a Grid.
  *
@@ -12,7 +12,7 @@
  *
  * CONTAINS PUBLIC FUNCTIONS: 
  * - bvals_ionrad(DomainS *pD) - calls appropriate functions to set ghost cells
- * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_mhd()
+ * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_ionrad()
 /*============================================================================*/
 
 #include <stdio.h>
@@ -46,7 +46,7 @@ static void ProlongateLater(GridS *pG);
 /*=========================== PUBLIC FUNCTIONS ===============================*/
 
 /*----------------------------------------------------------------------------*/
-/*! \fn void bvals_mhd(DomainS *pD)
+/*! \fn void bvals_ionrad(DomainS *pD)
  *  \brief Calls appropriate functions to set ghost zones.  
  *
  *   The function
@@ -108,7 +108,7 @@ void bvals_ionrad(DomainS *pD)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn void bvals_mhd_init(MeshS *pM)
+/*! \fn void bvals_ionrad_init(MeshS *pM)
  *  \brief Sets function pointers for physical boundaries during
  *   initialization, allocates memory for send/receive buffers with MPI.
  */
