@@ -10,7 +10,8 @@
 #   the appropriate object files, compiler options, and library paths.
 #
 #-------------------  object files  --------------------------------------------
-CORE_OBJ = ionrad.o \
+CORE_OBJ = bvals_ionrad.o \
+           ionrad.o \
            ionrad_3d.o \
            ionrad_chemistry.o \
            ionradplane_3d.o \
