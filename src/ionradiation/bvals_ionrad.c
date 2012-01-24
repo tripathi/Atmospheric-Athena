@@ -11,8 +11,8 @@
  * Outflow boundary conditions
  *
  * CONTAINS PUBLIC FUNCTIONS: 
- * - bvals_ionrad() - calls appropriate functions to set ghost cells
- * - bvals_ionrad_init() - sets function pointers used by bvals_mhd()
+ * - bvals_ionrad(DomainS *pD) - calls appropriate functions to set ghost cells
+ * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_mhd()
 /*============================================================================*/
 
 #include <stdio.h>
