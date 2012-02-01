@@ -133,6 +133,7 @@ typedef struct Radplane_s {
 				= -y direction, +2 = +y direction,
 				etc. */
   int nradplane;            /* number of planar rad fronts */
+  Real flux_i;               /* Flux entering the computational domain*/
 } Radplane;
 
 #endif /* ION_RADPLANE */

@@ -55,6 +55,8 @@ void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
 /*   (pMesh->radplanelist)->nradplane++; */
   (pMesh->radplanelist)->dir[counter] = dir;
   counter++;
+  (pMesh->radplanelist)->flux_i = flux;
+
  /*  int n; */
 
 /*   /\* Add radiator to pgrid structure *\/ */

@@ -835,7 +835,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* Compute photoionization rate from all sources */
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
-      get_ph_rate_plane(5e8,
+      get_ph_rate_plane((pMesh->radplanelist)->flux_i,
 			(pMesh->radplanelist)->dir[n],
 			ph_rate, pGrid);
 #endif
