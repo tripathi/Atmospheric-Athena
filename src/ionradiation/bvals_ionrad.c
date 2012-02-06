@@ -27,6 +27,7 @@
 static VGFun_t ix1_radBCFun = NULL, ox1_radBCFun = NULL;
 static VGFun_t ix2_radBCFun = NULL, ox2_radBCFun = NULL;
 static VGFun_t ix3_radBCFun = NULL, ox3_radBCFun = NULL;
+static const int nghost_ionrad = 1;
 
 /*==============================================================================
  * PRIVATE FUNCTION PROTOTYPES:
@@ -118,6 +119,7 @@ void bvals_ionrad_init(MeshS *pM)
   GridS *pG;
   DomainS *pD;
   int i,nl,nd,irefine;
+  int dir = (pM->radplanelist)->dir[0];
 
 /* Cycle through all the Domains that have active Grids on this proc */
 
@@ -138,12 +140,17 @@ void bvals_ionrad_init(MeshS *pM)
       if(ix1_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
 	/* Domain boundary is in interior of root */
-        if(pD->Disp[0] != 0) {      
+        if((pD->Disp[0] != 0) || (dir != -1)) {      
           ix1_radBCFun = ProlongateLater;
 	  
-	  /* Domain is at L-edge of root Domain */
 	} else {                    
-	  ix1_radBCFun = outflow_flux_ix1;
+	  /* Domain is at L-edge of root Domain */
+	  if (dir == -1){
+	    ix1_radBCFun = outflow_flux_ix1;
+/* 	  } else if (dir ==1){ */
+/* 	    ox1_radBCFun = outflow_flux_ox1; */
+	  }
+
 	}
       }
       
@@ -152,12 +159,16 @@ void bvals_ionrad_init(MeshS *pM)
       if(ox1_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 	
 	/* Domain boundary is in interior of root */
-        if((pD->Disp[0] + pD->Nx[0])/irefine != pM->Nx[0]) {
+        if(((pD->Disp[0] + pD->Nx[0])/irefine == pM->Nx[0]) || (dir !=1)) {
           ox1_radBCFun = ProlongateLater;
 	  
 	  /* Domain is at R-edge of root Domain */
-	} else {
-	  ox1_radBCFun = outflow_flux_ox1;
+	} else{
+	  if (dir == 1){
+	    ox1_radBCFun = outflow_flux_ox1;
+	  }
+/* 	} else { */
+/* 	  ox1_radBCFun = outflow_flux_ox1; */
 	}
       }
     }
@@ -171,13 +182,14 @@ void bvals_ionrad_init(MeshS *pM)
       if(ix2_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
 /* Domain boundary is in interior of root */
-        if(pD->Disp[1] != 0) {
+        if((pD->Disp[1] != 0) || (dir != -2)) {
           ix2_radBCFun = ProlongateLater;
 	  
 	  /* Domain is at L-edge of root Domain */
 	} else {
-	  ix2_radBCFun = outflow_flux_ix2;
-
+	  if (dir == -2){
+	    ix2_radBCFun = outflow_flux_ix2;
+	  }
 	}
       }
 
@@ -186,12 +198,14 @@ void bvals_ionrad_init(MeshS *pM)
       if(ox2_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
 	/* Domain boundary is in interior of root */
-        if((pD->Disp[1] + pD->Nx[1])/irefine != pM->Nx[1]) {
+        if(((pD->Disp[1] + pD->Nx[1])/irefine != pM->Nx[1]) || (dir !=2)) {
           ox2_radBCFun = ProlongateLater;
 
 	  /* Domain is at R-edge of root Domain */
 	} else {
-	  ox2_radBCFun = outflow_flux_ox2;
+	  if (dir == 2){
+	    ox2_radBCFun = outflow_flux_ox2;
+	  }
 	}
       }
     }
@@ -205,12 +219,14 @@ void bvals_ionrad_init(MeshS *pM)
       if(ix3_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 	
 /* Domain boundary is in interior of root */
-        if(pD->Disp[2] != 0) {
+        if((pD->Disp[2] != 0) || (dir !=-3)) {
           ix3_radBCFun = ProlongateLater;
 	  
 	  /* Domain is at L-edge of root Domain */
 	} else {
-	  ix3_radBCFun = outflow_flux_ix3;
+	  if (dir == -3){
+	    ix3_radBCFun = outflow_flux_ix3;
+	  }
 	}
       }
 /*---- ox3 boundary ----------------------------------------------------------*/
@@ -218,12 +234,14 @@ void bvals_ionrad_init(MeshS *pM)
       if(ox3_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 
 	/* Domain boundary is in interior of root */
-        if((pD->Disp[2] + pD->Nx[2])/irefine != pM->Nx[2]) {
+        if(((pD->Disp[2] + pD->Nx[2])/irefine != pM->Nx[2]) || (dir !=3)) {
           ox3_radBCFun = ProlongateLater;
 
 	  /* Domain is at R-edge of root Domain */
 	} else {
-	  ox3_radBCFun = outflow_flux_ox3;
+	  if (dir == 3){
+	    ox3_radBCFun = outflow_flux_ox3;
+	  }
 	}
       }
     }
@@ -251,16 +269,20 @@ void bvals_ionrad_init(MeshS *pM)
 
 static void outflow_flux_ix1(GridS *pGrid)
 {
-  int is = pGrid->is;
-  int js = pGrid->js, je = pGrid->je;
-  int ks = pGrid->ks, ke = pGrid->ke;
-  int i,j,k;
+  MeshS *pMesh = pGrid->Mesh;
+  int je = pGrid->Nx[1];
+  int ke = pGrid->Nx[2];
 
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->EdgeFlux[k][j][is-i] = pGrid->EdgeFlux[k][j][is];
-      }
+/*   int is = pGrid->is; */
+/*   int js = pGrid->js, je = pGrid->je; */
+/*   int ks = pGrid->ks, ke = pGrid->ke; */
+  int i,j,k;
+  /*Add in something to see if flux is coming from left.  If not, don't do this.*/
+  for (k=0; k<=ke; k++) {
+    for (j=0; j<=je; j++) {
+/*       for (i=is-1; i<=is + nghost_ionrad; i++) { */
+      pGrid->EdgeFlux[k][j][0] =(pMesh->radplanelist)->flux_i;
+/*       } */
     }
   }
 
@@ -273,16 +295,17 @@ static void outflow_flux_ix1(GridS *pGrid)
 
 static void outflow_flux_ox1(GridS *pGrid)
 {
-  int ie = pGrid->ie;
-  int js = pGrid->js, je = pGrid->je;
-  int ks = pGrid->ks, ke = pGrid->ke;
+  MeshS *pMesh = pGrid->Mesh;
+  int ie = pGrid->Nx[0];
+  int je = pGrid->Nx[1];
+  int ke = pGrid->Nx[2];
   int i,j,k;
 
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->EdgeFlux[k][j][ie+i] = pGrid->EdgeFlux[k][j][ie];
-      }
+  for (k=0; k<=ke; k++) {
+    for (j=0; j<=je; j++) {
+/*       for (i=1; i<=nghost_ionrad; i++) { */
+        pGrid->EdgeFlux[k][j][ie+i] =(pMesh->radplanelist)->flux_i;
+/*       } */
     }
   }
 
@@ -296,18 +319,18 @@ static void outflow_flux_ox1(GridS *pGrid)
 
 static void outflow_flux_ix2(GridS *pGrid)
 {
-  int is = pGrid->is, ie = pGrid->ie;
-  int js = pGrid->js;
-  int ks = pGrid->ks, ke = pGrid->ke;
+  MeshS *pMesh = pGrid->Mesh;
+  int ie = pGrid->Nx[0];
+  int ke = pGrid->Nx[2];
   int i,j,k;
 
 
-  for (k=ks; k<=ke; k++) {
-    for (j=1; j<=nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->EdgeFlux[k][js-j][i] = pGrid->EdgeFlux[k][js][i];
+  for (k=0; k<=ke; k++) {
+/*     for (j=1; j<=nghost_ionrad; j++) { */
+      for (i=0; i<=ie; i++) {
+        pGrid->EdgeFlux[k][0][i] =(pMesh->radplanelist)->flux_i;;
       }
-    }
+/*     } */
   }
 
   return;
@@ -319,16 +342,17 @@ static void outflow_flux_ix2(GridS *pGrid)
 
 static void outflow_flux_ox2(GridS *pGrid)
 {
-  int is = pGrid->is, ie = pGrid->ie;
-  int je = pGrid->je;
-  int ks = pGrid->ks, ke = pGrid->ke;
+  MeshS *pMesh = pGrid->Mesh;
+  int ie = pGrid->Nx[0];
+  int je = pGrid->Nx[1];
+  int ke = pGrid->Nx[2];
   int i,j,k;
 
-  for (k=ks; k<=ke; k++) {
-    for (j=1; j<=nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->EdgeFlux[k][je+j][i] = pGrid->EdgeFlux[k][je][i];
-      }
+  for (k=0; k<=ke; k++) {
+/*     for (j=1; j<=nghost_ionrad; j++) { */
+      for (i=0; i<=ie; i++) {
+        pGrid->EdgeFlux[k][je+1][i] =(pMesh->radplanelist)->flux_i;
+/*       } */
     }
   }
 
@@ -342,16 +366,16 @@ static void outflow_flux_ox2(GridS *pGrid)
 
 static void outflow_flux_ix3(GridS *pGrid)
 {
-  int is = pGrid->is, ie = pGrid->ie;
-  int js = pGrid->js, je = pGrid->je;
-  int ks = pGrid->ks;
+  MeshS *pMesh = pGrid->Mesh;
+  int ie = pGrid->Nx[0];
+  int je = pGrid->Nx[1];
   int i,j,k;
 
-  for (k=1; k<=nghost; k++) {
-    for (j=js-nghost; j<=je+nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->EdgeFlux[ks-k][j][i] = pGrid->EdgeFlux[ks][j][i];
-      }
+/*   for (k=1; k<=nghost_ionrad; k++) { */
+    for (j=0; j<=je; j++) {
+       for (i=0; i<=ie; i++) { 
+        pGrid->EdgeFlux[0][j][i] = (pMesh->radplanelist)->flux_i;
+/*       } */
     }
   }
 
@@ -365,16 +389,17 @@ static void outflow_flux_ix3(GridS *pGrid)
 
 static void outflow_flux_ox3(GridS *pGrid)
 {
-  int is = pGrid->is, ie = pGrid->ie;
-  int js = pGrid->js, je = pGrid->je;
-  int ke = pGrid->ke;
+  MeshS *pMesh = pGrid->Mesh;
+  int ie = pGrid->Nx[0];
+  int je = pGrid->Nx[1];
+  int ke = pGrid->Nx[2];
   int i,j,k;
 
-  for (k=1; k<=nghost; k++) {
-    for (j=js-nghost; j<=je+nghost; j++) {
-      for (i=is-nghost; i<=ie+nghost; i++) {
-        pGrid->EdgeFlux[ke+k][j][i] = pGrid->EdgeFlux[ke][j][i];
-      }
+/*   for (k=1; k<=nghost_ionrad; k++) { */
+    for (j=0; j<=je; j++) {
+      for (i=0; i<=ie; i++) { 
+        pGrid->EdgeFlux[ke+1][j][i] = (pMesh->radplanelist)->flux_i;
+/*       } */
     }
   }
 

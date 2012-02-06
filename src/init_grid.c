@@ -53,6 +53,7 @@ void init_grid(MeshS *pM)
   GridS *pG;
   int nDim,nl,nd,myL,myM,myN;
   int i,l,m,n,n1z,n2z,n3z,n1p,n2p,n3p;
+  int nrad1, nrad2, nrad3;
 #ifdef STATIC_MESH_REFINEMENT
   DomainS *pCD,*pPD;
   SideS D1,D2,D3,G1,G2,G3;
@@ -237,7 +238,11 @@ void init_grid(MeshS *pM)
 
       /*Allocate and initialize array of edge fluxes*/
 #ifdef ION_RADPLANE
-      pG->EdgeFlux = (Real***)calloc_3d_array(pG->Nx[2]+1, pG->Nx[1]+1, pG->Nx[0]+1, sizeof(Real));
+      nrad1 = pG->Nx[0] + 1;
+      nrad2 = pG->Nx[1] + 1;
+      nrad3 = pG->Nx[2] + 1;
+      pG->EdgeFlux = (Real***)calloc_3d_array(nrad3, nrad2, nrad1, sizeof(Real));
+
       if (pG->EdgeFlux == NULL) goto on_error16;
 #endif
 
