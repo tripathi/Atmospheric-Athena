@@ -407,11 +407,17 @@ int main(int argc, char *argv[])
 #ifdef PARTICLES
   bvals_particle_init(&Mesh);
 #endif
+#ifdef ION_RADIATION
+  bvals_ionrad_init(&Mesh);  /*Added to handle boundary conditions for ion. radiation*/
+#endif
 
   for (nl=0; nl<(Mesh.NLevels); nl++){ 
     for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){  
       if (Mesh.Domain[nl][nd].Grid != NULL){
         bvals_mhd(&(Mesh.Domain[nl][nd]));
+#ifdef ION_RADIATION
+	bvals_ionrad(&(Mesh.Domain[nl][nd]));  /*Added to handle boundary conditions for ion. radiation*/
+#endif
 #ifdef PARTICLES
         bvals_particle(&(Mesh.Domain[nl][nd]));
 #ifdef FEEDBACK
