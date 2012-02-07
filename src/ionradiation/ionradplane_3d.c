@@ -243,6 +243,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 #endif /* MPI_PARALLEL */
 	      flux = initflux;
 	    for (i=s; i<=e; i+=lr) {
+	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
@@ -277,6 +278,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 #endif /* MPI_PARALLEL */
 	      flux = initflux;
 	    for (j=s; j<=e; j+=lr) {
+	      pGrid->EdgeFlux[k-pGrid->ks][j-s][i-pGrid->is] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
@@ -309,6 +311,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 #endif /* MPI_PARALLEL */
 	      flux = initflux;
 	    for (k=s; k<=e; k+=lr) {
+	      pGrid->EdgeFlux[k-s][j-pGrid->js][i-pGrid->is] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
