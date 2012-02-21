@@ -241,6 +241,7 @@ void init_grid(MeshS *pM)
       nrad1 = pG->Nx[0] + 1;
       nrad2 = pG->Nx[1] + 1;
       nrad3 = pG->Nx[2] + 1;
+       ath_pout(0,"This grid %d %d %d \n", nrad3, nrad2, nrad1); 
       pG->EdgeFlux = (Real***)calloc_3d_array(nrad3, nrad2, nrad1, sizeof(Real));
 
       if (pG->EdgeFlux == NULL) goto on_error16;

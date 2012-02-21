@@ -532,6 +532,7 @@ int main(int argc, char *argv[])
     for (nl=0; nl<(Mesh.NLevels); nl++){
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
 	(*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
+/* 	bvals_ionrad(&(Mesh.Domain[nl][nd])); */
 	bvals_mhd(&(Mesh.Domain[nl][nd]));
 /* 	(*IonRadTransfer)((Mesh.Domain[0][0]).Grid); /\*CHECK! Currently carrying out for root domain ONLY*\/ */
 /* 	bvals_mhd(&(Mesh.Domain[0][0])); /\* Re-apply hydro bc's.  Again, I think a FOR LOOP is NEEDED *\/ */

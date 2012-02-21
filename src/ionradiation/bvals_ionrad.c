@@ -107,7 +107,6 @@ void bvals_ionrad(DomainS *pD)
 
   return;
 }
-
 /*----------------------------------------------------------------------------*/
 /*! \fn void bvals_ionrad_init(MeshS *pM)
  *  \brief Sets function pointers for physical boundaries during
@@ -272,6 +271,8 @@ static void outflow_flux_ix1(GridS *pGrid)
   MeshS *pMesh = pGrid->Mesh;
   int je = pGrid->Nx[1];
   int ke = pGrid->Nx[2];
+  
+/*   ath_pout(0,"Check: %d vs %d and %d vs %d \n", je, pGrid->je - pGrid->js, ke, pGrid->ke - pGrid->ks); */
 
 /*   int is = pGrid->is; */
 /*   int js = pGrid->js, je = pGrid->je; */
@@ -304,7 +305,7 @@ static void outflow_flux_ox1(GridS *pGrid)
   for (k=0; k<=ke; k++) {
     for (j=0; j<=je; j++) {
 /*       for (i=1; i<=nghost_ionrad; i++) { */
-        pGrid->EdgeFlux[k][j][ie+i] =(pMesh->radplanelist)->flux_i;
+        pGrid->EdgeFlux[k][j][ie] =(pMesh->radplanelist)->flux_i;
 /*       } */
     }
   }
@@ -351,7 +352,7 @@ static void outflow_flux_ox2(GridS *pGrid)
   for (k=0; k<=ke; k++) {
 /*     for (j=1; j<=nghost_ionrad; j++) { */
       for (i=0; i<=ie; i++) {
-        pGrid->EdgeFlux[k][je+1][i] =(pMesh->radplanelist)->flux_i;
+        pGrid->EdgeFlux[k][je][i] =(pMesh->radplanelist)->flux_i;
 /*       } */
     }
   }
@@ -398,7 +399,7 @@ static void outflow_flux_ox3(GridS *pGrid)
 /*   for (k=1; k<=nghost_ionrad; k++) { */
     for (j=0; j<=je; j++) {
       for (i=0; i<=ie; i++) { 
-        pGrid->EdgeFlux[ke+1][j][i] = (pMesh->radplanelist)->flux_i;
+        pGrid->EdgeFlux[ke][j][i] = (pMesh->radplanelist)->flux_i;
 /*       } */
     }
   }
