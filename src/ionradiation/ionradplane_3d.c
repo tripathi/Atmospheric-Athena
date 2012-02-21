@@ -33,14 +33,14 @@
 
 /* Initialized number of radiation planes to zero */
 void ion_radplane_init_domain_3d(GridS *pG, DomainS *pD) {
-  int i, j, k;
-  for (k=0; k<pG->Nx[2]+1; k++) {
-    for (j=0; j<pG->Nx[1]+1; j++) {
-      for (i=0; i<pG->Nx[2]+1; i++) {
-	pG->EdgeFlux[k][j][i] = par_getd("problem","flux");
-      }
-    }
-  }
+/*   int i, j, k; */
+/*   for (k=0; k<=pG->Nx[2]; k++) { */
+/*     for (j=0; j<=pG->Nx[1]; j++) { */
+/*       for (i=0; i<=pG->Nx[0]; i++) { */
+/* 	pG->EdgeFlux[k][j][i] = par_getd("problem","flux"); */
+/*       } */
+/*     } */
+/*   } */
   return;
 }
 
@@ -101,6 +101,10 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
 #endif
+  MeshS *pMesh = pGrid->Mesh;
+  DomainS *pDomain = (pGrid->Mesh)->Domain;
+
+  flux = 0;
 
   /* Set lr based on whether radiation is left or right
      propagating. lr = 1 is for radiation going left to right. Also
@@ -136,7 +140,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     break;
   }
   }
-
+/*     fprintf(stderr,"s: %d e: %d \n", s, e);  */
 #ifdef MPI_PARALLEL
   /* Figure out processor geometry: where am I, where are my neighbors
      upstream and downstream, how many processors are there in the
@@ -229,7 +233,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       }
 #endif /* MPI_PARALLEL */
 
-      /* Propograte the radiation */
+      /* Propagate the radiation */
       switch(dir) {
       case -1: case 1: {
 	for (k=pGrid->ks; k<=pGrid->ke; k++) {
@@ -241,8 +245,20 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js];
 	    else
 #endif /* MPI_PARALLEL */
-	      flux = initflux;
+	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
+/* 	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
+
 	    for (i=s; i<=e; i+=lr) {
+	      if (pGrid->Nx[0] != 64){
+		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { 
+		fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);  
+		}
+	      } else{
+		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { 
+		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);  
+		}
+	      }
+
 	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 	      tau = sigma_ph * n_H * pGrid->dx1;
