@@ -246,27 +246,28 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
+	    if (flux != (pMesh->radplanelist)->flux_i)
+	      fprintf(stderr, "Interesting");
 /* 	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
 
 	    for (i=s; i<=e; i+=lr) {
-	      if (pGrid->Nx[0] != 64){
-		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { 
-		fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);  
-		}
-	      } else{
-		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { 
-		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);  
-		}
-	      }
-
 	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
+	      if (pGrid->Nx[0] != 64){
+		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) {
+		  fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, flux:%e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H ,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);
+		}
+	      } else{
+		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) {
+		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);
+		}
+	      }
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
-	      flux_frac = flux / initflux;
+	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
 	      if (flux_frac < MINFLUXFRAC) break;
 	    }
 #ifdef MPI_PARALLEL
