@@ -836,7 +836,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
     /* If necessary, scale back time step to avoid exceeding hydro
        time step. */
-`    if (dt_done + dt > pGrid->dt) {
+    if (dt_done + dt > pGrid->dt) {
       dt = pGrid->dt - dt_done;
       hydro_done = 1;
     }
@@ -855,11 +855,13 @@ void ion_radtransfer_3d(DomainS *pDomain)
        exit loop. */
     if (check_range(pGrid)) {
       pGrid->dt = dt_done;
+/*       fprintf(stderr,"In check range \n"); */
       break;
     }
 
     /* Have we advanced the full hydro time step? If so, exit loop. */
     if (hydro_done) {
+/*       fprintf(stderr,"In hydro done \n"); */
       break;
     }
 
@@ -869,6 +871,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
     dt_hydro = compute_dt_hydro(pGrid);
     if (dt_hydro < dt_done) {
       pGrid->dt = dt_done;
+/*       fprintf(stderr,"dt_hydro dt done \n"); */
       break;
     }
   }
@@ -877,6 +880,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
      to hydro with the time step re-set to what we managed to do. */
   if (niter==maxiter)
     pGrid->dt = dt_done;
+/*   fprintf(stderr,"niter: %d maxiter: %d \n", niter, maxiter); */
 
 
   /* Write status */
