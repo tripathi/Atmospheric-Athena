@@ -45,7 +45,7 @@ static Real ***e_th_init;          /* Thermal energies on entry to
 				      routine */
 static Real ***x_init;             /* Ionization fraction on entry to
 				      routine */
-
+static Real tcoarse =0; /*Keep track of higher domain time step*/
 /* ------------------------------------------------------------
  * Photoionization routines
  * ------------------------------------------------------------
@@ -790,8 +790,13 @@ void ion_radtransfer_3d(DomainS *pDomain)
   MeshS *pMesh = pDomain->Mesh;
   GridS *pGrid = pDomain->Grid;
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
-  int n, niter, hydro_done;
+  int n, hydro_done;
   int nchem, ntherm;
+  int finegrid, iiter;
+  finegrid = 0;
+  iiter = 0;
+  
+  if(pDomain->Level != 0) finegrid = 1;
 
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
@@ -809,8 +814,16 @@ void ion_radtransfer_3d(DomainS *pDomain)
   dt_done = 0.0;
   hydro_done = 0;
   nchem = ntherm = 0;
-  for (niter = 0; niter<maxiter;) {
 
+  /*Do radiation sub cycle differently depending on whether on a coarse or fine grid*/
+
+  /*If on the coarsest level, run under the <maxiter condition*/
+  /*If on a finer level, run under the time condition*/
+  /*This assumes ONLY 2 levels, no more.*/
+  while(finegrid || iiter < maxiter){
+/* ) && (!finegrid || dt_done<tcoarse)){ */
+/*   for (niter = 0; niter<maxiter;) { */
+    
     /* Initialize photoionization rate array */
     ph_rate_init(pGrid);
 
@@ -844,48 +857,65 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* Do an update */
     ionization_update(pGrid, dt);
     dt_done += dt;
-    niter++;
+    iiter++;
+/*     niter++; */
 
     /* Set all temperatures below the floor to the floor */
     apply_temp_floor(pGrid);
     apply_neutral_floor(pGrid);
 
-    /* Check new energies and ionization fractions against initial
-       values to see if we've changed them as much as possible. If so,
-       exit loop. */
-    if (check_range(pGrid)) {
-      pGrid->dt = dt_done;
-/*       fprintf(stderr,"In check range \n"); */
-      break;
+    /*Force finegrid to stop when time <= tcoarse*/
+    if (finegrid){
+      if (dt_done >= tcoarse) {
+/* 	fprintf(stderr,"Exceeding coarse time limit \n"); */
+	break;
+      }
     }
 
-    /* Have we advanced the full hydro time step? If so, exit loop. */
-    if (hydro_done) {
-/*       fprintf(stderr,"In hydro done \n"); */
-      break;
-    }
 
-    /* Compute a new hydro time step based on the new temperature
-       distribution. If it's smaller than the time step we've already 
-       advanced, then exit. */
-    dt_hydro = compute_dt_hydro(pGrid);
-    if (dt_hydro < dt_done) {
-      pGrid->dt = dt_done;
-/*       fprintf(stderr,"dt_hydro dt done \n"); */
-      break;
+    /*Check stopping criteria only for coarse grid */
+    if (!finegrid){
+
+      /* Check new energies and ionization fractions against initial
+	 values to see if we've changed them as much as possible. If so,
+	 exit loop. */
+      if (check_range(pGrid)) {
+	pGrid->dt = dt_done;
+/* 	fprintf(stderr,"In check range \n"); */
+	break;
+      }
+
+      /* Have we advanced the full hydro time step? If so, exit loop. */
+      if (hydro_done) {
+/* 	fprintf(stderr,"In hydro done \n"); */
+	break;
+      }
+
+      /* Compute a new hydro time step based on the new temperature
+	 distribution. If it's smaller than the time step we've already 
+	 advanced, then exit. */
+      dt_hydro = compute_dt_hydro(pGrid);
+      if (dt_hydro < dt_done) {
+	pGrid->dt = dt_done;
+	fprintf(stderr,"dt_hydro dt done \n");
+	break;
+      }
+
     }
   }
-
+  
   /* Have we exceeded the maximum number of iterations? If so, return
      to hydro with the time step re-set to what we managed to do. */
-  if (niter==maxiter)
-    pGrid->dt = dt_done;
-/*   fprintf(stderr,"niter: %d maxiter: %d \n", niter, maxiter); */
+  if (!finegrid){
+    if (iiter==maxiter)
+      pGrid->dt = dt_done;
+  }
+/*   fprintf(stderr,"niter: %d maxiter: %d \n", iiter, maxiter); */
 
+  if (!finegrid) tcoarse = dt_done;
 
   /* Write status */
-  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", 
-	   niter, ntherm, nchem, pGrid->dt);
+  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", iiter, ntherm, nchem, pGrid->dt);
 
   /* Sanity check */
   if (pGrid->dt < 0) {
