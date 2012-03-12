@@ -790,11 +790,11 @@ void ion_radtransfer_3d(DomainS *pDomain)
   MeshS *pMesh = pDomain->Mesh;
   GridS *pGrid = pDomain->Grid;
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
-  int n, hydro_done;
+  int n, niter, hydro_done;
   int nchem, ntherm;
-  int finegrid, iiter;
+  int finegrid, coarsetime_done;
   finegrid = 0;
-  iiter = 0;
+  niter = 0;
   
   if(pDomain->Level != 0) finegrid = 1;
 
@@ -813,16 +813,16 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /* Begin the radiation sub-cycle */
   dt_done = 0.0;
   hydro_done = 0;
+  coarsetime_done = 0;
   nchem = ntherm = 0;
 
   /*Do radiation sub cycle differently depending on whether on a coarse or fine grid*/
 
   /*If on the coarsest level, run under the <maxiter condition*/
   /*If on a finer level, run under the time condition*/
-  /*This assumes ONLY 2 levels, no more.*/
-  while(finegrid || iiter < maxiter){
-/* ) && (!finegrid || dt_done<tcoarse)){ */
-/*   for (niter = 0; niter<maxiter;) { */
+  /*This assumes ONLY treats the root level as special.*/
+  fprintf(stderr, "TIME BEFORE STARTING: %e \n", pGrid->dt);
+  while(finegrid || niter < maxiter){
     
     /* Initialize photoionization rate array */
     ph_rate_init(pGrid);
@@ -849,31 +849,28 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
     /* If necessary, scale back time step to avoid exceeding hydro
        time step. */
-    if (dt_done + dt > pGrid->dt) {
-      dt = pGrid->dt - dt_done;
-      hydro_done = 1;
+    if (!finegrid){
+      if (dt_done + dt > pGrid->dt) {
+	dt = pGrid->dt - dt_done;
+	hydro_done = 1;
+      }
+    } else {
+       if (dt_done + dt >tcoarse) {
+	dt = tcoarse - dt_done;
+	coarsetime_done = 1;
+       }
     }
 
     /* Do an update */
     ionization_update(pGrid, dt);
     dt_done += dt;
-    iiter++;
-/*     niter++; */
+    niter++;
 
     /* Set all temperatures below the floor to the floor */
     apply_temp_floor(pGrid);
     apply_neutral_floor(pGrid);
 
-    /*Force finegrid to stop when time <= tcoarse*/
-    if (finegrid){
-      if (dt_done >= tcoarse) {
-/* 	fprintf(stderr,"Exceeding coarse time limit \n"); */
-	break;
-      }
-    }
-
-
-    /*Check stopping criteria only for coarse grid */
+    /*Check stopping criteria for coarse grid */
     if (!finegrid){
 
       /* Check new energies and ionization fractions against initial
@@ -897,25 +894,35 @@ void ion_radtransfer_3d(DomainS *pDomain)
       dt_hydro = compute_dt_hydro(pGrid);
       if (dt_hydro < dt_done) {
 	pGrid->dt = dt_done;
-	fprintf(stderr,"dt_hydro dt done \n");
+/* 	fprintf(stderr,"dt_hydro dt done \n"); */
 	break;
       }
 
+    } else {
+      /*Check time to stop fine grid */
+      if (coarsetime_done) {
+	pGrid->dt = dt_done;
+/* 	fprintf(stderr,"Exceeding coarse time limit \n"); */
+	break;
+      }
     }
   }
   
   /* Have we exceeded the maximum number of iterations? If so, return
-     to hydro with the time step re-set to what we managed to do. */
+     to hydro with the time step re-set to what we managed to do and
+     return this time to the finer levels. */
   if (!finegrid){
-    if (iiter==maxiter)
-      pGrid->dt = dt_done;
+    if (niter==maxiter) {
+	pGrid->dt = dt_done;
+    }
+/*   fprintf(stderr,"niter: %d maxiter: %d \n", niter, maxiter); */
+    tcoarse = dt_done;
   }
-/*   fprintf(stderr,"niter: %d maxiter: %d \n", iiter, maxiter); */
 
-  if (!finegrid) tcoarse = dt_done;
+  fprintf(stderr, "TIME BEFORE EXITING: %e \n", pGrid->dt);
 
   /* Write status */
-  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", iiter, ntherm, nchem, pGrid->dt);
+  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
 
   /* Sanity check */
   if (pGrid->dt < 0) {
