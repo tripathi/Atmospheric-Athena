@@ -821,7 +821,6 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*If on the coarsest level, run under the <maxiter condition*/
   /*If on a finer level, run under the time condition*/
   /*This assumes ONLY treats the root level as special.*/
-  fprintf(stderr, "TIME BEFORE STARTING: %e \n", pGrid->dt);
   while(finegrid || niter < maxiter){
     
     /* Initialize photoionization rate array */
@@ -918,8 +917,6 @@ void ion_radtransfer_3d(DomainS *pDomain)
 /*   fprintf(stderr,"niter: %d maxiter: %d \n", niter, maxiter); */
     tcoarse = dt_done;
   }
-
-  fprintf(stderr, "TIME BEFORE EXITING: %e \n", pGrid->dt);
 
   /* Write status */
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);

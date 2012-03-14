@@ -255,11 +255,11 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 	      if (pGrid->Nx[0] != 64){
 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) {
-		  fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, flux:%e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H ,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);
+/* 		  fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, flux:%e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H ,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); */
 		}
 	      } else{
 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) {
-		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);
+/* 		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); */
 		}
 	      }
 	      tau = sigma_ph * n_H * pGrid->dx1;
