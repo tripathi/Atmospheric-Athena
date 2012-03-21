@@ -7,7 +7,14 @@ defs.h
 bin/athena
 currentversiondoxy
 autom4te.cache/*
+*~
 bin/*.vtk
 bin/*.hst
-bin/*.bin
+bin/*/*.bin
+bin/*/*.vtk
+bin/*/*.hst
+bin/*/*.bin
+bin/*/*/*.vtk
+bin/*/*/*.hst
+bin/*/*/*.bin
 .svn
