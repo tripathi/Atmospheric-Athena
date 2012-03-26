@@ -16,7 +16,6 @@
 
 void problem(DomainS *pDomain)
 {
-  MeshS *pMesh = pDomain->Mesh;
   GridS *pGrid = pDomain->Grid;
   int i, is = pGrid->is, ie = pGrid->ie;
   int j, js = pGrid->js, je = pGrid->je;

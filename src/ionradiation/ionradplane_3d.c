@@ -87,7 +87,6 @@ void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
 
 void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, 
 		       GridS *pGrid) {
-  int n;
   int lr;
   Real tau, n_H, kph, etau, cell_len;
   Real flux, flux_frac;
@@ -102,7 +101,6 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   MPI_Status stat;
 #endif
   MeshS *pMesh = pGrid->Mesh;
-  DomainS *pDomain = (pGrid->Mesh)->Domain;
 
   flux = 0;
 

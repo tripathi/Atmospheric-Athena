@@ -922,9 +922,12 @@ void ion_radtransfer_3d(DomainS *pDomain)
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
 
   /* Sanity check */
-  if (pGrid->dt < 0) {
-    ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_hydro = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_hydro, dt_done);
+  if (!finegrid){
+    if (pGrid->dt < 0) {
+      ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_hydro = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_hydro, dt_done);
+    }
+  } else {
+    ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_done);
   }
 }
-
 #endif /* ION_RADIATION */
