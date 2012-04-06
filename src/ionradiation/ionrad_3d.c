@@ -648,6 +648,55 @@ Real compute_dt_hydro(GridS *pGrid) {
   return(dt);
 }
 
+
+/* Routine to manually set energy passed to hydro solver
+ to test if the ionization fraction is working*/
+void set_energy_manually(GridS *pGrid)
+{
+  int i, j, k;
+  Real e_nonthermal, n_H, n_Hplus, n_e, x;
+  Real Tcalc, mucalc;
+
+  for (k=pGrid->ks; k<=pGrid->ke; k++) {
+    for (j=pGrid->js; j<=pGrid->je; j++) {
+      for (i=pGrid->is; i<=pGrid->ie; i++) {
+
+	/* Compute kinetic energy */
+	e_nonthermal = 0.5 *
+	  (pGrid->U[k][j][i].M1 * pGrid->U[k][j][i].M1 +
+	   pGrid->U[k][j][i].M2 * pGrid->U[k][j][i].M2 +
+	   pGrid->U[k][j][i].M3 * pGrid->U[k][j][i].M3) 
+	  / pGrid->U[k][j][i].d
+#ifdef MHD
+	  + 0.5 * (pGrid->U[k][j][i].B1c * pGrid->U[k][j][i].B1c +
+		   pGrid->U[k][j][i].B2c * pGrid->U[k][j][i].B2c +
+		   pGrid->U[k][j][i].B3c * pGrid->U[k][j][i].B3c) 
+#endif
+	  ;
+
+	/* Compute ion fraction */
+	n_H = pGrid->U[k][j][i].s[0] / m_H;
+	n_Hplus = (pGrid->U[k][j][i].d - pGrid->U[k][j][i].s[0]) / m_H;
+	n_e = n_Hplus + pGrid->U[k][j][i].d * alpha_C / (14.0 * m_H);
+	x = n_e / (n_H + n_Hplus);
+
+	/* Save thermal and total energy, and neutral fraction */
+	if (x <= .5) {
+	  /*Neutral gas*/
+	  Tcalc = 55. ;
+	  mucalc = mu;
+	} else {
+	  /*Ionized gas*/
+	  Tcalc=10000.;
+	  mucalc = m_H/2.;
+	}
+	pGrid->U[k][j][i].E = e_nonthermal + k_B*Tcalc/Gamma_1/mucalc*pGrid->U[k][j][i].d;
+      }
+    }
+  }
+}
+
+
 /* ------------------------------------------------------------
  * Initialize and store routines
  * ------------------------------------------------------------
@@ -868,6 +917,9 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* Set all temperatures below the floor to the floor */
     apply_temp_floor(pGrid);
     apply_neutral_floor(pGrid);
+
+    /*Manually set thermal energy due to ionization*/
+    set_energy_manually(pGrid);
 
     /*Check stopping criteria for coarse grid */
     if (!finegrid){
