@@ -871,6 +871,9 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*If on a finer level, run under the time condition*/
   /*This assumes ONLY treats the root level as special.*/
   while(finegrid || niter < maxiter){
+    /* if (niter % 200 == 0) { */
+    /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
+    /* } */
     
     /* Initialize photoionization rate array */
     ph_rate_init(pGrid);
@@ -919,7 +922,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
     apply_neutral_floor(pGrid);
 
     /*Manually set thermal energy due to ionization*/
-    set_energy_manually(pGrid);
+    /* set_energy_manually(pGrid); */
 
     /*Check stopping criteria for coarse grid */
     if (!finegrid){
@@ -929,13 +932,13 @@ void ion_radtransfer_3d(DomainS *pDomain)
 	 exit loop. */
       if (check_range(pGrid)) {
 	pGrid->dt = dt_done;
-/* 	fprintf(stderr,"In check range \n"); */
+	fprintf(stderr,"In check range \n");
 	break;
       }
 
       /* Have we advanced the full hydro time step? If so, exit loop. */
       if (hydro_done) {
-/* 	fprintf(stderr,"In hydro done \n"); */
+	fprintf(stderr,"In hydro done \n");
 	break;
       }
 
@@ -969,6 +972,9 @@ void ion_radtransfer_3d(DomainS *pDomain)
 /*   fprintf(stderr,"niter: %d maxiter: %d \n", niter, maxiter); */
     tcoarse = dt_done;
   }
+
+  /*Set mesh timestep equal to grid timestep*/
+  pMesh->dt = pGrid->dt;
 
   /* Write status */
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
