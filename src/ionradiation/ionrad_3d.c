@@ -290,6 +290,7 @@ Real compute_chem_rates(GridS *pGrid)
   Real n_H, n_Hplus, n_e, d_nlim;
   Real e_sp, T, x;
   Real dt_chem, dt_chem1, dt_chem2, dt_chem_min;
+  int dt_chem_min_index;
 #ifdef MPI_PARALLEL
   int err;
   Real dt_chem_min_glob;
@@ -297,11 +298,13 @@ Real compute_chem_rates(GridS *pGrid)
 
   /* Initialize chemistry time step to large time step */
   dt_chem_min = LARGE;
+  dt_chem_min_index = -999;
 
   /* Loop over cells to get timestep */
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
     for (j=pGrid->js; j<=pGrid->je; j++) {
       for (i=pGrid->is; i<=pGrid->ie; i++) {
+
 
 	/* Get species abundances */
 	n_H = pGrid->U[k][j][i].s[0] / m_H;
@@ -371,8 +374,13 @@ Real compute_chem_rates(GridS *pGrid)
 	  dt_chem1 = dt_chem2 = LARGE;
 	}
 	dt_chem = (dt_chem1 < dt_chem2) ? dt_chem1 : dt_chem2;
-	dt_chem_min = (dt_chem < dt_chem_min) ? dt_chem : dt_chem_min;
-
+	/* dt_chem_min = (dt_chem < dt_chem_min) ? dt_chem : dt_chem_min; */
+	if (dt_chem < dt_chem_min){
+	  /* fprintf(stderr, "Cell i: %d j %d k %d, dt_chem: %e dt_chem_min: %e \n", i, j, k, dt_chem, dt_chem_min); */
+	  dt_chem_min = dt_chem;
+	  dt_chem_min_index = i;
+	}
+	    
 	if (dt_chem < 0) {
 	  ath_error("[compute_chem_rates]: cell %d %d %d: dt_chem = %e, d = %e, d_n = %e, T = %e, nH = %e, nH+ = %e, ne = %e, nHdot = %e\n", i,j,k, dt_chem, pGrid->U[k][j][i].d, pGrid->U[k][j][i].s[0], T, n_H, n_Hplus, n_e, nHdot[k][j][i]);
 	}
@@ -380,6 +388,7 @@ Real compute_chem_rates(GridS *pGrid)
     }
   }
 
+  /* fprintf(stderr, "Min dt_chem at %d with left dens: %e, dens %e, right dens: %e \n", dt_chem_min_index, pGrid->U[4][4][dt_chem_min_index].d, pGrid->U[4][4][dt_chem_min_index-1].d, pGrid->U[4][4][dt_chem_min_index+1].d); */
 #ifdef MPI_PARALLEL
   /* Sync chemistry timestep across processors */
   err = MPI_Allreduce(&dt_chem_min, &dt_chem_min_glob, 1, MP_RL, 
@@ -403,6 +412,7 @@ Real compute_therm_rates(GridS *pGrid)
   Real n_H, n_Hplus, n_e, e_thermal;
   Real e_sp, T, x, e_sp_min, e_th_min, e_min, d_nlim;
   Real dt_therm, dt_therm1, dt_therm2, dt_therm_min;
+  int dt_therm_min_index;
 #ifdef MPI_PARALLEL
   int err;
   Real dt_therm_min_glob;
@@ -410,6 +420,7 @@ Real compute_therm_rates(GridS *pGrid)
 
   /* Initialize thermal time step to large value */
   dt_therm_min = LARGE;
+  dt_therm_min_index = -999;
 
   /* Loop over cells to get timestep */
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
@@ -517,11 +528,16 @@ Real compute_therm_rates(GridS *pGrid)
 
 	/* Set time step to minimum */
 	dt_therm = (dt_therm1 < dt_therm2) ? dt_therm1 : dt_therm2;
-	dt_therm_min = (dt_therm < dt_therm_min) ? dt_therm : dt_therm_min;
+	/* dt_therm_min = (dt_therm < dt_therm_min) ? dt_therm : dt_therm_min; */
+	if (dt_therm < dt_therm_min){
+	  /* fprintf(stderr, "Cell i: %d j %d k %d, dt_therm: %e dt_therm_min: %e \n", i, j, k, dt_therm, dt_therm_min); */
+	  dt_therm_min = dt_therm;
+	  dt_therm_min_index = i;
+	}
       }
     }
   }
-
+  /* fprintf(stderr, "Min dt_therm at %d \n", dt_therm_min_index); */
 #ifdef MPI_PARALLEL
   /* Sync thermal timestep across processors */
   err = MPI_Allreduce(&dt_therm_min, &dt_therm_min_glob, 1, MP_RL, 
@@ -870,7 +886,8 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*If on the coarsest level, run under the <maxiter condition*/
   /*If on a finer level, run under the time condition*/
   /*This assumes ONLY treats the root level as special.*/
-  while(finegrid || niter < maxiter){
+  /* while(finegrid || niter < maxiter){ */
+  while(!hydro_done){
     /* if (niter % 200 == 0) { */
     /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
     /* } */
@@ -947,8 +964,8 @@ void ion_radtransfer_3d(DomainS *pDomain)
 	 advanced, then exit. */
       dt_hydro = compute_dt_hydro(pGrid);
       if (dt_hydro < dt_done) {
+	fprintf(stderr,"Mesh time: %e dt_hydro %e dt done %e \n", pMesh->dt, dt_hydro, dt_done);
 	pGrid->dt = dt_done;
-/* 	fprintf(stderr,"dt_hydro dt done \n"); */
 	break;
       }
 
@@ -968,10 +985,12 @@ void ion_radtransfer_3d(DomainS *pDomain)
   if (!finegrid){
     if (niter==maxiter) {
 	pGrid->dt = dt_done;
+	fprintf(stderr,"Reached maxiter \n");
     }
-/*   fprintf(stderr,"niter: %d maxiter: %d \n", niter, maxiter); */
     tcoarse = dt_done;
   }
+
+  fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm);
 
   /*Set mesh timestep equal to grid timestep*/
   pMesh->dt = pGrid->dt;
