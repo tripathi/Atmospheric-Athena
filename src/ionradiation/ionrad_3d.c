@@ -909,11 +909,16 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* Compute rates and time step for thermal energy update */
     dt_therm = compute_therm_rates(pGrid);
 
+    /* fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm); */
+  
+
     /* Set time step to smaller of thermal and chemical time
        steps, and record whether this is a thermal or chemical step */
     if (dt_chem < dt_therm) nchem++;
     else ntherm++;
     dt = MIN(dt_therm, dt_chem);
+
+    /* fprintf(stderr,"Grid: %e, Mesh:%e\n", pGrid->dt, pMesh->dt);  */
 
     /* If necessary, scale back time step to avoid exceeding hydro
        time step. */
@@ -958,15 +963,15 @@ void ion_radtransfer_3d(DomainS *pDomain)
 	fprintf(stderr,"In hydro done \n");
 	break;
       }
-
+      
       /* Compute a new hydro time step based on the new temperature
 	 distribution. If it's smaller than the time step we've already 
 	 advanced, then exit. */
       dt_hydro = compute_dt_hydro(pGrid);
       if (dt_hydro < dt_done) {
-	fprintf(stderr,"Mesh time: %e dt_hydro %e dt done %e \n", pMesh->dt, dt_hydro, dt_done);
-	pGrid->dt = dt_done;
-	break;
+      	fprintf(stderr,"dt_hydro %e dt done %e \n", dt_hydro, dt_done);
+      	pGrid->dt = dt_done;
+      	break;
       }
 
     } else {
@@ -990,10 +995,10 @@ void ion_radtransfer_3d(DomainS *pDomain)
     tcoarse = dt_done;
   }
 
-  fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm);
 
   /*Set mesh timestep equal to grid timestep*/
   pMesh->dt = pGrid->dt;
+
 
   /* Write status */
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
