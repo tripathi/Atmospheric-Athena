@@ -48,8 +48,8 @@ static Real PlanetPot(const Real x1, const Real x2, const Real x3);
 static const Real Gcgs = 6.674e-8;   //cm^3 g^-1 s^-2
 static const Real Mjup = 1.8986e30;  //g
 static const Real Rjup = 6.9911e9;   //cm
-//static const Real kb = 1.3806e−16;   //erg K^-1
-//static const Real mh = 1.6737e-24;   //g 
+static const Real kb = 1.3806/1.e16;   //erg K^-1
+static const Real mh = 1.6737/1.e24;   //g 
 /*=========================== PUBLIC FUNCTIONS ===============================*/
 /*----------------------------------------------------------------------------*/
 /* problem:  */
@@ -63,7 +63,7 @@ void problem(DomainS *pDomain)
   Real x1,x2,x3,xshock;
   Real Mach;
   Real dr,pr,ur;
-
+  Real gconst;
 
 
 /* Read input parameters */
@@ -79,10 +79,11 @@ void problem(DomainS *pDomain)
   Zplanet = par_getd_def("problem","Zplanet",0.0);
   Rsoft   = par_getd_def("problem","Rsoft",0.1);
 
-	
+  gconst = Gcgs*Mp*Mjup/Rjup/Rjup;
+  
 /* Set parameters of ambient medium */
 
-  dr = 1.0 * 1.0e-15; //Density in g cm^-3
+  dr = 1.0e-15 * exp(-gconst /(Iso_csound*Iso_csound)); /*Density in g cm^-3 */
 #ifdef ADIABATIC
   pr = 1.0/Gamma; //!!!Need to scale appropriately
 #else
