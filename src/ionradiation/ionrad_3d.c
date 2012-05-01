@@ -290,7 +290,7 @@ Real compute_chem_rates(GridS *pGrid)
   Real n_H, n_Hplus, n_e, d_nlim;
   Real e_sp, T, x;
   Real dt_chem, dt_chem1, dt_chem2, dt_chem_min;
-  int dt_chem_min_index;
+  /* int dt_chem_min_index; */
 #ifdef MPI_PARALLEL
   int err;
   Real dt_chem_min_glob;
@@ -298,7 +298,7 @@ Real compute_chem_rates(GridS *pGrid)
 
   /* Initialize chemistry time step to large time step */
   dt_chem_min = LARGE;
-  dt_chem_min_index = -999;
+  /* dt_chem_min_index = -999; */
 
   /* Loop over cells to get timestep */
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
@@ -378,7 +378,7 @@ Real compute_chem_rates(GridS *pGrid)
 	if (dt_chem < dt_chem_min){
 	  /* fprintf(stderr, "Cell i: %d j %d k %d, dt_chem: %e dt_chem_min: %e \n", i, j, k, dt_chem, dt_chem_min); */
 	  dt_chem_min = dt_chem;
-	  dt_chem_min_index = i;
+	  /* dt_chem_min_index = i; */
 	}
 	    
 	if (dt_chem < 0) {
@@ -412,7 +412,7 @@ Real compute_therm_rates(GridS *pGrid)
   Real n_H, n_Hplus, n_e, e_thermal;
   Real e_sp, T, x, e_sp_min, e_th_min, e_min, d_nlim;
   Real dt_therm, dt_therm1, dt_therm2, dt_therm_min;
-  int dt_therm_min_index;
+  /* int dt_therm_min_index; */
 #ifdef MPI_PARALLEL
   int err;
   Real dt_therm_min_glob;
@@ -420,7 +420,7 @@ Real compute_therm_rates(GridS *pGrid)
 
   /* Initialize thermal time step to large value */
   dt_therm_min = LARGE;
-  dt_therm_min_index = -999;
+  /* dt_therm_min_index = -999; */
 
   /* Loop over cells to get timestep */
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
@@ -532,7 +532,7 @@ Real compute_therm_rates(GridS *pGrid)
 	if (dt_therm < dt_therm_min){
 	  /* fprintf(stderr, "Cell i: %d j %d k %d, dt_therm: %e dt_therm_min: %e \n", i, j, k, dt_therm, dt_therm_min); */
 	  dt_therm_min = dt_therm;
-	  dt_therm_min_index = i;
+	  /* dt_therm_min_index = i; */
 	}
       }
     }
@@ -887,7 +887,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*If on a finer level, run under the time condition*/
   /*This assumes ONLY treats the root level as special.*/
   /* while(finegrid || niter < maxiter){ */
-  while(!hydro_done){
+  while(finegrid || !hydro_done){
     /* if (niter % 200 == 0) { */
     /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
     /* } */
@@ -954,13 +954,13 @@ void ion_radtransfer_3d(DomainS *pDomain)
 	 exit loop. */
       if (check_range(pGrid)) {
 	pGrid->dt = dt_done;
-	fprintf(stderr,"In check range \n");
+	/* fprintf(stderr,"In check range \n"); */
 	break;
       }
 
       /* Have we advanced the full hydro time step? If so, exit loop. */
       if (hydro_done) {
-	fprintf(stderr,"In hydro done \n");
+	/* fprintf(stderr,"In hydro done \n"); */
 	break;
       }
       
@@ -969,7 +969,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 	 advanced, then exit. */
       dt_hydro = compute_dt_hydro(pGrid);
       if (dt_hydro < dt_done) {
-      	fprintf(stderr,"dt_hydro %e dt done %e \n", dt_hydro, dt_done);
+      	/* fprintf(stderr,"dt_hydro %e dt done %e \n", dt_hydro, dt_done); */
       	pGrid->dt = dt_done;
       	break;
       }
@@ -988,28 +988,26 @@ void ion_radtransfer_3d(DomainS *pDomain)
      to hydro with the time step re-set to what we managed to do and
      return this time to the finer levels. */
   if (!finegrid){
+
+    /*Set mesh timestep equal to grid timestep*/
+    pMesh->dt = pGrid->dt;
+    
     if (niter==maxiter) {
 	pGrid->dt = dt_done;
-	fprintf(stderr,"Reached maxiter \n");
+	/* fprintf(stderr,"Reached maxiter \n"); */
     }
     tcoarse = dt_done;
   }
 
-
-  /*Set mesh timestep equal to grid timestep*/
-  pMesh->dt = pGrid->dt;
 
 
   /* Write status */
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
 
   /* Sanity check */
-  if (!finegrid){
-    if (pGrid->dt < 0) {
-      ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_hydro = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_hydro, dt_done);
-    }
-  } else {
-    ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_done);
+  if (!finegrid && (pGrid->dt < 0)) {
+    ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_hydro = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_hydro, dt_done);
   }
 }
+
 #endif /* ION_RADIATION */
