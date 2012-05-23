@@ -71,7 +71,8 @@ ifeq (@ION_RADIATION_MODE@,ION_RADIATION)
 		ionradiation/ionrad_3d.o \
 		ionradiation/ionrad_chemistry.o \
 		ionradiation/ionradplane_3d.o \
-		ionradiation/ionradpoint_3d.o
+		ionradiation/ionradpoint_3d.o \
+		ionradiation/ionrad_smr.o
 endif
 
 GRAVITY_OBJ =
