@@ -24,7 +24,8 @@ void ionrad_prolongate(DomainS *pD)
 {
   MeshS *pM = pD->Mesh;
   GridS *pG = pD->Grid;
-  GridS *highergrid;            
+  GridS *highergrid;
+  DomainS *higherdom;
   int nd, ndtot, higherlevel, level;
   int dir = (pM->radplanelist)->dir[0];
   int upperi, upperj, upperk, fixed;
@@ -36,7 +37,7 @@ void ionrad_prolongate(DomainS *pD)
   higherlevel = level-1;
   ndtot = pM->DomainsPerLevel[higherlevel];
 
-  /*Find location of this domain on the higher level domain*/
+  /*Find location of this domain */
   /*relative to the origin in the higher level units*/
   for (i=0; i<3; i++){
     thisd.ijkl[i] = pD->Disp[i]/2;
@@ -46,6 +47,9 @@ void ionrad_prolongate(DomainS *pD)
   /*Find the parent domain for the current domain*/
   if (ndtot == 1) {
     highergrid = pM->Domain[higherlevel][ndtot-1].Grid;
+    higherdom =(DomainS*)&(pM->Domain[higherlevel][ndtot-1]);
+    if (pM->time == 0) fprintf(stderr, "Dom Level %d No %d has parent Dom Level %d No %d \n", level, pD->DomNumber, pM->Domain[higherlevel][0].Level, pM->Domain[higherlevel][0].DomNumber); 
+
   } else {
     for (nd=0; nd<ndtot-1; nd++){
       for (i=0; i<3; i++){
@@ -55,6 +59,7 @@ void ionrad_prolongate(DomainS *pD)
       isDOverlap = checkOverlap(&thisd, &parentd, &overlapd);
       if (isDOverlap == 1){
 	highergrid = pM->Domain[higherlevel][nd].Grid;
+	higherdom = (DomainS*)&(pM->Domain[higherlevel][nd]);
 	if (pM->time == 0) fprintf(stderr, "Dom Level %d No %d has parent Dom Level %d No %d \n", level, pD->DomNumber, pM->Domain[higherlevel][nd].Level, pM->Domain[higherlevel][nd].DomNumber); 
 
 	/*Check that the system believes this domain has a child grid*/
@@ -64,7 +69,7 @@ void ionrad_prolongate(DomainS *pD)
     }
   }
 
-  if (highergrid = NULL) ath_error("No parent grid \n");
+  if (highergrid == NULL) ath_error("No parent grid \n");
 
   lr = (dir < 0) ? 1 : -1;
   
@@ -74,11 +79,13 @@ void ionrad_prolongate(DomainS *pD)
     if (lr > 0) {
       fixed = 0;
       for (k=0; k<=pG->Nx[2]; k++) {
-	for (j=0; j<=pG->Nx[1]; j++) {
-	  upperk = k/2 + thisd.ijkl[2];
-	  upperj = j/2 + thisd.ijkl[1];
-	  pG->EdgeFlux[k][j][fixed] =highergrid->EdgeFlux[upperk][upperj][thisd.ijkl[0]];
-	}
+  	for (j=0; j<=pG->Nx[1]; j++) {
+	  /* fprintf(stderr, "%d %d Flux: %e \n", k, j, pG->EdgeFlux[k][j][fixed]); */
+  	  upperk =(int)( floor(k/2.) + thisd.ijkl[2] - higherdom->Disp[2]);
+	  upperj = (int) (floor(j/2) + thisd.ijkl[1] - higherdom->Disp[1]);
+	  /* fprintf(stderr, "This: %d Upper: %d This: %d Upper: %d \n", k, upperk, j, upperj); */
+  	  pG->EdgeFlux[k][j][fixed] =highergrid->EdgeFlux[upperk][upperj][thisd.ijkl[0]-higherdom->Disp[0]];
+  	}
       }
     } else {ath_error("Doesnt work yet \n");}
 
@@ -90,27 +97,6 @@ void ionrad_prolongate(DomainS *pD)
   /*    } else { */
   /*   } */
   /*   break; */
-  /* } */
-
-
-
-
-
-  /* GridOvrlpS *pCO, *pPO; */
-  /* int npg, ncg; */
-  /* /\* GridsDataS ***Ginfo = pD->GData; *\/ */
-  
-  /* fprintf(stderr, "---------\n Domain level: %d, number:%d, X-disp:%d, zones:%d, Nparents:%d, Nchild:%d \n", pD->Level, pD->DomNumber, pD->Disp[0], pD->Nx[0], pG->NPGrid,pG->NCGrid); */
-  /* /\* fprintf(stderr, "ID %d \n", Ginfo->ID_Comm_world); *\/ */
-
-  /* for (npg=0; npg<(pG->NPGrid); npg++){ */
-  /*   pPO = (GridOvrlpS*)&(pG->PGrid[npg]); */
-  /*   fprintf(stderr, "Parent: X:ijks %d ijke %d \n", pPO->ijks[0], pPO->ijke[0]); */
-  /* } */
-
-  /* for (ncg=0; ncg<(pG->NmyCGrid); ncg++){ */
-  /*   pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);    /\* ptr to child Grid overlap *\/ */
-  /*   fprintf(stderr, "Child: X:ijks %d ijke %d \n", pCO->ijks[0], pCO->ijke[0]); */
   /* } */
 
 }

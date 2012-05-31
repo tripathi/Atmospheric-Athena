@@ -244,8 +244,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
-	    if (flux != (pMesh->radplanelist)->flux_i)
-	      fprintf(stderr, "Interesting");
+	    /* if (flux != (pMesh->radplanelist)->flux_i) */
+	    /*   fprintf(stderr, "Interesting"); */
 /* 	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
 
 	    for (i=s; i<=e; i+=lr) {

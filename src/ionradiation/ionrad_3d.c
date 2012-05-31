@@ -863,6 +863,11 @@ void ion_radtransfer_3d(DomainS *pDomain)
   
   if(pDomain->Level != 0) finegrid = 1;
 
+  /*Adding in SMR */
+#ifdef STATIC_MESH_REFINEMENT
+  if (finegrid) ionrad_prolongate(pDomain);
+#endif
+
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
 
