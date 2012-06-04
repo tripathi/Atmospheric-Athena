@@ -1,0 +1,75 @@
+<comment>
+problem = Planar ionizating radiation
+
+<job>
+problem_id      = ifront_mpi     # problem ID: basename of output filenames
+maxout          = 3          # Output blocks number from 1 -> maxout
+num_domains     = 1          # number of Domains in Mesh
+
+<time>
+cour_no         = 0.4		 # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 10000000000000 	 # cycle limit
+tlim            = 5.0e13	 # time limit
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 5.0e11              # time increment between outputs
+
+<output2>
+out_fmt = vtk      # bin image
+dt      = 1.0e12    # time step between outputs
+
+<output3>
+out_fmt = bin      # bin image
+dt      = 1.0e12    # time step between outputs
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 32        # Number of zones in X1-direction
+x1min           = -1.543e19   # minimum value of X
+x1max           = 1.543e19    # maximum value of X
+bc_ix1          = 1         # boundary condition flag for inner-I (X1)
+bc_ox1          = 2         # boundary condition flag for outer-I (X1)
+NGrid_x1        = 8         # with MPI, number of Grids in X1 coordinate
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+
+Nx2             = 16        # Number of zones in X2-direction
+x2min           = -1.543e19   # minimum value of X2
+x2max           = 1.543e19    # maximum value of X2
+bc_ix2          = 2         # boundary condition flag for inner-J (X2)
+bc_ox2          = 2         # boundary condition flag for outer-J (X2)
+NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+
+Nx3             = 16         # Number of zones in X3-direction
+x3min           = -1.543e19    # minimum value of X3
+x3max           = 1.543e19     # maximum value of X3
+bc_ix3          = 2          # boundary condition flag for inner-K (X3)
+bc_ox3          = 2          # boundary condition flag for outer-K (X3)
+NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
+AutoWithNProc   = 0         # set to Nproc for auto domain decomposition
+
+<ionradiation>
+sigma_ph = 6.3e-18
+m_H = 2.3e-24
+mu = 2.1e-24
+e_gamma = 3.84e-12
+alpha_C = 3.0e-3
+k_B = 1.38e-16
+time_unit = 1.0
+max_de_iter = 0.1
+max_de_therm_iter = 0.1
+max_dx_iter = 0.25
+max_de_step = 10.0
+max_de_therm_step = 10.0
+max_dx_step = 10.0
+tfloor = 20.0
+tceil = 10e5
+maxiter = 100000000.
+
+<problem>
+n_H = 63.0
+cs = 5.74e4
+flux = 3.67e9
+gamma = 1.666666666667
+nradplanes = 1	#Ensure that this matches the number of calls to addradplane in ifront.c
