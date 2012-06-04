@@ -826,13 +826,13 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
 
 void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 
-  /*A Tripathi 01/10/12: CHECK to see if deprecated*/
+  /*A Tripathi 06/01/12: CHECK to see if this is correct and/or necessary*/
   /* Store parallel grid information for internal use */
 #ifdef MPI_PARALLEL
   pD = pDomain;
-  NGrid_x1 = par_geti("parallel","NGrid_x1");
-  NGrid_x2 = par_geti("parallel","NGrid_x2");
-  NGrid_x3 = par_geti("parallel","NGrid_x3");
+  NGrid_x1 = pDomain->NGrid[0];
+  NGrid_x2 = pDomain->NGrid[1];
+  NGrid_x3 = pDomain->NGrid[2];
 #endif
 
   /* Store information specific to point sources and planes */
