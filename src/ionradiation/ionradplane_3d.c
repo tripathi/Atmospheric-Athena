@@ -93,7 +93,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   int i, j, k;
   int s, e;
 #ifdef MPI_PARALLEL
-  int nGrid;
+  int n, nGrid;
   int myrank, nextproc, prevproc, err;
   int planesize;
   Real *planeflux = NULL;
@@ -147,18 +147,18 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   for (k=0; k<NGrid_x3; k++) {
     for (j=0; j<NGrid_x2; j++) {
       for (i=0; i<NGrid_x1; i++) {
-	if (pD->GridArray[k][j][i].id == pGrid->my_id) {
+	if (pD->GData[k][j][i].ID_Comm_world == myID_Comm_world) {
 	  switch(dir) {
 	  case -1: case 1: {
 	    nGrid=NGrid_x1;
 	    myrank = lr > 0 ? i : nGrid - i - 1;
 	    planesize=pGrid->Nx[1]*pGrid->Nx[2];
 	    if ((i-lr >= 0) && (i-lr <= NGrid_x1-1))
-	      prevproc = pD->GridArray[k][j][i-lr].id;
+	      prevproc = pD->GData[k][j][i-lr].ID_Comm_world;
 	    else
 	      prevproc = -1;
 	    if ((i+lr >= 0) && (i+lr <= NGrid_x1-1))
-	      nextproc = pD->GridArray[k][j][i+lr].id;
+	      nextproc = pD->GData[k][j][i+lr].ID_Comm_world;
 	    else
 	      nextproc = -1;
 	    break;
@@ -168,11 +168,11 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    myrank = lr > 0 ? j : nGrid - j - 1;
 	    planesize=pGrid->Nx[0]*pGrid->Nx[1];
 	    if ((j-lr >= 0) && (j-lr <= NGrid_x2-1))
-	      prevproc = pD->GridArray[k][j-lr][i].id;
+	      prevproc = pD->GData[k][j-lr][i].ID_Comm_world;
 	    else
 	      prevproc = -1;
 	    if ((j+lr >= 0) && (j+lr <= NGrid_x2-1))
-	      nextproc = pD->GridArray[k][j+lr][i].id;
+	      nextproc = pD->GData[k][j+lr][i].ID_Comm_world;
 	    else
 	      nextproc = -1;
 	    break;
@@ -182,11 +182,11 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    myrank = lr > 0 ? k : nGrid - k - 1;
 	    planesize=pGrid->Nx[0]*pGrid->Nx[1];
 	    if ((k-lr >= 0) && (k-lr <= NGrid_x3-1))
-	      prevproc = pD->GridArray[k-lr][j][i].id;
+	      prevproc = pD->GData[k-lr][j][i].ID_Comm_world;
 	    else
 	      prevproc = -1;
 	    if ((k+lr >= 0) && (k+lr <= NGrid_x2-1))
-	      nextproc = pD->GridArray[k+lr][j][i].id;
+	      nextproc = pD->GData[k+lr][j][i].ID_Comm_world;
 	    else
 	      nextproc = -1;
 	    break;
@@ -200,6 +200,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     }
       if (nGrid != 0) break;
   }
+
+  /*AT 06/01/12: I Think this needs to be modified!*/
 
   /* Allocate memory for flux at interface on first pass */
   if (!(planeflux=calloc(planesize, sizeof(Real))))
@@ -244,6 +246,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
+/*AT 06/03/12: Shouldn't be fixed to 0. Should change to match left/right propagation!!!*/
 	    /* if (flux != (pMesh->radplanelist)->flux_i) */
 	    /*   fprintf(stderr, "Interesting"); */
 /* 	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
@@ -251,21 +254,21 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    for (i=s; i<=e; i+=lr) {
 	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
-	      if (pGrid->Nx[0] != 64){
-		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) {
-/* 		  fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, flux:%e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H ,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); */
-		}
-	      } else{
-		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) {
-/* 		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); */
-		}
-	      }
+/* 	      if (pGrid->Nx[0] != 64){ */
+/* 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { */
+/* /\* 		  fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, flux:%e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H ,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); *\/ */
+/* 		} */
+/* 	      } else{ */
+/* 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { */
+/* /\* 		  fprintf(stderr, "Coarse -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, Flux: %e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); *\/ */
+/* 		} */
+/* 	      } */
 	      tau = sigma_ph * n_H * pGrid->dx1;
 	      etau = exp(-tau);
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
-	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
+	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0]; /*Check if this should still be 0 or not*/
 	      if (flux_frac < MINFLUXFRAC) break;
 	    }
 #ifdef MPI_PARALLEL
