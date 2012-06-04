@@ -72,6 +72,17 @@ ifeq ($(MACHINE),artemis)
   FFTWLIB = -L/opt/fftw3/lib64 -lfftw3
   FFTWINC = -I/opt/fftw3/include
 else
+#--Added in Odyssey- AT 11/27/11---
+ifeq ($(MACHINE),odyssey)
+  CC  = mpicc
+  LDR = mpicc
+  OPT = -O3 -xW -ipo -i-static
+  MPIINC =
+  MPILIB = -lmpi
+  FFTWLIB = -L/opt/fftw3/lib64 -lfftw3
+  FFTWINC = -I/opt/fftw3/include
+else
+#--End Odyssey addition
 ifeq ($(MACHINE),aether)
   CC  = mpicc
   LDR = mpicc
@@ -87,6 +98,7 @@ ifeq ($(MACHINE),macosx)
   FFTWINC = -I/opt/local/include
 else
   abort Unsupported MACHINE=$(MACHINE)
+endif
 endif
 endif
 endif
