@@ -76,11 +76,11 @@ else
 ifeq ($(MACHINE),odyssey)
   CC  = mpicc
   LDR = mpicc
-  OPT = -O3 -xW -ipo -i-static
+  OPT = -O3
   MPIINC =
   MPILIB = -lmpi
-  FFTWLIB = -L/opt/fftw3/lib64 -lfftw3
-  FFTWINC = -I/opt/fftw3/include
+  FFTWLIB = -lfftw3
+  FFTWINC =
 else
 #--End Odyssey addition
 ifeq ($(MACHINE),aether)
