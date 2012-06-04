@@ -20,6 +20,8 @@
 #include "prototypes.h"
 #include "../prototypes.h"
 
+#ifdef STATIC_MESH_REFINEMENT
+
 void ionrad_prolongate(DomainS *pD)
 {
   MeshS *pM = pD->Mesh;
@@ -100,3 +102,5 @@ void ionrad_prolongate(DomainS *pD)
   /* } */
 
 }
+
+#endif
