@@ -69,6 +69,18 @@ void bvals_ionrad(DomainS *pD)
 
   if (pGrid->Nx[0] > 1){
 
+#ifdef MPI_PARALLEL
+/* Physical boundary on left, MPI block on right */
+    if (pGrid->rx1_id >= 0 && pGrid->lx1_id < 0) {
+      (*(ix1_radBCFun))(pGrid);
+    }
+
+/* MPI block on left, Physical boundary on right */
+    if (pGrid->rx1_id < 0 && pGrid->lx1_id >= 0) {
+      (*(ox1_radBCFun))(pGrid);
+    }
+#endif
+
 /* Physical boundaries on both left and right */
     if (pGrid->rx1_id < 0 && pGrid->lx1_id < 0) {
       (*(ix1_radBCFun))(pGrid);
