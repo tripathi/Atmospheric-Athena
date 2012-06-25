@@ -261,6 +261,9 @@ typedef struct GridOvrlp_s{
   int ID, DomN;        /*!< processor ID, and Domain #, of OVERLAP Grid */
   int nWordsRC, nWordsP; /*!< # of words communicated for Rest/Corr and Prol */
   ConsS **myFlx[6];   /*!< fluxes of conserved variables at 6 boundaries */
+#ifdef ION_RADPLANE
+  Real **ionFlx[6];
+#endif /*ION_RADPLANE*/
 #ifdef MHD
   Real **myEMF1[6];      /*!< fluxes of magnetic field (EMF1) at 6 boundaries */
   Real **myEMF2[6];      /*!< fluxes of magnetic field (EMF2) at 6 boundaries */

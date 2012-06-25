@@ -379,6 +379,9 @@ void init_grid(MeshS *pM)
         for (ncg=0; ncg<pG->NCGrid; ncg++){
           for (dim=0; dim<6; dim++) {
             pG->CGrid[ncg].myFlx[dim] = NULL;
+#ifdef ION_RADPLANE
+	    pG->CGrid[ncg].ionFlx[dim] = NULL;
+#endif /*ION_RADPLANE*/
 #ifdef MHD
             pG->CGrid[ncg].myEMF1[dim] = NULL;
             pG->CGrid[ncg].myEMF2[dim] = NULL;
@@ -524,6 +527,17 @@ printf("\nCGrid overlap is %d x %d x %d\n",n1z,n2z,n3z);
 if(myID_Comm_world==0){
 printf("Allocated %d x %d array for ixb CGrid.myFlx\n",n2z,n1z);
 }
+		  
+#ifdef ION_RADPLANE
+		  pG->CGrid[ncg].ionFlx[2*dim] = (Real**)calloc_2d_array(n2z,n1z+1, sizeof(Real));
+                  if(pG->CGrid[ncg].ionFlx[2*dim] == NULL) ath_error(
+                   "[init_grid]:failed to allocate CGrid ixb ionFlx\n");
+if(myID_Comm_world==0){
+printf("Allocated %d x %d array for ixb CGrid.ionFlx\n",n2z,n1z);
+}
+
+#endif /*ION_RADPLANE*/
+		  
 #ifdef MHD
                   pG->CGrid[ncg].nWordsP += 6*((nghost/2)+2)*n1p*n2p;
 
@@ -628,6 +642,15 @@ printf("Allocated %d x %d array for ixb CGrid.myEMF2\n",n2z,n1z+1);
 if(myID_Comm_world==0){
 printf("Allocated %d x %d array for oxb CGrid.myFlx\n",n2z,n1z);
 }
+#ifdef ION_RADPLANE
+		  pG->CGrid[ncg].ionFlx[(2*dim)+1] = (Real**)calloc_2d_array(n2z,n1z+1, sizeof(Real));
+                  if(pG->CGrid[ncg].ionFlx[(2*dim)+1] == NULL) ath_error(
+                    "[init_grid]:failed to allocate CGrid oxb ionFlx\n");
+if(myID_Comm_world==0){
+printf("Allocated %d x %d array for oxb CGrid.ionFlx\n",n2z,n1z);
+}
+#endif /*ION_RADPLANE*/
+
 #ifdef MHD
                   pG->CGrid[ncg].nWordsP += 6*((nghost/2)+2)*n1p*n2p;
 
@@ -799,6 +822,9 @@ printf("Child_ID=%d DomN=%d nWordsRC=%d nWordsP=%d\n",
         for (npg=0; npg<pG->NPGrid; npg++){
           for (dim=0; dim<6; dim++) {
             pG->PGrid[npg].myFlx[dim] = NULL;
+#ifdef ION_RADPLANE
+	    pG->PGrid[npg].ionFlx[dim] = NULL;
+#endif /*ION_RADPLANE*/
 #ifdef MHD
             pG->PGrid[npg].myEMF1[dim] = NULL;
             pG->PGrid[npg].myEMF2[dim] = NULL;
@@ -946,6 +972,17 @@ printf("Child_ID=%d DomN=%d nWordsRC=%d nWordsP=%d\n",
 if(myID_Comm_world==0){
 printf("Allocated %d x %d array for ixb PGrid.myFlx\n",n2z,n1z);
 }
+#ifdef ION_RADPLANE
+                    pG->PGrid[npg].ionFlx[2*dim] = (Real**)calloc_2d_array(
+                      n2z,n1z, sizeof(Real));
+                    if(pG->PGrid[npg].ionFlx[2*dim] == NULL) ath_error(
+                      "[init_grid]:failed to allocate PGrid ixb ionFlx\n");
+if(myID_Comm_world==0){
+printf("Allocated %d x %d array for ixb PGrid.ionFlx\n",n2z,n1z);
+}
+		    
+#endif /*ION_RADPLANE*/
+
 #ifdef MHD
                     pG->PGrid[npg].nWordsP += 6*((nghost/2)+2)*n1p*n2p;
 
@@ -1054,6 +1091,17 @@ printf("Allocated %d x %d array for ixb PGrid.myEMF2\n",n2z,n1z+1);
 if(myID_Comm_world==0){
 printf("Allocated %d x %d array for oxb PGrid.myFlx\n",n2z,n1z);
 }
+
+#ifdef ION_RADPLANE
+                    pG->PGrid[npg].ionFlx[(2*dim)+1] =
+                      (Real**)calloc_2d_array(n2z,n1z, sizeof(Real));
+                    if(pG->PGrid[npg].ionFlx[(2*dim)+1] == NULL) ath_error(
+                      "[init_grid]:failed to allocate PGrid oxb ionFlx\n");
+if(myID_Comm_world==0){
+printf("Allocated %d x %d array for oxb PGrid.ionFlx\n",n2z,n1z);
+}
+#endif /*ION_RADPLANE*/
+
 #ifdef MHD
                     pG->PGrid[npg].nWordsP += 6*((nghost/2)+2)*n1p*n2p;
 
