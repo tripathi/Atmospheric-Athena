@@ -50,6 +50,8 @@ void ionrad_prolongate(DomainS *pD)
   if (ndtot == 1) {
     highergrid = pM->Domain[higherlevel][ndtot-1].Grid;
     higherdom =(DomainS*)&(pM->Domain[higherlevel][ndtot-1]);
+
+    /*If this is the first time searching for a parent domain, print to screen the information*/
     if (pM->time == 0) fprintf(stderr, "Dom Level %d No %d has parent Dom Level %d No %d \n", level, pD->DomNumber, pM->Domain[higherlevel][0].Level, pM->Domain[higherlevel][0].DomNumber); 
 
   } else {
@@ -104,3 +106,20 @@ void ionrad_prolongate(DomainS *pD)
 }
 
 #endif
+
+  /* GridOvrlpS *pCO, *pPO; */
+  /* int npg, ncg; */
+  /* /\* GridsDataS ***Ginfo = pD->GData; *\/ */
+  
+  /* fprintf(stderr, "---------\n Domain level: %d, number:%d, X-disp:%d, zones:%d, Nparents:%d, Nchild:%d \n", pD->Level, pD->DomNumber, pD->Disp[0], pD->Nx[0], pG->NPGrid,pG->NCGrid); */
+  /* /\* fprintf(stderr, "ID %d \n", Ginfo->ID_Comm_world); *\/ */
+
+  /* for (npg=0; npg<(pG->NPGrid); npg++){ */
+  /*   pPO = (GridOvrlpS*)&(pG->PGrid[npg]); */
+  /*   fprintf(stderr, "Parent: X:ijks %d ijke %d, ID:%d \n", pPO->ijks[0], pPO->ijke[0], pPO->ID); */
+  /* } */
+
+  /* for (ncg=0; ncg<(pG->NmyCGrid); ncg++){ */
+  /*   pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);    /\* ptr to child Grid overlap *\/ */
+  /*   fprintf(stderr, "Child: X:ijks %d ijke %d, ID:%d \n", pCO->ijks[0], pCO->ijke[0], pCO->ID); */
+  /* } */
