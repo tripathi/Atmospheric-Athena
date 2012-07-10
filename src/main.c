@@ -532,6 +532,7 @@ int main(int argc, char *argv[])
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
 	(*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
 	bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
+	/*Add in SMR prolongate*/
       }
     }
 #endif

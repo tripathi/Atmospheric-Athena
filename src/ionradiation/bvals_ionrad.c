@@ -12,7 +12,7 @@
  *
  * CONTAINS PUBLIC FUNCTIONS: 
  * - bvals_ionrad(DomainS *pD) - calls appropriate functions to set ghost cells
- * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_ionrad()
+ * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_ionrad*/
 /*============================================================================*/
 
 #include <stdio.h>

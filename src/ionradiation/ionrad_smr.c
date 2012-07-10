@@ -105,6 +105,13 @@ void ionrad_prolongate(DomainS *pD)
 
 }
 
+#ifdef MPI_PARALLEL
+/* Need to send to all children upon completion of coarse grid and receive by all fine grids*/
+/* Need to have call to this not from ionrad_3d.c in the finegrid case.  Instead it needs to be called even after the coarse.*/
+/*So maybe like - at end of every level, do a send.  And if not root domain, do a receive*/
+/*So if nparents != 0, then receive, and if nchildren !=0 then do a send*/
+#endif
+
 #endif
 
   /* GridOvrlpS *pCO, *pPO; */

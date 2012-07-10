@@ -277,6 +277,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	       fraction. */
 	    planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js] = 
 	      flux_frac < MINFLUXFRAC ? 0.0 : flux;
+
+	    fprintf("j:%d, k:%d, Planeflux %f \n", j, k, planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js]);
+
 	    max_flux_frac = (flux_frac > max_flux_frac) ?
 	      flux_frac : max_flux_frac;
 #endif /* MPI_PARALLEL */
