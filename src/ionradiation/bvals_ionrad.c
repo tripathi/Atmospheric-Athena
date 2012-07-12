@@ -12,7 +12,7 @@
  *
  * CONTAINS PUBLIC FUNCTIONS: 
  * - bvals_ionrad(DomainS *pD) - calls appropriate functions to set ghost cells
- * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_ionrad()
+ * - bvals_ionrad_init(MeshS *pM) - sets function pointers used by bvals_ionrad*/
 /*============================================================================*/
 
 #include <stdio.h>
@@ -68,6 +68,18 @@ void bvals_ionrad(DomainS *pD)
  * Boundary Conditions in x1-direction */
 
   if (pGrid->Nx[0] > 1){
+
+#ifdef MPI_PARALLEL
+/* Physical boundary on left, MPI block on right */
+    if (pGrid->rx1_id >= 0 && pGrid->lx1_id < 0) {
+      (*(ix1_radBCFun))(pGrid);
+    }
+
+/* MPI block on left, Physical boundary on right */
+    if (pGrid->rx1_id < 0 && pGrid->lx1_id >= 0) {
+      (*(ox1_radBCFun))(pGrid);
+    }
+#endif
 
 /* Physical boundaries on both left and right */
     if (pGrid->rx1_id < 0 && pGrid->lx1_id < 0) {

@@ -90,7 +90,7 @@ Real d_nlo;                        /* "Low" neutral density, defined
 				      as the value that gives an
 				      optical depth of MINOPTDEPTH */
 #ifdef MPI_PARALLEL
-Domain *pD;
+DomainS *pD;
 int NGrid_x1, NGrid_x2, NGrid_x3;
 #endif
 
@@ -152,7 +152,7 @@ extern Real d_nlo;                 /* "Low" neutral density, defined
 				      as the value that gives an
 				      optical depth of MINOPTDEPTH */
 #ifdef MPI_PARALLEL
-extern Domain *pD;
+extern DomainS *pD;
 extern int NGrid_x1, NGrid_x2, NGrid_x3;
 #endif
 #if defined(MPI_PARALLEL) && defined(ION_RADPOINT)

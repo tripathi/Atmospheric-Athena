@@ -15,7 +15,8 @@ CORE_OBJ = bvals_ionrad.o \
            ionrad_3d.o \
            ionrad_chemistry.o \
            ionradplane_3d.o \
-           ionradpoint_3d.o
+           ionradpoint_3d.o \
+           ionrad_smr.o 
 
 OBJ = $(CORE_OBJ)
 
