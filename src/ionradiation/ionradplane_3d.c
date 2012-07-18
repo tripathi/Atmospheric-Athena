@@ -99,6 +99,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real *planeflux = NULL;
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
+  int dim, fixed;
 #endif
   MeshS *pMesh = pGrid->Mesh;
 
@@ -364,6 +365,53 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 			MPI_MAX, MPI_COMM_WORLD);
     if (err) ath_error("[get_ph_rate_plane]: MPI_Allreduce error = %d\n", err);
     if (max_flux_frac_glob < MINFLUXFRAC) break;
+  }
+
+  /*Converting propagation direction into GridOvrlp "dim" index*/
+  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
+
+    
+  /* Loop over parent grids to fill their buffer arrays*/
+  for (npg=0; npg<(pG->NPGrid); npg++){
+    pPO=(GridOvrlpS*)&(pG->PGrid[npg]);
+    switch(dir) {
+    case -1: case 1: {
+      if (lr > 0) {
+	fixed = pPO->ijks[0];
+      } else {
+	fixed = pPO->ijke[0]+1;
+      }
+    break;
+    }
+    case -2: case 2: {
+      if (lr > 0) {
+	fixed = pPO->ijks[1];
+      } else {
+	fixed = pPO->ijke[1]+1;
+      }
+      break;
+    }
+    case -3: case 3: {
+       if (lr > 0) {
+	fixed = pPO->ijks[2];
+      } else {
+	fixed = pPO->ijke[2]+1;
+      }
+      break;
+    }
+    }
+
+
+    pPO->ionFlx[dim][]
+
+  }
+  for (ncg=0; ncg<(pG->NCGrid); ncg++){
+    pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);
+
+for (dim=0; dim<(2*nDim); dim++){
+        if (pCO->myFlx[dim] != NULL) {
+
+pG->CGrid[ncg].myFlx
   }
 
   free(planeflux);
