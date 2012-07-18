@@ -381,6 +381,12 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       } else {
 	fixed = pPO->ijke[0]+1;
       }
+      for (k=pPO->ijks[2]; k<= pPO->ijke[2]+1; k++) {
+	for (j=pPO->ijks[1]; j<= pPO->ijke[1]+1; j++) {
+	  pPO->ionFlx[dim][(k-pPO->ijks[2])*(pPO->ijke[1] - pPO->ijks[1] + 1)+j-pPO->ijks[1]] = pG->EdgeFlux[k][j][fixed];
+	}
+      }
+ 
     break;
     }
     case -2: case 2: {
@@ -390,6 +396,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	fixed = pPO->ijke[1]+1;
       }
       break;
+      /*Insert code for other directions*/
     }
     case -3: case 3: {
        if (lr > 0) {
@@ -398,20 +405,47 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	fixed = pPO->ijke[2]+1;
       }
       break;
+      /*Insert code for other directions*/
     }
     }
-
-
-    pPO->ionFlx[dim][]
-
   }
+
   for (ncg=0; ncg<(pG->NCGrid); ncg++){
     pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);
-
-for (dim=0; dim<(2*nDim); dim++){
-        if (pCO->myFlx[dim] != NULL) {
-
-pG->CGrid[ncg].myFlx
+    switch(dir) {
+    case -1: case 1: {
+      if (lr > 0) {
+	fixed = pCO->ijks[0];
+      } else {
+	fixed = pCO->ijke[0]+1;
+      }
+      for (k=pCO->ijks[2]; k<= pCO->ijke[2]+1; k++) {
+	for (j=pCO->ijks[1]; j<= pCO->ijke[1]+1; j++) {
+	  pCO->ionFlx[dim][(k-pCO->ijks[2])*(pCO->ijke[1] - pCO->ijks[1] + 1)+j-pCO->ijks[1]] = pG->EdgeFlux[k][j][fixed];
+	}
+      }
+ 
+    break;
+    }
+    case -2: case 2: {
+      if (lr > 0) {
+	fixed = pCO->ijks[1];
+      } else {
+	fixed = pCO->ijke[1]+1;
+      }
+      break;
+      /*Insert code for other directions*/
+    }
+    case -3: case 3: {
+       if (lr > 0) {
+	fixed = pCO->ijks[2];
+      } else {
+	fixed = pCO->ijke[2]+1;
+      }
+      break;
+      /*Insert code for other directions*/
+    }
+    }
   }
 
   free(planeflux);
