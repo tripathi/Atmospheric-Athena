@@ -99,7 +99,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real *planeflux = NULL;
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
-  int dim, fixed;
+  int dim, fixed, npg, ncg;
+  GridOvrlpS *pCO, *pPO;
 #endif
   MeshS *pMesh = pGrid->Mesh;
 
@@ -372,8 +373,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 
     
   /* Loop over parent grids to fill their buffer arrays*/
-  for (npg=0; npg<(pG->NPGrid); npg++){
-    pPO=(GridOvrlpS*)&(pG->PGrid[npg]);
+  for (npg=0; npg<(pGrid->NPGrid); npg++){
+    pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
     switch(dir) {
     case -1: case 1: {
       if (lr > 0) {
@@ -381,6 +382,12 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       } else {
 	fixed = pPO->ijke[0]+1;
       }
+      for (k=pPO->ijks[2]; k<= pPO->ijke[2]+1; k++) {
+	for (j=pPO->ijks[1]; j<= pPO->ijke[1]+1; j++) {
+	  pPO->ionFlx[dim][(k-pPO->ijks[2])*(pPO->ijke[1] - pPO->ijks[1] + 1)+j-pPO->ijks[1]] = pGrid->EdgeFlux[k][j][fixed];
+	}
+      }
+ 
     break;
     }
     case -2: case 2: {
@@ -390,6 +397,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	fixed = pPO->ijke[1]+1;
       }
       break;
+      /*Insert code for other directions*/
     }
     case -3: case 3: {
        if (lr > 0) {
@@ -398,20 +406,48 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	fixed = pPO->ijke[2]+1;
       }
       break;
+      /*Insert code for other directions*/
     }
     }
-
-
-    pPO->ionFlx[dim][]
-
   }
-  for (ncg=0; ncg<(pG->NCGrid); ncg++){
-    pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);
 
-for (dim=0; dim<(2*nDim); dim++){
-        if (pCO->myFlx[dim] != NULL) {
-
-pG->CGrid[ncg].myFlx
+  /* Loop over children grids to fill their buffer arrays*/
+  for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
+    pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
+    switch(dir) {
+    case -1: case 1: {
+      if (lr > 0) {
+	fixed = pCO->ijks[0];
+      } else {
+	fixed = pCO->ijke[0]+1;
+      }
+      for (k=pCO->ijks[2]; k<= pCO->ijke[2]+1; k++) {
+	for (j=pCO->ijks[1]; j<= pCO->ijke[1]+1; j++) {
+	  pCO->ionFlx[dim][(k-pCO->ijks[2])*(pCO->ijke[1] - pCO->ijks[1] + 1)+j-pCO->ijks[1]] = pGrid->EdgeFlux[k][j][fixed];
+	}
+      }
+ 
+    break;
+    }
+    case -2: case 2: {
+      if (lr > 0) {
+	fixed = pCO->ijks[1];
+      } else {
+	fixed = pCO->ijke[1]+1;
+      }
+      break;
+      /*Insert code for other directions*/
+    }
+    case -3: case 3: {
+       if (lr > 0) {
+	fixed = pCO->ijks[2];
+      } else {
+	fixed = pCO->ijke[2]+1;
+      }
+      break;
+      /*Insert code for other directions*/
+    }
+    }
   }
 
   free(planeflux);
