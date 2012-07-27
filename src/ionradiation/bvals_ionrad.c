@@ -69,6 +69,8 @@ void bvals_ionrad(DomainS *pD)
 
   if (pGrid->Nx[0] > 1){
 
+    /*Note this currently does not have anything for the case of MPI on BOTH sides*/
+
 #ifdef MPI_PARALLEL
 /* Physical boundary on left, MPI block on right */
     if (pGrid->rx1_id >= 0 && pGrid->lx1_id < 0) {
@@ -94,6 +96,18 @@ void bvals_ionrad(DomainS *pD)
 
   if (pGrid->Nx[1] > 1){
 
+#ifdef MPI_PARALLEL
+/* Physical boundary on left, MPI block on right */
+    if (pGrid->rx2_id >= 0 && pGrid->lx2_id < 0) {
+      (*(ix2_radBCFun))(pGrid);
+    }
+
+/* MPI block on left, Physical boundary on right */
+    if (pGrid->rx2_id < 0 && pGrid->lx2_id >= 0) {
+      (*(ox2_radBCFun))(pGrid);
+    }
+#endif
+
 /* Physical boundaries on both left and right */
     if (pGrid->rx2_id < 0 && pGrid->lx2_id < 0) {
       (*(ix2_radBCFun))(pGrid);
@@ -108,6 +122,17 @@ void bvals_ionrad(DomainS *pD)
 
   if (pGrid->Nx[2] > 1){
 
+#ifdef MPI_PARALLEL
+/* Physical boundary on left, MPI block on right */
+    if (pGrid->rx3_id >= 0 && pGrid->lx3_id < 0) {
+      (*(ix3_radBCFun))(pGrid);
+    }
+
+/* MPI block on left, Physical boundary on right */
+    if (pGrid->rx3_id < 0 && pGrid->lx3_id >= 0) {
+      (*(ox3_radBCFun))(pGrid);
+    }
+#endif
 
 /* Physical boundaries on both left and right */
     if (pGrid->rx3_id < 0 && pGrid->lx3_id < 0) {
@@ -131,6 +156,8 @@ void bvals_ionrad_init(MeshS *pM)
   DomainS *pD;
   int i,nl,nd,irefine;
   int dir = (pM->radplanelist)->dir[0];
+
+/*Code for MPI case possibly also needed!*/
 
 /* Cycle through all the Domains that have active Grids on this proc */
 
