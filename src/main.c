@@ -530,9 +530,10 @@ int main(int argc, char *argv[])
        the value computed by Courant. */
     for (nl=0; nl<(Mesh.NLevels); nl++){
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
-	(*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
-	bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
-	/*Add in SMR prolongate*/
+        if (Mesh.Domain[nl][nd].Grid != NULL){
+	  (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
+	  bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
+	}
       }
     }
 #endif
