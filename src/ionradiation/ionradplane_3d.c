@@ -90,7 +90,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   int lr;
   Real tau, n_H, kph, etau, cell_len;
   Real flux, flux_frac;
-  int i, j, k;
+  int i, j, k, ii;
   int s, e;
 #ifdef MPI_PARALLEL
   int n, nGrid;
@@ -271,8 +271,14 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
 	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0]; /*Check if this should still be 0 or not*/
-	      if (flux_frac < MINFLUXFRAC) break;
+	      if (flux_frac < MINFLUXFRAC){
+		for (ii=i; ii<=e; ii+=lr) {
+		  pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][ii-s] = 0.0;
+		}
+		break;
+	      }
 	    }
+	    pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][e-s+1] = flux_frac < MINFLUXFRAC ? 0.0 : flux; /*Account for flux at rightmost edge*/
 #ifdef MPI_PARALLEL
 	    /* Store final flux to pass to next processor, or 0 if we
 	       ended the loop early because we were below the minimum
