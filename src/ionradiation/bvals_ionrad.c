@@ -197,7 +197,7 @@ void bvals_ionrad_init(MeshS *pM)
       if(ox1_radBCFun == NULL){    /* BCFun ptr was not set in prob gen */
 	
 	/* Domain boundary is in interior of root */
-        if(((pD->Disp[0] + pD->Nx[0])/irefine == pM->Nx[0]) || (dir !=1)) {
+        if(((pD->Disp[0] + pD->Nx[0])/irefine != pM->Nx[0]) || (dir !=1)) {
           ox1_radBCFun = ProlongateLater;
 	  
 	  /* Domain is at R-edge of root Domain */
