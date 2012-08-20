@@ -529,11 +529,11 @@ printf("Allocated %d x %d array for ixb CGrid.myFlx\n",n2z,n1z);
 }
 		  
 #ifdef ION_RADPLANE
-		  pG->CGrid[ncg].ionFlx[2*dim] = (Real*)calloc_1d_array(n2z*n1z, sizeof(Real));
+ pG->CGrid[ncg].ionFlx[2*dim] = (Real*)calloc_1d_array((n2z+1)*(n1z+1), sizeof(Real));
                   if(pG->CGrid[ncg].ionFlx[2*dim] == NULL) ath_error(
                    "[init_grid]:failed to allocate CGrid ixb ionFlx\n");
 if(myID_Comm_world==0){
-printf("Allocated %d x %d array for ixb CGrid.ionFlx\n",n2z,n1z);
+printf("Allocated %d x %d array for ixb CGrid.ionFlx\n",n2z+1,n1z+1);
 }
 
 #endif /*ION_RADPLANE*/
@@ -643,11 +643,11 @@ if(myID_Comm_world==0){
 printf("Allocated %d x %d array for oxb CGrid.myFlx\n",n2z,n1z);
 }
 #ifdef ION_RADPLANE
-		  pG->CGrid[ncg].ionFlx[(2*dim)+1] = (Real*)calloc_1d_array(n2z*n1z, sizeof(Real));
+ pG->CGrid[ncg].ionFlx[(2*dim)+1] = (Real*)calloc_1d_array((n2z+1)*(n1z+1), sizeof(Real));
                   if(pG->CGrid[ncg].ionFlx[(2*dim)+1] == NULL) ath_error(
                     "[init_grid]:failed to allocate CGrid oxb ionFlx\n");
 if(myID_Comm_world==0){
-printf("Allocated %d x %d array for oxb CGrid.ionFlx\n",n2z,n1z);
+printf("Allocated %d x %d array for oxb CGrid.ionFlx\n",n2z+1,n1z+1);
 }
 #endif /*ION_RADPLANE*/
 
