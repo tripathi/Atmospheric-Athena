@@ -100,7 +100,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
   int dim, fixed, npg, ncg;
+#ifdef STATIC_MESH_REFINEMENT
   GridOvrlpS *pCO, *pPO;
+#endif
 #endif
   MeshS *pMesh = pGrid->Mesh;
 
@@ -286,8 +288,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js] = 
 	      flux_frac < MINFLUXFRAC ? 0.0 : flux;
 
-	    fprintf("j:%d, k:%d, Planeflux %f \n", j, k, planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js]);
-
+	    /*	    fprintf("j:%d, k:%d, Planeflux %f \n", j, k, planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js]);
+	     */
 	    max_flux_frac = (flux_frac > max_flux_frac) ?
 	      flux_frac : max_flux_frac;
 #endif /* MPI_PARALLEL */
@@ -377,45 +379,46 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   /*Converting propagation direction into GridOvrlp "dim" index*/
   dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
 
-    
-  /* Loop over parent grids to fill their buffer arrays*/
-  for (npg=0; npg<(pGrid->NPGrid); npg++){
-    pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
-    switch(dir) {
-    case -1: case 1: {
-      if (lr > 0) {
-	fixed = pPO->ijks[0];
-      } else {
-	fixed = pPO->ijke[0]+1;
-      }
-      for (k=pPO->ijks[2]; k<= pPO->ijke[2]+1; k++) {
-	for (j=pPO->ijks[1]; j<= pPO->ijke[1]+1; j++) {
-	  pPO->ionFlx[dim][(k-pPO->ijks[2])*(pPO->ijke[1] - pPO->ijks[1] + 1)+j-pPO->ijks[1]] = pGrid->EdgeFlux[k][j][fixed];
-	}
-      }
+
+#ifdef STATIC_MESH_REFINEMENT    
+/*   /\* Loop over parent grids to fill their buffer arrays*\/ */
+/*   for (npg=0; npg<(pGrid->NPGrid); npg++){ */
+/*     pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]); */
+/*     switch(dir) { */
+/*     case -1: case 1: { */
+/*       if (lr > 0) { */
+/* 	fixed = pPO->ijks[0] - nghost; */
+/*       } else { */
+/* 	fixed = pPO->ijke[0]+1 - nghost; */
+/*       } */
+/*       for (k=pPO->ijks[2]-nghost; k<= pPO->ijke[2]-nghost+1; k++) { */
+/* 	for (j=pPO->ijks[1]-nghost; j<= pPO->ijke[1]-nghost+1; j++) { */
+/* 	  pPO->ionFlx[dim][(k-pPO->ijks[2])*(pPO->ijke[1] - pPO->ijks[1] + 1)+j-pPO->ijks[1]] = pGrid->EdgeFlux[k][j][fixed]; */
+/* 	} */
+/*       } */
  
-    break;
-    }
-    case -2: case 2: {
-      if (lr > 0) {
-	fixed = pPO->ijks[1];
-      } else {
-	fixed = pPO->ijke[1]+1;
-      }
-      break;
-      /*Insert code for other directions*/
-    }
-    case -3: case 3: {
-       if (lr > 0) {
-	fixed = pPO->ijks[2];
-      } else {
-	fixed = pPO->ijke[2]+1;
-      }
-      break;
-      /*Insert code for other directions*/
-    }
-    }
-  }
+/*     break; */
+/*     } */
+/*     case -2: case 2: { */
+/*       if (lr > 0) { */
+/* 	fixed = pPO->ijks[1]; */
+/*       } else { */
+/* 	fixed = pPO->ijke[1]+1; */
+/*       } */
+/*       break; */
+/*       /\*Insert code for other directions*\/ */
+/*     } */
+/*     case -3: case 3: { */
+/*        if (lr > 0) { */
+/* 	fixed = pPO->ijks[2]; */
+/*       } else { */
+/* 	fixed = pPO->ijke[2]+1; */
+/*       } */
+/*       break; */
+/*       /\*Insert code for other directions*\/ */
+/*     } */
+/*     } */
+/*   } */
 
   /* Loop over children grids to fill their buffer arrays*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
@@ -423,17 +426,22 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     switch(dir) {
     case -1: case 1: {
       if (lr > 0) {
-	fixed = pCO->ijks[0];
+	fixed = pCO->ijks[0] -nghost;
       } else {
-	fixed = pCO->ijke[0]+1;
+	fixed = pCO->ijke[0]+1 -nghost;
       }
-      for (k=pCO->ijks[2]; k<= pCO->ijke[2]+1; k++) {
-	for (j=pCO->ijks[1]; j<= pCO->ijke[1]+1; j++) {
-	  pCO->ionFlx[dim][(k-pCO->ijks[2])*(pCO->ijke[1] - pCO->ijks[1] + 1)+j-pCO->ijks[1]] = pGrid->EdgeFlux[k][j][fixed];
+
+      if(pCO->ionFlx[dim] != NULL)
+	{
+
+	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
+	    for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
+	      fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2);
+	    }
+	  }
 	}
-      }
- 
-    break;
+      break;
     }
     case -2: case 2: {
       if (lr > 0) {
@@ -455,7 +463,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     }
     }
   }
-
+#endif /* STATIC_MESH_REFINEMENT*/
   free(planeflux);
 #endif /* MPI_PARALLEL */
 
