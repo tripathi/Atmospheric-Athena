@@ -426,40 +426,55 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     switch(dir) {
     case -1: case 1: {
       if (lr > 0) {
-	fixed = pCO->ijks[0] -nghost;
+	fixed = pCO->ijks[0] - nghost;
       } else {
-	fixed = pCO->ijke[0]+1 -nghost;
+	fixed = pCO->ijke[0] + 1 - nghost;
       }
 
-      if(pCO->ionFlx[dim] != NULL)
-	{
-
-	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
-	    for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
-	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
-	      fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2);
-	    }
+      if(pCO->ionFlx[dim] != NULL) {
+	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
+	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+	    pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
+	    fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2);
 	  }
 	}
+      }
       break;
     }
+
     case -2: case 2: {
       if (lr > 0) {
-	fixed = pCO->ijks[1];
+	fixed = pCO->ijks[1] - nghost;
       } else {
-	fixed = pCO->ijke[1]+1;
+	fixed = pCO->ijke[1] + 1 - nghost;
+      }
+      
+      if(pCO->ionFlx[dim] != NULL) {
+	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
+	    for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) {
+	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[k][fixed][i];
+	      fprintf(stderr, "k:%d i:%d, index: %d, nx: %d \n", k, i, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2);
+	    }
+	  }
       }
       break;
-      /*Insert code for other directions*/
     }
+
     case -3: case 3: {
-       if (lr > 0) {
-	fixed = pCO->ijks[2];
+      if (lr > 0) {
+	fixed = pCO->ijks[2] - nghost;
       } else {
-	fixed = pCO->ijke[2]+1;
+	fixed = pCO->ijke[2] + 1 - nghost;
+      }
+      if(pCO->ionFlx[dim] != NULL) {
+	for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+	  for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) {
+	    pCO->ionFlx[dim][(j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[fixed][j][i];
+	    fprintf(stderr, "j:%d i:%d, index: %d, nx: %d \n", j, i, (j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2);
+	  }
+	}
       }
       break;
-      /*Insert code for other directions*/
     }
     }
   }
