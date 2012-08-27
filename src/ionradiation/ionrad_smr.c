@@ -32,7 +32,7 @@ void ionrad_prolong_rcv(DomainS *pDomain, int dir, int arrsize)
   dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
 
     
-  for (npg=0; npg<(pGrid->NCGrid); ncg++)
+  for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
 /*       if (pPO->DomN == pDomain->Level - 1)  */
