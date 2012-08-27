@@ -21,6 +21,28 @@
 #include "../prototypes.h"
 
 #ifdef STATIC_MESH_REFINEMENT
+void ionrad_prolong_rcv(DomainS *pDomain, int dir, int arrsize)
+{
+  int npg;
+  GridS *pGrid = pDomain->Grid;
+  int dim;
+  MPI_Status stat;
+  int err;
+
+  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
+
+    
+  for (npg=0; npg<(pGrid->NCGrid); ncg++)
+    {
+      pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
+/*       if (pPO->DomN == pDomain->Level - 1)  */
+      err = MPI_Recv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, npg, MPI_COMM_WORLD, &stat);
+    }
+}
+
+void ionrad_prolong_snd(GridS *pG)
+{
+}
 
 void ionrad_prolongate(DomainS *pD)
 {
