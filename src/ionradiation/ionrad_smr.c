@@ -36,12 +36,15 @@ void ionrad_prolong_rcv(DomainS *pDomain, int dir, int arrsize)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
 /*       if (pPO->DomN == pDomain->Level - 1)  */
-      err = MPI_Recv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, npg, MPI_COMM_WORLD, &stat);
+      err = MPI_Recv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag, MPI_COMM_WORLD, &stat);
     }
 }
 
-void ionrad_prolong_snd(GridS *pG)
+void ionrad_prolong_snd(GridS *pGrid)
 {
+  pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
+  err = MPI_Send(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag, MPI_COMM_WORLD);
+
 }
 
 void ionrad_prolongate(DomainS *pD)
