@@ -100,9 +100,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
   int dim, fixed, npg, ncg;
+#endif
 #ifdef STATIC_MESH_REFINEMENT
   GridOvrlpS *pCO, *pPO;
-#endif
 #endif
   MeshS *pMesh = pGrid->Mesh;
 
@@ -381,45 +381,6 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 
 
 #ifdef STATIC_MESH_REFINEMENT    
-/*   /\* Loop over parent grids to fill their buffer arrays*\/ */
-/*   for (npg=0; npg<(pGrid->NPGrid); npg++){ */
-/*     pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]); */
-/*     switch(dir) { */
-/*     case -1: case 1: { */
-/*       if (lr > 0) { */
-/* 	fixed = pPO->ijks[0] - nghost; */
-/*       } else { */
-/* 	fixed = pPO->ijke[0]+1 - nghost; */
-/*       } */
-/*       for (k=pPO->ijks[2]-nghost; k<= pPO->ijke[2]-nghost+1; k++) { */
-/* 	for (j=pPO->ijks[1]-nghost; j<= pPO->ijke[1]-nghost+1; j++) { */
-/* 	  pPO->ionFlx[dim][(k-pPO->ijks[2])*(pPO->ijke[1] - pPO->ijks[1] + 1)+j-pPO->ijks[1]] = pGrid->EdgeFlux[k][j][fixed]; */
-/* 	} */
-/*       } */
- 
-/*     break; */
-/*     } */
-/*     case -2: case 2: { */
-/*       if (lr > 0) { */
-/* 	fixed = pPO->ijks[1]; */
-/*       } else { */
-/* 	fixed = pPO->ijke[1]+1; */
-/*       } */
-/*       break; */
-/*       /\*Insert code for other directions*\/ */
-/*     } */
-/*     case -3: case 3: { */
-/*        if (lr > 0) { */
-/* 	fixed = pPO->ijks[2]; */
-/*       } else { */
-/* 	fixed = pPO->ijke[2]+1; */
-/*       } */
-/*       break; */
-/*       /\*Insert code for other directions*\/ */
-/*     } */
-/*     } */
-/*   } */
-
   /* Loop over children grids to fill their buffer arrays*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
