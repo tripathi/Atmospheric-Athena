@@ -99,7 +99,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real *planeflux = NULL;
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
-  int dim, fixed, npg, ncg;
+  int dim, fixed, npg, ncg, arrsize;
 #endif
 #ifdef STATIC_MESH_REFINEMENT
   GridOvrlpS *pCO, *pPO;
@@ -399,6 +399,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2);
 	  }
 	}
+	/*Will need to check indexing to see if it's +1 or +2*/
+	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
       }
       break;
     }
@@ -417,6 +419,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      fprintf(stderr, "k:%d i:%d, index: %d, nx: %d \n", k, i, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2);
 	    }
 	  }
+	  arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[0] + 2 - pCO->ijks[0]);
       }
       break;
     }
@@ -434,9 +437,12 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    fprintf(stderr, "j:%d i:%d, index: %d, nx: %d \n", j, i, (j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2);
 	  }
 	}
+	arrsize = (pCO->ijke[0] + 2 - pCO->ijks[0]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
       }
       break;
     }
+
+      ionrad_prolong_snd(pGrid, dim, arrsize)
     }
   }
 #endif /* STATIC_MESH_REFINEMENT*/
