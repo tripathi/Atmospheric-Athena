@@ -865,7 +865,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
   /*Adding in SMR */
 #ifdef STATIC_MESH_REFINEMENT
-  if (finegrid) ionrad_prolongate(pDomain);
+  /*    if (finegrid) ionrad_prolongate(pDomain);*/
 #endif
 
   /* Set all temperatures below the floor to the floor */

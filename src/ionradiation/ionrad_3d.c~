@@ -45,7 +45,7 @@ static Real ***e_th_init;          /* Thermal energies on entry to
 				      routine */
 static Real ***x_init;             /* Ionization fraction on entry to
 				      routine */
-
+static Real tcoarse =0; /*Keep track of higher domain time step*/
 /* ------------------------------------------------------------
  * Photoionization routines
  * ------------------------------------------------------------
@@ -56,7 +56,7 @@ static Real ***x_init;             /* Ionization fraction on entry to
  */
 
 /* Routine to zero out initial photoionization rates */
-void ph_rate_init(Grid *pGrid)
+void ph_rate_init(GridS *pGrid)
 {
   int i,j,k;
 
@@ -68,7 +68,7 @@ void ph_rate_init(Grid *pGrid)
 }
 
 /* Routine to floor temperatures */
-void apply_temp_floor(Grid *pGrid) {
+void apply_temp_floor(GridS *pGrid) {
   int i,j,k;
   Real e_sp, e_thermal, ke, T, x, n_H, n_Hplus, n_e;
 #ifdef MHD
@@ -138,7 +138,7 @@ void apply_temp_floor(Grid *pGrid) {
 
 
 /* Routine to keep d_n > floor and d_n < d. */
-void apply_neutral_floor(Grid *pGrid) {
+void apply_neutral_floor(GridS *pGrid) {
   int i,j,k;
   Real d_nlim;
 
@@ -160,7 +160,7 @@ void apply_neutral_floor(Grid *pGrid) {
 
 /* Routine to save energy, thermal energy, and ionization fraction
    passed to routine -- used for time step constraint. */
-void save_energy_and_x(Grid *pGrid)
+void save_energy_and_x(GridS *pGrid)
 {
   int i, j, k;
   Real e_thermal, n_H, n_Hplus, n_e, x;
@@ -186,7 +186,7 @@ void save_energy_and_x(Grid *pGrid)
 	n_H = pGrid->U[k][j][i].s[0] / m_H;
 	n_Hplus = (pGrid->U[k][j][i].d - pGrid->U[k][j][i].s[0]) / m_H;
 	n_e = n_Hplus + pGrid->U[k][j][i].d * alpha_C / (14.0 * m_H);
-	x = n_Hplus / (n_H + n_Hplus);
+	x = n_e / (n_H + n_Hplus);
 
 	/* Save thermal and total energy, and neutral fraction */
 	e_init[k][j][i] = pGrid->U[k][j][i].E;
@@ -204,7 +204,7 @@ void save_energy_and_x(Grid *pGrid)
 
 /* Routine to check if we have changed the total energy, thermal
    energy, or x_n as much as we are allowed. */
-int check_range(Grid *pGrid) {
+int check_range(GridS *pGrid) {
   int i, j, k;
   Real e_thermal, n_H, n_Hplus, n_e, x;
   long cellcount = 0;
@@ -284,12 +284,13 @@ int check_range(Grid *pGrid) {
 
 #define MAXSIGNCOUNT 4
 #define DAMPFACTOR 0.5
-Real compute_chem_rates(Grid *pGrid)
+Real compute_chem_rates(GridS *pGrid)
 {
   int i, j, k, n;
   Real n_H, n_Hplus, n_e, d_nlim;
   Real e_sp, T, x;
   Real dt_chem, dt_chem1, dt_chem2, dt_chem_min;
+  /* int dt_chem_min_index; */
 #ifdef MPI_PARALLEL
   int err;
   Real dt_chem_min_glob;
@@ -297,11 +298,13 @@ Real compute_chem_rates(Grid *pGrid)
 
   /* Initialize chemistry time step to large time step */
   dt_chem_min = LARGE;
+  /* dt_chem_min_index = -999; */
 
   /* Loop over cells to get timestep */
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
     for (j=pGrid->js; j<=pGrid->je; j++) {
       for (i=pGrid->is; i<=pGrid->ie; i++) {
+
 
 	/* Get species abundances */
 	n_H = pGrid->U[k][j][i].s[0] / m_H;
@@ -371,8 +374,13 @@ Real compute_chem_rates(Grid *pGrid)
 	  dt_chem1 = dt_chem2 = LARGE;
 	}
 	dt_chem = (dt_chem1 < dt_chem2) ? dt_chem1 : dt_chem2;
-	dt_chem_min = (dt_chem < dt_chem_min) ? dt_chem : dt_chem_min;
-
+	/* dt_chem_min = (dt_chem < dt_chem_min) ? dt_chem : dt_chem_min; */
+	if (dt_chem < dt_chem_min){
+	  /* fprintf(stderr, "Cell i: %d j %d k %d, dt_chem: %e dt_chem_min: %e \n", i, j, k, dt_chem, dt_chem_min); */
+	  dt_chem_min = dt_chem;
+	  /* dt_chem_min_index = i; */
+	}
+	    
 	if (dt_chem < 0) {
 	  ath_error("[compute_chem_rates]: cell %d %d %d: dt_chem = %e, d = %e, d_n = %e, T = %e, nH = %e, nH+ = %e, ne = %e, nHdot = %e\n", i,j,k, dt_chem, pGrid->U[k][j][i].d, pGrid->U[k][j][i].s[0], T, n_H, n_Hplus, n_e, nHdot[k][j][i]);
 	}
@@ -380,6 +388,7 @@ Real compute_chem_rates(Grid *pGrid)
     }
   }
 
+  /* fprintf(stderr, "Min dt_chem at %d with left dens: %e, dens %e, right dens: %e \n", dt_chem_min_index, pGrid->U[4][4][dt_chem_min_index].d, pGrid->U[4][4][dt_chem_min_index-1].d, pGrid->U[4][4][dt_chem_min_index+1].d); */
 #ifdef MPI_PARALLEL
   /* Sync chemistry timestep across processors */
   err = MPI_Allreduce(&dt_chem_min, &dt_chem_min_glob, 1, MP_RL, 
@@ -397,12 +406,13 @@ Real compute_chem_rates(Grid *pGrid)
 #undef DAMPFACTOR
 
 
-Real compute_therm_rates(Grid *pGrid)
+Real compute_therm_rates(GridS *pGrid)
 {
   int i, j, k;
   Real n_H, n_Hplus, n_e, e_thermal;
   Real e_sp, T, x, e_sp_min, e_th_min, e_min, d_nlim;
   Real dt_therm, dt_therm1, dt_therm2, dt_therm_min;
+  /* int dt_therm_min_index; */
 #ifdef MPI_PARALLEL
   int err;
   Real dt_therm_min_glob;
@@ -410,6 +420,7 @@ Real compute_therm_rates(Grid *pGrid)
 
   /* Initialize thermal time step to large value */
   dt_therm_min = LARGE;
+  /* dt_therm_min_index = -999; */
 
   /* Loop over cells to get timestep */
   for (k=pGrid->ks; k<=pGrid->ke; k++) {
@@ -517,11 +528,16 @@ Real compute_therm_rates(Grid *pGrid)
 
 	/* Set time step to minimum */
 	dt_therm = (dt_therm1 < dt_therm2) ? dt_therm1 : dt_therm2;
-	dt_therm_min = (dt_therm < dt_therm_min) ? dt_therm : dt_therm_min;
+	/* dt_therm_min = (dt_therm < dt_therm_min) ? dt_therm : dt_therm_min; */
+	if (dt_therm < dt_therm_min){
+	  /* fprintf(stderr, "Cell i: %d j %d k %d, dt_therm: %e dt_therm_min: %e \n", i, j, k, dt_therm, dt_therm_min); */
+	  dt_therm_min = dt_therm;
+	  /* dt_therm_min_index = i; */
+	}
       }
     }
   }
-
+  /* fprintf(stderr, "Min dt_therm at %d \n", dt_therm_min_index); */
 #ifdef MPI_PARALLEL
   /* Sync thermal timestep across processors */
   err = MPI_Allreduce(&dt_therm_min, &dt_therm_min_glob, 1, MP_RL, 
@@ -535,7 +551,7 @@ Real compute_therm_rates(Grid *pGrid)
 }
 
 
-void ionization_update(Grid *pGrid, Real dt)
+void ionization_update(GridS *pGrid, Real dt)
 {
   int i, j, k;
   Real d_nlim;
@@ -563,7 +579,7 @@ void ionization_update(Grid *pGrid, Real dt)
 }
 
 
-Real compute_dt_hydro(Grid *pGrid) {
+Real compute_dt_hydro(GridS *pGrid) {
   int i,j,k;
   Real di,v1,v2,v3,qsq,p,asq,cf1sq,cf2sq,cf3sq,max_dti=0.0,dt;
 #ifdef MHD
@@ -626,11 +642,11 @@ Real compute_dt_hydro(Grid *pGrid) {
 #endif /* MHD */
 
 	/* compute maximum inverse of dt (corresponding to minimum dt) */
-	if (pGrid->Nx1 > 1)
+	if (pGrid->Nx[0] > 1)
 	  max_dti = MAX(max_dti,(fabs(v1)+sqrt((double)cf1sq))/pGrid->dx1);
-	if (pGrid->Nx2 > 1)
+	if (pGrid->Nx[1] > 1)
 	  max_dti = MAX(max_dti,(fabs(v2)+sqrt((double)cf2sq))/pGrid->dx2);
-	if (pGrid->Nx3 > 1)
+	if (pGrid->Nx[2] > 1)
 	  max_dti = MAX(max_dti,(fabs(v3)+sqrt((double)cf3sq))/pGrid->dx3);
       }
     }
@@ -648,6 +664,55 @@ Real compute_dt_hydro(Grid *pGrid) {
   return(dt);
 }
 
+
+/* Routine to manually set energy passed to hydro solver
+ to test if the ionization fraction is working*/
+void set_energy_manually(GridS *pGrid)
+{
+  int i, j, k;
+  Real e_nonthermal, n_H, n_Hplus, n_e, x;
+  Real Tcalc, mucalc;
+
+  for (k=pGrid->ks; k<=pGrid->ke; k++) {
+    for (j=pGrid->js; j<=pGrid->je; j++) {
+      for (i=pGrid->is; i<=pGrid->ie; i++) {
+
+	/* Compute kinetic energy */
+	e_nonthermal = 0.5 *
+	  (pGrid->U[k][j][i].M1 * pGrid->U[k][j][i].M1 +
+	   pGrid->U[k][j][i].M2 * pGrid->U[k][j][i].M2 +
+	   pGrid->U[k][j][i].M3 * pGrid->U[k][j][i].M3) 
+	  / pGrid->U[k][j][i].d
+#ifdef MHD
+	  + 0.5 * (pGrid->U[k][j][i].B1c * pGrid->U[k][j][i].B1c +
+		   pGrid->U[k][j][i].B2c * pGrid->U[k][j][i].B2c +
+		   pGrid->U[k][j][i].B3c * pGrid->U[k][j][i].B3c) 
+#endif
+	  ;
+
+	/* Compute ion fraction */
+	n_H = pGrid->U[k][j][i].s[0] / m_H;
+	n_Hplus = (pGrid->U[k][j][i].d - pGrid->U[k][j][i].s[0]) / m_H;
+	n_e = n_Hplus + pGrid->U[k][j][i].d * alpha_C / (14.0 * m_H);
+	x = n_e / (n_H + n_Hplus);
+
+	/* Save thermal and total energy, and neutral fraction */
+	if (x <= .5) {
+	  /*Neutral gas*/
+	  Tcalc = 55. ;
+	  mucalc = mu;
+	} else {
+	  /*Ionized gas*/
+	  Tcalc=10000.;
+	  mucalc = m_H/2.;
+	}
+	pGrid->U[k][j][i].E = e_nonthermal + k_B*Tcalc/Gamma_1/mucalc*pGrid->U[k][j][i].d;
+      }
+    }
+  }
+}
+
+
 /* ------------------------------------------------------------
  * Initialize and store routines
  * ------------------------------------------------------------
@@ -658,7 +723,7 @@ Real compute_dt_hydro(Grid *pGrid) {
  *
  */
 
-void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
+void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
   Real area1, area2, area3, maxdx;
   int j, k;
 
@@ -682,28 +747,28 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
 
   /* Allocate memory for rate arrays */
   ph_rate = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   edot = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   nHdot = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   last_sign = (int***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(int));
   sign_count = (int***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(int));
   e_init = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1,  
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0],  
 		    sizeof(Real));
   e_th_init = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
   x_init = (Real***) 
-    calloc_3d_array(pGrid->Nx3, pGrid->Nx2, pGrid->Nx1, 
+    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
 		    sizeof(Real));
 
   /* Offset pointers to account for ghost cells */
@@ -736,12 +801,6 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
     }
   }
 
-#ifdef ION_RADPOINT
-  /* Initialize random number generator if this is not a restart. If
-     this is a restart, we have already set up the random number
-     generator from the restart file. */
-  if (ires==0) ion_radpoint_init_ranstate();
-#endif /* ION_RADPOINT */
 
   /* What's the smallest area a cell face can have? */
   area1 = pGrid->dx1 * pGrid->dx2;
@@ -765,20 +824,18 @@ void ion_radtransfer_init_3d(Grid *pGrid, Domain *pDomain, int ires) {
 }
 
 
-void ion_radtransfer_init_domain_3d(Grid *pGrid, Domain *pDomain) {
+void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 
+  /*A Tripathi 06/01/12: CHECK to see if this is correct and/or necessary*/
   /* Store parallel grid information for internal use */
 #ifdef MPI_PARALLEL
   pD = pDomain;
-  NGrid_x1 = par_geti("parallel","NGrid_x1");
-  NGrid_x2 = par_geti("parallel","NGrid_x2");
-  NGrid_x3 = par_geti("parallel","NGrid_x3");
+  NGrid_x1 = pDomain->NGrid[0];
+  NGrid_x2 = pDomain->NGrid[1];
+  NGrid_x3 = pDomain->NGrid[2];
 #endif
 
   /* Store information specific to point sources and planes */
-#ifdef ION_RADPOINT
-  ion_radpoint_init_domain_3d(pGrid, pDomain);
-#endif
 #ifdef ION_RADPLANE
   ion_radplane_init_domain_3d(pGrid, pDomain);
 #endif
@@ -793,16 +850,23 @@ void ion_radtransfer_init_domain_3d(Grid *pGrid, Domain *pDomain) {
  *
  */
 
-void ion_radtransfer_3d(Grid *pGrid) 
+void ion_radtransfer_3d(DomainS *pDomain) 
 {
+  MeshS *pMesh = pDomain->Mesh;
+  GridS *pGrid = pDomain->Grid;
   Real dt_chem, dt_therm, dt_hydro, dt, dt_done;
   int n, niter, hydro_done;
   int nchem, ntherm;
+  int finegrid, coarsetime_done;
+  finegrid = 0;
+  niter = 0;
+  
+  if(pDomain->Level != 0) finegrid = 1;
 
-#ifdef ION_RADPOINT
-  /* Build or rebuild trees */
-  refresh_trees(pGrid);
-#endif /* ION_RADPOINT */
+  /*Adding in SMR */
+#ifdef STATIC_MESH_REFINEMENT
+    if (finegrid) ionrad_prolongate(pDomain);
+#endif
 
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
@@ -816,40 +880,31 @@ void ion_radtransfer_3d(Grid *pGrid)
      and sign_count arrays */
   save_energy_and_x(pGrid);
 
-#if defined(MPI_PARALLEL) && defined(ION_RADPOINT)
-  /* Allocate buffer for MPI communication and attach here. Note that
-     we detatch below, to ensure that the buffer we use here doesn't
-     get tangled up with buffers that may be used in other
-     modules. This is necessary because only one MPI buffer is allowed
-     per process. We only use the buffer for point sources, since it     
-     is easier to handle plane fronts using non-buffered communication. */
-  if (mpi_bufsize==0) {
-    mpi_bufsize = INIT_MPI_BUFSIZE;
-    mpi_buffer = malloc(mpi_bufsize);
-  }
-  MPI_Buffer_attach(mpi_buffer, mpi_bufsize);
-#endif
-
   /* Begin the radiation sub-cycle */
   dt_done = 0.0;
   hydro_done = 0;
+  coarsetime_done = 0;
   nchem = ntherm = 0;
-  for (niter = 0; niter<maxiter;) {
 
+  /*Do radiation sub cycle differently depending on whether on a coarse or fine grid*/
+
+  /*If on the coarsest level, run under the <maxiter condition*/
+  /*If on a finer level, run under the time condition*/
+  /*This assumes ONLY treats the root level as special.*/
+  /* while(finegrid || niter < maxiter){ */
+  while(finegrid || !hydro_done){
+    /* if (niter % 200 == 0) { */
+    /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
+    /* } */
+    
     /* Initialize photoionization rate array */
     ph_rate_init(pGrid);
 
     /* Compute photoionization rate from all sources */
-#ifdef ION_RADPOINT
-    for (n=0; n<pGrid->nradpoint; n++) 
-      get_ph_rate_point(pGrid->radpointlist[n].s, 
-			&(pGrid->radpointlist[n].tree),
-			ph_rate, pGrid);
-#endif
 #ifdef ION_RADPLANE
-    for (n=0; n<pGrid->nradplane; n++) 
-      get_ph_rate_plane(pGrid->radplanelist[n].flux,
-			pGrid->radplanelist[n].dir,
+    for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
+      get_ph_rate_plane((pMesh->radplanelist)->flux_i,
+			(pMesh->radplanelist)->dir[n],
 			ph_rate, pGrid);
 #endif
 
@@ -859,17 +914,29 @@ void ion_radtransfer_3d(Grid *pGrid)
     /* Compute rates and time step for thermal energy update */
     dt_therm = compute_therm_rates(pGrid);
 
+    /* fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm); */
+  
+
     /* Set time step to smaller of thermal and chemical time
        steps, and record whether this is a thermal or chemical step */
     if (dt_chem < dt_therm) nchem++;
     else ntherm++;
     dt = MIN(dt_therm, dt_chem);
 
+    /* fprintf(stderr,"Grid: %e, Mesh:%e\n", pGrid->dt, pMesh->dt);  */
+
     /* If necessary, scale back time step to avoid exceeding hydro
        time step. */
-    if (dt_done + dt > pGrid->dt) {
-      dt = pGrid->dt - dt_done;
-      hydro_done = 1;
+    if (!finegrid){
+      if (dt_done + dt > pGrid->dt) {
+	dt = pGrid->dt - dt_done;
+	hydro_done = 1;
+      }
+    } else {
+       if (dt_done + dt >tcoarse) {
+	dt = tcoarse - dt_done;
+	coarsetime_done = 1;
+       }
     }
 
     /* Do an update */
@@ -881,45 +948,69 @@ void ion_radtransfer_3d(Grid *pGrid)
     apply_temp_floor(pGrid);
     apply_neutral_floor(pGrid);
 
-    /* Check new energies and ionization fractions against initial
-       values to see if we've changed them as much as possible. If so,
-       exit loop. */
-    if (check_range(pGrid)) {
-      pGrid->dt = dt_done;
-      break;
-    }
+    /*Manually set thermal energy due to ionization*/
+    /* set_energy_manually(pGrid); */
 
-    /* Have we advanced the full hydro time step? If so, exit loop. */
-    if (hydro_done) {
-      break;
-    }
+    /*Check stopping criteria for coarse grid */
+    if (!finegrid){
 
-    /* Compute a new hydro time step based on the new temperature
-       distribution. If it's smaller than the time step we've already 
-       advanced, then exit. */
-    dt_hydro = compute_dt_hydro(pGrid);
-    if (dt_hydro < dt_done) {
-      pGrid->dt = dt_done;
-      break;
+      /* Check new energies and ionization fractions against initial
+	 values to see if we've changed them as much as possible. If so,
+	 exit loop. */
+      if (check_range(pGrid)) {
+	pGrid->dt = dt_done;
+	/* fprintf(stderr,"In check range \n"); */
+	break;
+      }
+
+      /* Have we advanced the full hydro time step? If so, exit loop. */
+      if (hydro_done) {
+	/* fprintf(stderr,"In hydro done \n"); */
+	break;
+      }
+      
+      /* Compute a new hydro time step based on the new temperature
+	 distribution. If it's smaller than the time step we've already 
+	 advanced, then exit. */
+      dt_hydro = compute_dt_hydro(pGrid);
+      if (dt_hydro < dt_done) {
+      	/* fprintf(stderr,"dt_hydro %e dt done %e \n", dt_hydro, dt_done); */
+      	pGrid->dt = dt_done;
+      	break;
+      }
+
+    } else {
+      /*Check time to stop fine grid */
+      if (coarsetime_done) {
+	pGrid->dt = dt_done;
+/* 	fprintf(stderr,"Exceeding coarse time limit \n"); */
+	break;
+      }
     }
   }
-
+  
   /* Have we exceeded the maximum number of iterations? If so, return
-     to hydro with the time step re-set to what we managed to do. */
-  if (niter==maxiter)
-    pGrid->dt = dt_done;
+     to hydro with the time step re-set to what we managed to do and
+     return this time to the finer levels. */
+  if (!finegrid){
 
-#if defined(MPI_PARALLEL) && defined(ION_RADPOINT)
-  /* Deallocate MPI buffer */
-  MPI_Buffer_detach(&mpi_buffer, &mpi_bufsize);
-#endif
+    /*Set mesh timestep equal to grid timestep*/
+    pMesh->dt = pGrid->dt;
+    
+    if (niter==maxiter) {
+	pGrid->dt = dt_done;
+	/* fprintf(stderr,"Reached maxiter \n"); */
+    }
+    tcoarse = dt_done;
+  }
+
+
 
   /* Write status */
-  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", 
-	   niter, ntherm, nchem, pGrid->dt);
+  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
 
   /* Sanity check */
-  if (pGrid->dt < 0) {
+  if (!finegrid && (pGrid->dt < 0)) {
     ath_error("[ion_radtransfer_3d]: dt = %e, dt_chem = %e, dt_therm = %e, dt_hydro = %e, dt_done = %e\n", pGrid->dt, dt_chem, dt_therm, dt_hydro, dt_done);
   }
 }
