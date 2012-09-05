@@ -18,3 +18,4 @@ bin/*/*/*.vtk
 bin/*/*/*.hst
 bin/*/*/*.bin
 .svn
+*.c#

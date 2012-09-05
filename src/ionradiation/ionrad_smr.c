@@ -19,20 +19,18 @@
 #include "globals.h"
 #include "prototypes.h"
 #include "../prototypes.h"
+#include "ionrad.h"
 
 #ifdef STATIC_MESH_REFINEMENT
 
 int tag = 0;
-void ionrad_prolong_rcv(GridS *pGrid, int dir, int arrsize)
+void ionrad_prolong_rcv(GridS *pGrid, int dim, int arrsize)
 {
   int npg;
-  int dim;
   MPI_Status stat;
   int err;
+  GridOvrlpS *pPO;
 
-  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
-
-    
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
@@ -40,9 +38,11 @@ void ionrad_prolong_rcv(GridS *pGrid, int dir, int arrsize)
     }
 }
 
-void ionrad_prolong_snd(GridS *pGrid)
+void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize)
 {
   int ncg, err;
+  GridOvrlpS *pCO, *pPO;
+
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
     err = MPI_Send(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag, MPI_COMM_WORLD);
