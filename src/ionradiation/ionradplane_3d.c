@@ -442,7 +442,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       break;
     }
 
-      ionrad_prolong_snd(pGrid, dim, arrsize)
+      ionrad_prolong_snd(pGrid, dim, arrsize);
     }
   }
 #endif /* STATIC_MESH_REFINEMENT*/
