@@ -1,4 +1,4 @@
-#include "../copyright.h"
+f#include "../copyright.h"
 
 /*==============================================================================
  * FILE: ionrad_smr.c
@@ -24,9 +24,10 @@
 #ifdef STATIC_MESH_REFINEMENT
 
 int tag = 0;
-void ionrad_prolong_rcv(GridS *pGrid, int dim, int arrsize)
+void ionrad_prolong_rcv(GridS *pGrid, int dim)
 {
   int npg;
+  int i, j, k, fixed, arrsize, indexarith;
   MPI_Status stat;
   int err;
   GridOvrlpS *pPO;
@@ -34,18 +35,85 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int arrsize)
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
-      err = MPI_Recv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag, MPI_COMM_WORLD, &stat);
+
+/*       switch(dim) { */
+/*       case 0: case 1: { */
+	if (fmod(dim,2) == 0) {
+	  fixed = pPO->ijks[0] - nghost;
+	} else {
+	  fixed = pPO->ijke[0] + 1 - nghost; /*Should this be +1 or +2? */
+	}
+	
+	if(pPO->ionFlx[dim] != NULL) {
+	  arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
+	  /* Will need in nonblocking form? */
+	  err = MPI_Recv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &stat);
+
+
+	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
+	    for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
+	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
+	      pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
+	      fprintf(stderr, "k:%d j:%d, index: %d \n", k, j, indexarith);
+	    }
+	  }
+	  /*Will need to check indexing to see if it's +1 or +2*/
+	}
+/* 	break; */
+/*       } */
+/*       } */
+
+/*     case 2: case 3: { */
+/*       if (lr > 0) { */
+/* 	fixed = pCO->ijks[1] - nghost; */
+/*       } else { */
+/* 	fixed = pCO->ijke[1] + 1 - nghost; */
+/*       } */
+      
+/*       if(pCO->ionFlx[dim] != NULL) { */
+/* 	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) { */
+/* 	    for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) { */
+/* 	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[k][fixed][i]; */
+/* 	      fprintf(stderr, "k:%d i:%d, index: %d, nx: %d \n", k, i, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2); */
+/* 	    } */
+/* 	  } */
+/* 	  arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[0] + 2 - pCO->ijks[0]); */
+/*       } */
+/*       break; */
+/*     } */
+
+/*     case 4: case 5: { */
+/*       if (lr > 0) { */
+/* 	fixed = pCO->ijks[2] - nghost; */
+/*       } else { */
+/* 	fixed = pCO->ijke[2] + 1 - nghost; */
+/*       } */
+/*       if(pCO->ionFlx[dim] != NULL) { */
+/* 	for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) { */
+/* 	  for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) { */
+/* 	    pCO->ionFlx[dim][(j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[fixed][j][i]; */
+/* 	    fprintf(stderr, "j:%d i:%d, index: %d, nx: %d \n", j, i, (j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2); */
+/* 	  } */
+/* 	} */
+/* 	arrsize = (pCO->ijke[0] + 2 - pCO->ijks[0]) * (pCO->ijke[1] + 2 - pCO->ijks[1]); */
+
+
+
     }
+
+
 }
 
 void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize)
 {
-  int ncg, err;
+  MPI_Request *send_rq=NULL;
+  int ncg, ierr;
   GridOvrlpS *pCO, *pPO;
 
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
-    err = MPI_Send(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag, MPI_COMM_WORLD);
+    ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, pCO->ID, MPI_COMM_WORLD, &(send_rq[ncg]));
+    fprintf(stderr, "I sent my data for %d \n", ncg);
   }
 }
 

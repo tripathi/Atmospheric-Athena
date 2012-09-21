@@ -108,6 +108,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 
   flux = 0;
 
+  /*Convert propagation direction into GridOvrlp "dim" index*/
+  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
+
   /* Set lr based on whether radiation is left or right
      propagating. lr = 1 is for radiation going left to right. Also
      set up the start and end indices based on the direction, and
@@ -205,6 +208,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       if (nGrid != 0) break;
   }
 
+
+
   /*AT 06/01/12: I Think this needs to be modified!*/
 
   /* Allocate memory for flux at interface on first pass */
@@ -234,7 +239,10 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	err = MPI_Recv(planeflux, planesize, MP_RL, prevproc, n,
 		       MPI_COMM_WORLD, &stat);
 	if (err) ath_error("[get_ph_rate_plane]: MPI_Send error = %d\n", err);
-      }
+      } else {
+	ionrad_prolong_rcv(pGrid, dim);
+	/*Need to include a non-MPI receive for SMR only - A.t. 9/14/12*/
+      }	
 #endif /* MPI_PARALLEL */
 
       /* Propagate the radiation */
@@ -376,9 +384,6 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     if (max_flux_frac_glob < MINFLUXFRAC) break;
   }
 
-  /*Converting propagation direction into GridOvrlp "dim" index*/
-  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
-
 
 #ifdef STATIC_MESH_REFINEMENT    
   /* Loop over children grids to fill their buffer arrays*/
@@ -441,9 +446,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
       }
       break;
     }
-
-      ionrad_prolong_snd(pGrid, dim, arrsize);
+      
     }
+      ionrad_prolong_snd(pGrid, dim, arrsize);
   }
 #endif /* STATIC_MESH_REFINEMENT*/
   free(planeflux);
