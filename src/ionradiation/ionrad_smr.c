@@ -28,8 +28,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 {
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
-  MPI_Status stat;
-  int err;
+  MPI_Request *rcv_rq=NULL;
+  int ierr;
   GridOvrlpS *pPO;
 
   for (npg=0; npg<(pGrid->NPGrid); npg++)
@@ -47,7 +47,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 	if(pPO->ionFlx[dim] != NULL) {
 	  arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
 	  /* Will need in nonblocking form? */
-	  err = MPI_Recv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &stat);
+	  ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &(rcv_rq[npg]));
 
 
 	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
@@ -106,7 +106,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 
 void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize)
 {
-  MPI_Request *send_rq=NULL;
+  MPI_Request *send_rq=NUL;L
   int ncg, ierr;
   GridOvrlpS *pCO, *pPO;
 
