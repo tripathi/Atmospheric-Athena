@@ -865,6 +865,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
   /*Adding in SMR */
 #ifdef STATIC_MESH_REFINEMENT
+  fprintf(stderr, "In SMR call in ionrad_3d.c for Domain %d \n", pDomain->Level);
   /*    if (finegrid) ionrad_prolongate(pDomain);*/
 #endif
 
@@ -903,9 +904,10 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* Compute photoionization rate from all sources */
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
-      get_ph_rate_plane((pMesh->radplanelist)->flux_i,
-			(pMesh->radplanelist)->dir[n],
-			ph_rate, pGrid);
+      {
+	fprintf(stderr, "Being sent to getph rate \n");
+	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid);
+      }
 #endif
 
     /* Compute rates and time step for chemistry update */

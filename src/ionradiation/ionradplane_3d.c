@@ -108,6 +108,8 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 
   flux = 0;
 
+  fprintf(stderr, "inside getph \n");
+
   /*Convert propagation direction into GridOvrlp "dim" index*/
   dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
 
@@ -209,6 +211,10 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   }
 
 
+  /* AT 9/21/12: Add case switch */
+  if (pGrid->lx1_id ==-1) {  ionrad_prolong_rcv(pGrid, dim); }
+  /*Need to include a non-MPI receive for SMR only - A.t. 9/14/12*/
+
 
   /*AT 06/01/12: I Think this needs to be modified!*/
 
@@ -229,7 +235,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 		     MPI_COMM_WORLD);
       if (err) ath_error("[get_ph_rate_plane]: MPI_Send error = %d\n", err);
     } 
-
+ 
     /* Is it my turn to compute the transfer now? */
     if (myrank == n) {
 
@@ -239,10 +245,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	err = MPI_Recv(planeflux, planesize, MP_RL, prevproc, n,
 		       MPI_COMM_WORLD, &stat);
 	if (err) ath_error("[get_ph_rate_plane]: MPI_Send error = %d\n", err);
-      } else {
-	ionrad_prolong_rcv(pGrid, dim);
-	/*Need to include a non-MPI receive for SMR only - A.t. 9/14/12*/
-      }	
+      } 
 #endif /* MPI_PARALLEL */
 
       /* Propagate the radiation */
@@ -401,7 +404,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
-	    fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2);
+
+/* 	    fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2); */
+	    
 	  }
 	}
 	/*Will need to check indexing to see if it's +1 or +2*/
@@ -448,7 +453,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     }
       
     }
-      ionrad_prolong_snd(pGrid, dim, arrsize);
+    ionrad_prolong_snd(pGrid, dim, arrsize);
   }
 #endif /* STATIC_MESH_REFINEMENT*/
   free(planeflux);

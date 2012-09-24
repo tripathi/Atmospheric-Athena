@@ -1,4 +1,4 @@
-f#include "../copyright.h"
+#include "../copyright.h"
 
 /*==============================================================================
  * FILE: ionrad_smr.c
@@ -28,37 +28,71 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 {
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
-  MPI_Request *rcv_rq=NULL;
-  int ierr;
+  MPI_Status stat;
+  MPI_Request *rcv_rq;
+  int err, ierr;
   GridOvrlpS *pPO;
+  int allrcv =0;
+  int rcvd = 0;
+  int receive_done;
+  int *succtest;
+
+  rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
+  succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
+
+
+  
+  for (npg=0; npg<(pGrid->NPGrid); npg++)
+    {
+      pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
+
+      /* AT 9/24/12: I don't know why this is here...*/
+      /* 	if(pPO->ionFlx[dim] != NULL) { */
+      
+      /*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
+      arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
+      ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &(rcv_rq[npg]));
+    }
+  while(allrcv==0)
+    {
+      for (npg=0; npg<(pGrid->NPGrid); npg++)
+	{
+	  if (succtest[npg]==0) 
+	    {
+	      err = MPI_Test(&(rcv_rq[npg]), &receive_done, &stat);
+	      if (receive_done) 
+		{ 
+		  succtest[npg]= 1; 
+		  rcvd ++;
+		  fprintf(stderr, "I received data from parent %d of %d \n", npg, pGrid->NPGrid);
+		}
+	    }
+	}
+      allrcv = (rcvd == pGrid->NPGrid) ? 1 : 0;
+    }
 
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
 
+      /*AT 9/21/12: */
 /*       switch(dim) { */
 /*       case 0: case 1: { */
-	if (fmod(dim,2) == 0) {
-	  fixed = pPO->ijks[0] - nghost;
-	} else {
-	  fixed = pPO->ijke[0] + 1 - nghost; /*Should this be +1 or +2? */
+      if (fmod(dim,2) == 0) {
+	fixed = pPO->ijks[0] - nghost;
+      } else {
+	fixed = pPO->ijke[0] + 1 - nghost; /*Should this be +1 or +2? */
+      }
+      
+      for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
+	for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
+	  indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
+	  pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
+/* 	  fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); */
 	}
-	
-	if(pPO->ionFlx[dim] != NULL) {
-	  arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
-	  /* Will need in nonblocking form? */
-	  ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &(rcv_rq[npg]));
-
-
-	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
-	    for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
-	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
-	      pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
-	      fprintf(stderr, "k:%d j:%d, index: %d \n", k, j, indexarith);
-	    }
-	  }
-	  /*Will need to check indexing to see if it's +1 or +2*/
-	}
+      }
+      /*Will need to check indexing to see if it's +1 or +2*/
+    }
 /* 	break; */
 /*       } */
 /*       } */
@@ -99,21 +133,20 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 
 
 
-    }
-
-
 }
 
 void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize)
 {
-  MPI_Request *send_rq=NUL;L
+
   int ncg, ierr;
-  GridOvrlpS *pCO, *pPO;
+  GridOvrlpS *pCO;
+  MPI_Request *send_rq;
+  send_rq = (MPI_Request*) calloc_1d_array(pGrid->NCGrid,sizeof(MPI_Request)) ;
 
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
-    ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, pCO->ID, MPI_COMM_WORLD, &(send_rq[ncg]));
-    fprintf(stderr, "I sent my data for %d \n", ncg);
+    ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, pCO->ID, MPI_COMM_WORLD, &send_rq[ncg]);
+    fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg, pGrid->NCGrid);
   }
 }
 
