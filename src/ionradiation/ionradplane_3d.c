@@ -99,7 +99,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   Real *planeflux = NULL;
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
-  int dim, fixed, npg, ncg, arrsize;
+  int fixed, npg, ncg, arrsize;
 #endif
 #ifdef STATIC_MESH_REFINEMENT
   GridOvrlpS *pCO, *pPO;
@@ -107,11 +107,6 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   MeshS *pMesh = pGrid->Mesh;
 
   flux = 0;
-
-  fprintf(stderr, "inside getph \n");
-
-  /*Convert propagation direction into GridOvrlp "dim" index*/
-  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
 
   /* Set lr based on whether radiation is left or right
      propagating. lr = 1 is for radiation going left to right. Also
@@ -147,7 +142,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     break;
   }
   }
-/*     fprintf(stderr,"s: %d e: %d \n", s, e);  */
+
+  fixed = (lr > 0) ? 0 : e - nghost;
+
 #ifdef MPI_PARALLEL
   /* Figure out processor geometry: where am I, where are my neighbors
      upstream and downstream, how many processors are there in the
@@ -211,12 +208,9 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   }
 
 
-  /* AT 9/21/12: Add case switch */
-  if (pGrid->lx1_id ==-1) {  ionrad_prolong_rcv(pGrid, dim); }
-  /*Need to include a non-MPI receive for SMR only - A.t. 9/14/12*/
+  /* AT 9/26/12: Make sure that the grids at the upsetram edge have received their data from the coarse grid.  */
+  /* Also ADD IN a non-MPI receive for SMR only - A.t. 9/14/12*/
 
-
-  /*AT 06/01/12: I Think this needs to be modified!*/
 
   /* Allocate memory for flux at interface on first pass */
   if (!(planeflux=calloc(planesize, sizeof(Real))))
@@ -260,15 +254,15 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js];
 	    else
 #endif /* MPI_PARALLEL */
-	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0];
-/*AT 06/03/12: Shouldn't be fixed to 0. Should change to match left/right propagation!!!*/
-	    /* if (flux != (pMesh->radplanelist)->flux_i) */
-	    /*   fprintf(stderr, "Interesting"); */
+	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed];
 /* 	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
 
 	    for (i=s; i<=e; i+=lr) {
 	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
+
+	      /*	      fprintf(stderr, "I am %d My flux at k: %d j: %d i: %d is %f \n", myID_Comm_world, k-pGrid->ks, j-pGrid->js, i-pGrid->is, pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);*/
+
 /* 	      if (pGrid->Nx[0] != 64){ */
 /* 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { */
 /* /\* 		  fprintf(stderr, "Fine -  Time: %e .... i: %d, j:%d, k:%d ..... nh: %e, flux:%e \n", pMesh->time, i-s, j-pGrid->js,k-pGrid->ks, n_H ,pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); *\/ */
@@ -283,7 +277,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
-	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][0]; /*Check if this should still be 0 or not*/
+	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed]; /*Check if this should still be 0 or not*/
 	      if (flux_frac < MINFLUXFRAC){
 		for (ii=i; ii<=e; ii+=lr) {
 		  pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][ii-s] = 0.0;
@@ -296,13 +290,11 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    /* Store final flux to pass to next processor, or 0 if we
 	       ended the loop early because we were below the minimum
 	       fraction. */
-	    planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js] = 
-	      flux_frac < MINFLUXFRAC ? 0.0 : flux;
+	    planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js] = flux_frac < MINFLUXFRAC ? 0.0 : flux;
 
 	    /*	    fprintf("j:%d, k:%d, Planeflux %f \n", j, k, planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js]);
 	     */
-	    max_flux_frac = (flux_frac > max_flux_frac) ?
-	      flux_frac : max_flux_frac;
+	    max_flux_frac = (flux_frac > max_flux_frac) ? flux_frac : max_flux_frac;
 #endif /* MPI_PARALLEL */
 	  }
 	}
@@ -388,74 +380,6 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
   }
 
 
-#ifdef STATIC_MESH_REFINEMENT    
-  /* Loop over children grids to fill their buffer arrays*/
-  for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
-    pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
-    switch(dir) {
-    case -1: case 1: {
-      if (lr > 0) {
-	fixed = pCO->ijks[0] - nghost;
-      } else {
-	fixed = pCO->ijke[0] + 1 - nghost;
-      }
-
-      if(pCO->ionFlx[dim] != NULL) {
-	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
-	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
-	    pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
-
-/* 	    fprintf(stderr, "k:%d j:%d, index: %d, ny: %d \n", k, j, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost), pCO->ijke[1] - pCO->ijks[1] +2); */
-	    
-	  }
-	}
-	/*Will need to check indexing to see if it's +1 or +2*/
-	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
-      }
-      break;
-    }
-
-    case -2: case 2: {
-      if (lr > 0) {
-	fixed = pCO->ijks[1] - nghost;
-      } else {
-	fixed = pCO->ijke[1] + 1 - nghost;
-      }
-      
-      if(pCO->ionFlx[dim] != NULL) {
-	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
-	    for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) {
-	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[k][fixed][i];
-	      fprintf(stderr, "k:%d i:%d, index: %d, nx: %d \n", k, i, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2);
-	    }
-	  }
-	  arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[0] + 2 - pCO->ijks[0]);
-      }
-      break;
-    }
-
-    case -3: case 3: {
-      if (lr > 0) {
-	fixed = pCO->ijks[2] - nghost;
-      } else {
-	fixed = pCO->ijke[2] + 1 - nghost;
-      }
-      if(pCO->ionFlx[dim] != NULL) {
-	for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
-	  for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) {
-	    pCO->ionFlx[dim][(j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[fixed][j][i];
-	    fprintf(stderr, "j:%d i:%d, index: %d, nx: %d \n", j, i, (j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2);
-	  }
-	}
-	arrsize = (pCO->ijke[0] + 2 - pCO->ijks[0]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
-      }
-      break;
-    }
-      
-    }
-    ionrad_prolong_snd(pGrid, dim, arrsize);
-  }
-#endif /* STATIC_MESH_REFINEMENT*/
   free(planeflux);
 #endif /* MPI_PARALLEL */
 

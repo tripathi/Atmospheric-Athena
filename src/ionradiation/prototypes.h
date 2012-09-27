@@ -62,7 +62,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid);
 /* ionrad_smr.c */
 void ionrad_prolongate(DomainS *pD);
 void ionrad_prolong_rcv(GridS *pGrid, int dim);
-  void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize);
+  void ionrad_prolong_snd(GridS *pGrid, int dim);
 
 #endif /* ION_RADPLANE */
 

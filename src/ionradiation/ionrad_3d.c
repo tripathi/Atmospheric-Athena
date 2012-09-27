@@ -858,15 +858,25 @@ void ion_radtransfer_3d(DomainS *pDomain)
   int n, niter, hydro_done;
   int nchem, ntherm;
   int finegrid, coarsetime_done;
+  int dir, dim;
   finegrid = 0;
   niter = 0;
-  
+
+  /*AT 9/24/12: Make this dir not be hardwired to dir[0] and also consistent with the get_ph_rate_plane call*/
+  dir = (pMesh->radplanelist)->dir[0];
+  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
+
   if(pDomain->Level != 0) finegrid = 1;
 
   /*Adding in SMR */
 #ifdef STATIC_MESH_REFINEMENT
-  fprintf(stderr, "In SMR call in ionrad_3d.c for Domain %d \n", pDomain->Level);
+#ifdef MPI_PARALLEL
   /*    if (finegrid) ionrad_prolongate(pDomain);*/
+  if (finegrid) { 
+    fprintf(stderr, "Going to rcv for domain %d \n", pDomain->Level);
+    ionrad_prolong_rcv(pGrid, dim);
+  }
+#endif
 #endif
 
   /* Set all temperatures below the floor to the floor */
@@ -905,7 +915,6 @@ void ion_radtransfer_3d(DomainS *pDomain)
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
       {
-	fprintf(stderr, "Being sent to getph rate \n");
 	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid);
       }
 #endif
@@ -1006,7 +1015,12 @@ void ion_radtransfer_3d(DomainS *pDomain)
     tcoarse = dt_done;
   }
 
-
+#ifdef STATIC_MESH_REFINEMENT
+#ifdef MPI_PARALLEL
+  fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain %d \n", pDomain->Level);
+  ionrad_prolong_snd(pGrid, dim);
+#endif
+#endif
 
   /* Write status */
   ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);

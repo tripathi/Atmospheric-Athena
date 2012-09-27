@@ -10,6 +10,8 @@
  *   be set at compile time.
  *
  * CONTAINS PUBLIC FUNCTIONS:
+ *   ionrad_prolong_rcv - Receives radiative flux from coarser grid
+ *   ionrad_prolong_snd - Sends radiative flux to finer grid
  *   ion_prolongate - prolongates coarse grid radiative flux into fine grid
  *============================================================================*/
 #include <stdio.h>
@@ -39,19 +41,24 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
-
-
   
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
-
-      /* AT 9/24/12: I don't know why this is here...*/
-      /* 	if(pPO->ionFlx[dim] != NULL) { */
-      
-      /*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
-      arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
-      ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &(rcv_rq[npg]));
+      if(pPO->ionFlx[dim] != NULL) {
+	fprintf(stderr, "Beginning receive call for %d of %d \n", npg+1, pGrid->NPGrid);
+	
+	
+	/*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
+	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
+	fprintf(stderr, "myid: %d, pPO ID: %d \n", myID_Comm_world, pPO->ID);
+	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &(rcv_rq[npg]));
+	fprintf (stderr, "did i get here? %d \n", ierr);
+      } else {
+	/*AT 9/26/12: Faking a successful test for grids that are not in the direction of propagation*/
+	succtest[npg] = 1;
+	rcvd++;
+      }
     }
   while(allrcv==0)
     {
@@ -64,7 +71,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 		{ 
 		  succtest[npg]= 1; 
 		  rcvd ++;
-		  fprintf(stderr, "I received data from parent %d of %d \n", npg, pGrid->NPGrid);
+		  fprintf(stderr, " YAY I received data from parent %d of %d \n", npg, pGrid->NPGrid);
 		}
 	    }
 	}
@@ -75,67 +82,62 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
 
-      /*AT 9/21/12: */
-/*       switch(dim) { */
-/*       case 0: case 1: { */
-      if (fmod(dim,2) == 0) {
-	fixed = pPO->ijks[0] - nghost;
-      } else {
-	fixed = pPO->ijke[0] + 1 - nghost; /*Should this be +1 or +2? */
-      }
-      
-      for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
+      if(pPO->ionFlx[dim] != NULL) {
+	fprintf(stderr, "Going to go fill edgeflux now \n");
+
+	switch(dim) { 
+	case 0: case 1: { 
+	  if (fmod(dim,2) == 0) {
+	    fixed = pPO->ijks[0] - nghost;
+	  } else {
+	    fixed = pPO->ijke[0] + 1 - nghost; /*Should this be +1 or +2? */
+	  }  
+	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
+	    for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
+	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
+	      pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
+	      /*Will need to check indexing to see if it's +1 or +2*/
+	      fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); 
+	    }
+	  }
+	  break; 
+	}
+
+	case 2: case 3: {
+	  if (fmod(dim,2) == 0) {
+	    fixed = pPO->ijks[1] - nghost;
+	  } else {
+	    fixed = pPO->ijke[1] + 1 - nghost;
+	  }	  
+	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
+	    for (i=pPO->ijks[0] - nghost; i<= pPO->ijke[0]+1 - nghost; i++) {
+	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[0] - pPO->ijks[0] + 2)+i-(pPO->ijks[0]-nghost);
+	      pGrid->EdgeFlux[k][fixed][i] = pPO->ionFlx[dim][indexarith];
+	    }
+	  }
+	  break;
+	}
+
+	case 4: case 5: {
+	  if (fmod(dim,2) == 0) {
+	    fixed = pPO->ijks[2] - nghost;
+	  } else {
+	    fixed = pPO->ijke[2] + 1 - nghost;
+	  }
 	for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
-	  indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
-	  pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
-/* 	  fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); */
+	  for (i=pPO->ijks[0] - nghost; i<= pPO->ijke[0]+1 - nghost; i++) {
+	    indexarith = (j-(pPO->ijks[1]-nghost))*(pPO->ijke[0] - pPO->ijks[0] + 2)+i-(pPO->ijks[0]-nghost);
+	    pGrid->EdgeFlux[fixed][k][i] = pPO->ionFlx[dim][indexarith];
+	  }
+	}
+	break;
+	}
 	}
       }
-      /*Will need to check indexing to see if it's +1 or +2*/
     }
-/* 	break; */
-/*       } */
-/*       } */
-
-/*     case 2: case 3: { */
-/*       if (lr > 0) { */
-/* 	fixed = pCO->ijks[1] - nghost; */
-/*       } else { */
-/* 	fixed = pCO->ijke[1] + 1 - nghost; */
-/*       } */
-      
-/*       if(pCO->ionFlx[dim] != NULL) { */
-/* 	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) { */
-/* 	    for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) { */
-/* 	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[k][fixed][i]; */
-/* 	      fprintf(stderr, "k:%d i:%d, index: %d, nx: %d \n", k, i, (k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2); */
-/* 	    } */
-/* 	  } */
-/* 	  arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[0] + 2 - pCO->ijks[0]); */
-/*       } */
-/*       break; */
-/*     } */
-
-/*     case 4: case 5: { */
-/*       if (lr > 0) { */
-/* 	fixed = pCO->ijks[2] - nghost; */
-/*       } else { */
-/* 	fixed = pCO->ijke[2] + 1 - nghost; */
-/*       } */
-/*       if(pCO->ionFlx[dim] != NULL) { */
-/* 	for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) { */
-/* 	  for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) { */
-/* 	    pCO->ionFlx[dim][(j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[fixed][j][i]; */
-/* 	    fprintf(stderr, "j:%d i:%d, index: %d, nx: %d \n", j, i, (j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost), pCO->ijke[0] - pCO->ijks[0] +2); */
-/* 	  } */
-/* 	} */
-/* 	arrsize = (pCO->ijke[0] + 2 - pCO->ijks[0]) * (pCO->ijke[1] + 2 - pCO->ijks[1]); */
-
-
-
 }
 
-void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize)
+void ionrad_prolong_snd(GridS *pGrid, int dim)
 {
 
   int ncg, ierr;
@@ -143,10 +145,77 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int arrsize)
   MPI_Request *send_rq;
   send_rq = (MPI_Request*) calloc_1d_array(pGrid->NCGrid,sizeof(MPI_Request)) ;
 
+  int fixed, arrsize;
+  int i, j, k;
+
+  /* Loop over children grids to fill their buffer arrays*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
+    fprintf(stderr, "Actually filling buffer \n");
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
-    ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, pCO->ID, MPI_COMM_WORLD, &send_rq[ncg]);
-    fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg, pGrid->NCGrid);
+    switch(dim) {
+    case 0: case 1: {
+      if (fmod(dim,2) == 0) {
+	fixed = pCO->ijks[0] - nghost;
+      } else {
+	fixed = pCO->ijke[0] + 1 - nghost;
+      }
+
+      if(pCO->ionFlx[dim] != NULL) {
+	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
+	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+	    pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
+	  }
+	}
+	/*Will need to check indexing to see if it's +1 or +2*/
+	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
+      }
+      break;
+    }
+
+    case 2: case 3: {
+      if (fmod(dim,2) == 0) {
+	fixed = pCO->ijks[1] - nghost;
+      } else {
+	fixed = pCO->ijke[1] + 1 - nghost;
+      }
+      
+      if(pCO->ionFlx[dim] != NULL) {
+	  for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
+	    for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) {
+	      pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[k][fixed][i];
+	    }
+	  }
+	  arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[0] + 2 - pCO->ijks[0]);
+      }
+      break;
+    }
+
+    case 4: case 5: {
+      if (fmod(dim,2) == 0) {
+	fixed = pCO->ijks[2] - nghost;
+      } else {
+	fixed = pCO->ijke[2] + 1 - nghost;
+      }
+      if(pCO->ionFlx[dim] != NULL) {
+	for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+	  for (i=pCO->ijks[0] - nghost; i<= pCO->ijke[0]+1 - nghost; i++) {
+	    pCO->ionFlx[dim][(j-(pCO->ijks[1]-nghost))*(pCO->ijke[0] - pCO->ijks[0] + 2)+i-(pCO->ijks[0]-nghost)] = pGrid->EdgeFlux[fixed][j][i];
+	  }
+	}
+	arrsize = (pCO->ijke[0] + 2 - pCO->ijks[0]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
+      }
+      break;
+    }
+    }
+     
+    /*AT 9/26/12: I think the NULL check only needs to be here and needs to be modified above.*/
+    /* The point of such a check is to ensure that we're not trying to communicate, when there's an overlapping grid not in the direction of propagation*/
+    /*Send buffer arrays of radiation flux to children grids*/
+    if(pCO->ionFlx[dim] != NULL) {
+      fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID);
+      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, pCO->ID, MPI_COMM_WORLD, &send_rq[ncg]);
+      fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);
+    }
   }
 }
 
