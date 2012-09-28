@@ -52,12 +52,12 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
 	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world);
 	tag1 = atoi(temp);
 	tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + myID_Comm_world;
-	fprintf(stderr, "concat: %d, powers:%d \n", tag1, tag2);
+	fprintf(stderr, "rcvconcat: %d, powers:%d \n", tag1, tag2);
 	
 	/*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
 	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
 	fprintf(stderr, "myid: %d, pPO ID: %d \n", myID_Comm_world, pPO->ID);
-	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, 100*level + myID_Comm_world, MPI_COMM_WORLD, &(rcv_rq[npg]));
+	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag1, MPI_COMM_WORLD, &(rcv_rq[npg]));
 	fprintf (stderr, "did i get here? %d \n", ierr);
       } else {
 	/*AT 9/26/12: Faking a successful test for grids that are not in the direction of propagation*/
@@ -105,7 +105,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
 	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
 	      pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
 	      /*Will need to check indexing to see if it's +1 or +2*/
-	      fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); 
+	      /*	      fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); */
 	    }
 	  }
 	  break; 
@@ -155,6 +155,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level)
 
   int fixed, arrsize;
   int i, j, k;
+  int tag1, tag2;
+  char temp[10];
 
   /* Loop over children grids to fill their buffer arrays*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
@@ -221,7 +223,14 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level)
     /*Send buffer arrays of radiation flux to children grids*/
     if(pCO->ionFlx[dim] != NULL) {
       fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID);
-      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, ((level+1)*100)+pCO->ID, MPI_COMM_WORLD, &send_rq[ncg]);
+
+      sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID);
+	tag1 = atoi(temp);
+	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID;
+	fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2);
+
+
+      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag1, MPI_COMM_WORLD, &send_rq[ncg]);
       fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);
     }
   }
