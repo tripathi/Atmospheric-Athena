@@ -25,8 +25,7 @@
 
 #ifdef STATIC_MESH_REFINEMENT
 
-int tag = 0;
-void ionrad_prolong_rcv(GridS *pGrid, int dim)
+void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
 {
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
@@ -38,6 +37,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
   int rcvd = 0;
   int receive_done;
   int *succtest;
+  int tag1, tag2;
+  char temp[10];
 
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
@@ -47,12 +48,16 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
       if(pPO->ionFlx[dim] != NULL) {
 	fprintf(stderr, "Beginning receive call for %d of %d \n", npg+1, pGrid->NPGrid);
-	
+
+	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world);
+	tag1 = atoi(temp);
+	tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + myID_Comm_world;
+	fprintf(stderr, "concat: %d, powers:%d \n", tag1, tag2);
 	
 	/*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
 	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
 	fprintf(stderr, "myid: %d, pPO ID: %d \n", myID_Comm_world, pPO->ID);
-	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, pPO->ID, MPI_COMM_WORLD, &(rcv_rq[npg]));
+	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, 100*level + myID_Comm_world, MPI_COMM_WORLD, &(rcv_rq[npg]));
 	fprintf (stderr, "did i get here? %d \n", ierr);
       } else {
 	/*AT 9/26/12: Faking a successful test for grids that are not in the direction of propagation*/
@@ -72,7 +77,10 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
 		  succtest[npg]= 1; 
 		  rcvd ++;
 		  fprintf(stderr, " YAY I received data from parent %d of %d \n", npg, pGrid->NPGrid);
-		}
+		} 
+	      else {
+		/*		fprintf(stderr, "Still waiting \n");*/
+	      }
 	    }
 	}
       allrcv = (rcvd == pGrid->NPGrid) ? 1 : 0;
@@ -137,7 +145,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim)
     }
 }
 
-void ionrad_prolong_snd(GridS *pGrid, int dim)
+void ionrad_prolong_snd(GridS *pGrid, int dim, int level)
 {
 
   int ncg, ierr;
@@ -213,7 +221,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim)
     /*Send buffer arrays of radiation flux to children grids*/
     if(pCO->ionFlx[dim] != NULL) {
       fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID);
-      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, pCO->ID, MPI_COMM_WORLD, &send_rq[ncg]);
+      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, ((level+1)*100)+pCO->ID, MPI_COMM_WORLD, &send_rq[ncg]);
       fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);
     }
   }
