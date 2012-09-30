@@ -204,7 +204,7 @@ void save_energy_and_x(GridS *pGrid)
 
 /* Routine to check if we have changed the total energy, thermal
    energy, or x_n as much as we are allowed. */
-int check_range(GridS *pGrid) {
+int check_range(GridS *pGrid, MPI_Comm Comm_Domain) {
   int i, j, k;
   Real e_thermal, n_H, n_Hplus, n_e, x;
   long cellcount = 0;
@@ -272,7 +272,7 @@ int check_range(GridS *pGrid) {
 
 #ifdef MPI_PARALLEL
   err = MPI_Allreduce(&cellcount, &cellcount_glob, 1, MPI_LONG, 
-		      MPI_SUM, MPI_COMM_WORLD);
+		      MPI_SUM, Comm_Domain);
   if (err) ath_error("[check_range]: MPI_Allreduce returned error code %d\n"
 		    ,err);
   cellcount = cellcount_glob;
@@ -284,7 +284,7 @@ int check_range(GridS *pGrid) {
 
 #define MAXSIGNCOUNT 4
 #define DAMPFACTOR 0.5
-Real compute_chem_rates(GridS *pGrid)
+Real compute_chem_rates(GridS *pGrid, MPI_Comm Comm_Domain)
 {
   int i, j, k, n;
   Real n_H, n_Hplus, n_e, d_nlim;
@@ -392,7 +392,7 @@ Real compute_chem_rates(GridS *pGrid)
 #ifdef MPI_PARALLEL
   /* Sync chemistry timestep across processors */
   err = MPI_Allreduce(&dt_chem_min, &dt_chem_min_glob, 1, MP_RL, 
-		      MPI_MIN, MPI_COMM_WORLD);
+		      MPI_MIN, Comm_Domain);
   if(err) ath_error("[compute_chem_rates]: MPI_Allreduce returned error code %d\n"
 		    ,err);
   dt_chem_min = dt_chem_min_glob;
@@ -406,7 +406,7 @@ Real compute_chem_rates(GridS *pGrid)
 #undef DAMPFACTOR
 
 
-Real compute_therm_rates(GridS *pGrid)
+Real compute_therm_rates(GridS *pGrid, MPI_Comm Comm_Domain)
 {
   int i, j, k;
   Real n_H, n_Hplus, n_e, e_thermal;
@@ -541,7 +541,7 @@ Real compute_therm_rates(GridS *pGrid)
 #ifdef MPI_PARALLEL
   /* Sync thermal timestep across processors */
   err = MPI_Allreduce(&dt_therm_min, &dt_therm_min_glob, 1, MP_RL, 
-		      MPI_MIN, MPI_COMM_WORLD);
+		      MPI_MIN, Comm_Domain);
   if(err) ath_error("[compute_therm_rates]: MPI_Allreduce returned error code %d\n"
 		    ,err);
   dt_therm_min = dt_therm_min_glob;
@@ -579,7 +579,7 @@ void ionization_update(GridS *pGrid, Real dt)
 }
 
 
-Real compute_dt_hydro(GridS *pGrid) {
+Real compute_dt_hydro(GridS *pGrid, MPI_Comm Comm_Domain) {
   int i,j,k;
   Real di,v1,v2,v3,qsq,p,asq,cf1sq,cf2sq,cf3sq,max_dti=0.0,dt;
 #ifdef MHD
@@ -656,7 +656,7 @@ Real compute_dt_hydro(GridS *pGrid) {
   dt = CourNo/max_dti;
 
 #ifdef MPI_PARALLEL
-  err = MPI_Allreduce(&dt, &dt_glob, 1, MP_RL, MPI_MIN, MPI_COMM_WORLD);
+  err = MPI_Allreduce(&dt, &dt_glob, 1, MP_RL, MPI_MIN, Comm_Domain);
   if(err) ath_error("[compute_dt_hydro]: MPI_Allreduce returned error code %d\n"
 		    ,err);
   dt = dt_glob;
@@ -915,15 +915,15 @@ void ion_radtransfer_3d(DomainS *pDomain)
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
       {
-	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid);
+	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid, pDomain->Comm_Domain);
       }
 #endif
 
     /* Compute rates and time step for chemistry update */
-    dt_chem = compute_chem_rates(pGrid);
+    dt_chem = compute_chem_rates(pGrid, pDomain->Comm_Domain);
 
     /* Compute rates and time step for thermal energy update */
-    dt_therm = compute_therm_rates(pGrid);
+    dt_therm = compute_therm_rates(pGrid, pDomain->Comm_Domain);
 
     /* fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm); */
   
@@ -968,7 +968,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
       /* Check new energies and ionization fractions against initial
 	 values to see if we've changed them as much as possible. If so,
 	 exit loop. */
-      if (check_range(pGrid)) {
+      if (check_range(pGrid, pDomain->Comm_Domain)) {
 	pGrid->dt = dt_done;
 	/* fprintf(stderr,"In check range \n"); */
 	break;
@@ -983,7 +983,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
       /* Compute a new hydro time step based on the new temperature
 	 distribution. If it's smaller than the time step we've already 
 	 advanced, then exit. */
-      dt_hydro = compute_dt_hydro(pGrid);
+      dt_hydro = compute_dt_hydro(pGrid, pDomain->Comm_Domain);
       if (dt_hydro < dt_done) {
       	/* fprintf(stderr,"dt_hydro %e dt done %e \n", dt_hydro, dt_done); */
       	pGrid->dt = dt_done;

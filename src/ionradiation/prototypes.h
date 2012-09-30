@@ -56,7 +56,7 @@ Real ki_heat_rate(void);
 /* ionradplane_3d.c */
 void add_radplane_3d(GridS *pGrid, int dir, Real flux);
 void ion_radplane_init_domain_3d(GridS *pGrid, DomainS *pDomain);
-void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid);
+void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid, MPI_Comm Comm_Domain);
 
 /*----------------------------------------------------------------------------*/
 /* ionrad_smr.c */

@@ -86,7 +86,7 @@ void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
  */
 
 void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, 
-		       GridS *pGrid) {
+		       GridS *pGrid, MPI_Comm Comm_Domain) {
   int lr;
   Real tau, n_H, kph, etau, cell_len;
   Real flux, flux_frac;
@@ -374,7 +374,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
     /* If we're parallel, get the maximum flux fraction left and see
        if we should continue to the next set of processors. */
     err = MPI_Allreduce(&max_flux_frac, &max_flux_frac_glob, 1, MP_RL,
-			MPI_MAX, MPI_COMM_WORLD);
+			MPI_MAX, Comm_Domain);
     if (err) ath_error("[get_ph_rate_plane]: MPI_Allreduce error = %d\n", err);
     if (max_flux_frac_glob < MINFLUXFRAC) break;
   }
