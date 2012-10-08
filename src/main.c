@@ -536,6 +536,13 @@ int main(int argc, char *argv[])
 	}
       }
     }
+
+/* With SMR, restrict solution from Child --> Parent grids  */
+/* after updating the fine grids' ionizing flux */
+#ifdef STATIC_MESH_REFINEMENT
+    RestrictCorrect(&Mesh);
+#endif
+
 #endif
 /*--- Step 9c. ---------------------------------------------------------------*/
 /* Loop over all Domains and call Integrator */
