@@ -46,6 +46,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
+      /*#ifndef MPI_PARALLEL*/
+      /*      pPO->ionFlx[dim] = pCO->ionFlx[dim]*/
       if(pPO->ionFlx[dim] != NULL) {
 	fprintf(stderr, "Beginning receive call for %d of %d \n", npg+1, pGrid->NPGrid);
 
