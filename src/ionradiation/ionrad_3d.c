@@ -874,7 +874,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*    if (finegrid) ionrad_prolongate(pDomain);*/
   if (finegrid) { 
     fprintf(stderr, "Going to rcv for domain %d \n", pDomain->Level);
-    ionrad_prolong_rcv(pGrid, dim, pDomain->Level);
+    ionrad_prolong_rcv(pGrid, dim, pDomain->Level, pDomain->DomNumber);
   }
 #endif
 #endif
@@ -1018,7 +1018,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 #ifdef STATIC_MESH_REFINEMENT
 #ifdef MPI_PARALLEL
   fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain %d \n", pDomain->Level);
-  ionrad_prolong_snd(pGrid, dim, pDomain->Level);
+  ionrad_prolong_snd(pGrid, dim, pDomain->Level, pDomain->DomNumber);
 #endif
 #endif
 

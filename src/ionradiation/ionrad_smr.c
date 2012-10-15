@@ -25,7 +25,7 @@
 
 #ifdef STATIC_MESH_REFINEMENT
 
-void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
+void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 {
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
@@ -51,10 +51,10 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
       if(pPO->ionFlx[dim] != NULL) {
 	fprintf(stderr, "Beginning receive call for %d of %d \n", npg+1, pGrid->NPGrid);
 
-	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world);
+	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, domnumber);
 	tag1 = atoi(temp);
-	tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + myID_Comm_world;
-	fprintf(stderr, "rcvconcat: %d, powers:%d \n", tag1, tag2);
+	tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + domnumber;
+	fprintf(stderr, "rcvconcat: %d, powers:%d domno: %d, myid :%d \n", tag1, tag2, domnumber, myID_Comm_world);
 	
 	/*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
 	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
@@ -147,7 +147,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level)
     }
 }
 
-void ionrad_prolong_snd(GridS *pGrid, int dim, int level)
+void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 {
 
   int ncg, ierr;
@@ -226,7 +226,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level)
     if(pCO->ionFlx[dim] != NULL) {
       fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID);
 
-      sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID);
+      sprintf(temp,"%d%d%d%d", level, domnumber, level+1, pCO->ID);
 	tag1 = atoi(temp);
 	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID;
 	fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2);
