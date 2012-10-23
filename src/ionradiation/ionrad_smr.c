@@ -51,7 +51,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
       if(pPO->ionFlx[dim] != NULL) {
 	fprintf(stderr, "Beginning receive call for %d of %d \n", npg+1, pGrid->NPGrid);
 
-	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, domnumber);
+	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world);
 	tag1 = atoi(temp);
 	tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + domnumber;
 	fprintf(stderr, "rcvconcat: %d, powers:%d domno: %d, myid :%d \n", tag1, tag2, domnumber, myID_Comm_world);
@@ -226,11 +226,10 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
     if(pCO->ionFlx[dim] != NULL) {
       fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID);
 
-      sprintf(temp,"%d%d%d%d", level, domnumber, level+1, pCO->ID);
+      sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID);
 	tag1 = atoi(temp);
 	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID;
 	fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2);
-
 
       ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag1, MPI_COMM_WORLD, &send_rq[ncg]);
       fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);
