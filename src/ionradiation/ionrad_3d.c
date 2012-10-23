@@ -26,7 +26,7 @@
 #include "../prototypes.h"
 
 #ifdef ION_RADIATION
-extern tlim;
+extern Real tlim;
 /* Global storage arrays */
 static Real ***ph_rate;            /* Photoionization rate */
 static Real ***edot;               /* Rate of change of energy */
