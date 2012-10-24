@@ -263,6 +263,9 @@ typedef struct GridOvrlp_s{
   ConsS **myFlx[6];   /*!< fluxes of conserved variables at 6 boundaries */
 #ifdef ION_RADPLANE
   Real *ionFlx[6];
+#ifdef MPI_PARALLEL
+  Real ion_mpitag;
+#endif /*MPI_PARALLEL*/
 #endif /*ION_RADPLANE*/
 #ifdef MHD
   Real **myEMF1[6];      /*!< fluxes of magnetic field (EMF1) at 6 boundaries */

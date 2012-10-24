@@ -460,6 +460,16 @@ void init_grid(MeshS *pM)
               n3z = pG->CGrid[ncg].ijke[2] - pG->CGrid[ncg].ijks[2] + 1;
               pG->CGrid[ncg].nWordsRC = n1z*n2z*n3z*(NVAR);
               pG->CGrid[ncg].nWordsP  = 0;
+
+	      /*Adding in tag for use in MPI communications for ionizing flux*/
+#ifdef MPI_PARALLEL
+	      pG->CGrid[ncg].ion_mpitag = ncd << 21; /* Let the */
+	      pG->CGrid[ncg].ion_mpitag +=  pG->CGrid[ncg].ID << 8; /* Let the ?? grid ID be bitshifted 8 to the left*/
+	      pG->CGrid[ncg].ion_mpitag += myID_Comm_world; /*Let the ?? grid  ID not be bitshifted*/
+	      
+#endif
+
+
 if(myID_Comm_world==0){
 printf("\nCGrid overlap is %d x %d x %d\n",n1z,n2z,n3z);
 }
