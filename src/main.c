@@ -50,9 +50,6 @@ static char *athena_version = "version 4.0 - 01-Jul-2010";
  *   change_rundir - creates and outputs data to new directory
  *   usage         - outputs help message and terminates execution
  *============================================================================*/
-#ifdef ION_RADIATION
-Real tlim;
-#endif
 static void change_rundir(const char *name);
 static void usage(const char *prog);
 
@@ -101,9 +98,7 @@ int main(int argc, char *argv[])
   FILE *fp;               /* file pointer for data outputs */
   int nflag=0;            /* set to 1 if -n argument is given on command line */
   int i,nlim;             /* cycle index and limit */
-#ifndef ION_RADIATION 
   Real tlim;              /* time limit (in code units) */
-#endif
   int out_level, err_level, lazy; /* diagnostic output & error log levels */
   int iflush, nflush;             /* flush buffers every iflush cycles */
 

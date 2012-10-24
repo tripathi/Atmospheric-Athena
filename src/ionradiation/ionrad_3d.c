@@ -26,7 +26,6 @@
 #include "../prototypes.h"
 
 #ifdef ION_RADIATION
-extern Real tlim;
 /* Global storage arrays */
 static Real ***ph_rate;            /* Photoionization rate */
 static Real ***edot;               /* Rate of change of energy */
@@ -1017,12 +1016,8 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
 #ifdef STATIC_MESH_REFINEMENT
 #ifdef MPI_PARALLEL
-  fprintf(stderr,"TLIM: %f \n", tlim);
-  if (pGrid->dt+pMesh->time < tlim)
-    {
-      fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain %d \n", pDomain->Level);
-      ionrad_prolong_snd(pGrid, dim, pDomain->Level, pDomain->DomNumber);
-    }
+  fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain %d \n", pDomain->Level);
+  ionrad_prolong_snd(pGrid, dim, pDomain->Level, pDomain->DomNumber);
 #endif
 #endif
 
