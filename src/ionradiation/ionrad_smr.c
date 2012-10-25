@@ -27,6 +27,8 @@
 
 void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 {
+
+  MeshS *pMesh = pGrid->Mesh;
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
   MPI_Status stat;
@@ -37,7 +39,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   int rcvd = 0;
   int receive_done;
   int *succtest;
-  int tag1, tag2;
+  int tag1, tag2, tag3;
   char temp[10];
 
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
@@ -49,18 +51,19 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
       /*#ifndef MPI_PARALLEL*/
       /*      pPO->ionFlx[dim] = pCO->ionFlx[dim]*/
       if(pPO->ionFlx[dim] != NULL) {
-	fprintf(stderr, "Beginning receive call for %d of %d \n", npg+1, pGrid->NPGrid);
-
-	sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world);
-	tag1 = atoi(temp);
-	tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + domnumber;
-	fprintf(stderr, "rcvconcat: %d, powers:%d domno: %d, myid :%d \n", tag1, tag2, domnumber, myID_Comm_world);
+	fprintf(stderr, "Beginning receive call for domain level %d \n", level);
+	
+	/* sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world); */
+	/* tag1 = atoi(temp); */
+	/* tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + domnumber; */
+	tag3 = pPO->DomN + 100;
+	/* fprintf(stderr, "rcvconcat: %d, powers:%d domno: %d, myid :%d \n", tag1, tag2, domnumber, myID_Comm_world); */
 	
 	/*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
 	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
-	fprintf(stderr, "myid: %d, pPO ID: %d \n", myID_Comm_world, pPO->ID);
-	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag1, MPI_COMM_WORLD, &(rcv_rq[npg]));
-	fprintf (stderr, "did i get here? %d \n", ierr);
+	/* fprintf(stderr, "myid: %d, pPO ID: %d \n", myID_Comm_world, pPO->ID); */
+	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Parent, &(rcv_rq[npg]));
+	/* fprintf (stderr, "did i get here? %d \n", ierr); */
       } else {
 	/*AT 9/26/12: Faking a successful test for grids that are not in the direction of propagation*/
 	succtest[npg] = 1;
@@ -78,7 +81,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 		{ 
 		  succtest[npg]= 1; 
 		  rcvd ++;
-		  fprintf(stderr, " YAY I received data from parent %d of %d \n", npg, pGrid->NPGrid);
+		  fprintf(stderr, " Data received from parent w/id: %d for tag %d. I'm on level %d \n", pGrid->PGrid[npg].ID, pGrid->PGrid[npg].DomN + 100, level);
+		  
 		} 
 	      else {
 		/*		fprintf(stderr, "Still waiting \n");*/
@@ -93,7 +97,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
 
       if(pPO->ionFlx[dim] != NULL) {
-	fprintf(stderr, "Going to go fill edgeflux now \n");
+	/* fprintf(stderr, "Going to go fill edgeflux now \n"); */
 
 	switch(dim) { 
 	case 0: case 1: { 
@@ -149,7 +153,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 {
-
+  MeshS *pMesh = pGrid->Mesh;
   int ncg, ierr;
   GridOvrlpS *pCO;
   MPI_Request *send_rq;
@@ -157,12 +161,12 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 
   int fixed, arrsize;
   int i, j, k;
-  int tag1, tag2;
+  int tag1, tag2, tag3;
   char temp[10];
 
   /* Loop over children grids to fill their buffer arrays*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
-    fprintf(stderr, "Actually filling buffer \n");
+    /* fprintf(stderr, "Actually filling buffer \n"); */
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
     switch(dim) {
     case 0: case 1: {
@@ -224,15 +228,18 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
     /* The point of such a check is to ensure that we're not trying to communicate, when there's an overlapping grid not in the direction of propagation*/
     /*Send buffer arrays of radiation flux to children grids*/
     if(pCO->ionFlx[dim] != NULL) {
-      fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID);
+      /* fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID); */
 
-      sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID);
-	tag1 = atoi(temp);
-	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID;
-	fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2);
+      /* sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID); */
+      /* 	tag1 = atoi(temp); */
+      /* 	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID; */
+	/* fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2); */
+	tag3 = domnumber + 100;
 
-      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag1, MPI_COMM_WORLD, &send_rq[ncg]);
-      fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);
+
+      ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Children, &send_rq[ncg]);
+      fprintf(stderr, "Sent data to child ID %d using tag %d. I'm on level %d \n", pCO->ID, tag3, level);
+      /* fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid); */
     }
   }
 }
