@@ -713,8 +713,10 @@ nl,next_domainid[nl],pM->DomainsPerLevel[nl]);
     for(n=0; n<(pD->NGrid[2]); n++){
     for(m=0; m<(pD->NGrid[1]); m++){
     for(l=0; l<(pD->NGrid[0]); l++){
+      fprintf(stderr, "  n:%d, m:%d, l%d, out of %d %d %d \n", n, m, l, pD->NGrid[2], pD->NGrid[1], pD->NGrid[0]);
       ranks[groupn] = pD->GData[n][m][l].ID_Comm_world;
       pD->GData[n][m][l].ID_Comm_Domain = groupn;
+      fprintf(stderr, "nl%d, nd%d, ID_Comm_world: %d, ID_Comm_Domain %d, n:%d, m:%d, l%d \n", nl, nd, pD->GData[n][m][l].ID_Comm_world, pD->GData[n][m][l].ID_Comm_Domain, n, m, l);
       groupn++;
     }}}
 
@@ -823,6 +825,7 @@ printf("WorldID=%d Domain_CommID=%d\n",myID_Comm_world,myrank);
           } else {
             pCD->GData[n][m][l].ID_Comm_Parent = ranks[irank];
           }
+	  fprintf(stderr, "nl%d, nd%d, ID_Comm_world: %d, ID_Comm_Domain %d, ID_Comm_Parent %d \n", nl, nd, pD->GData[n][m][l].ID_Comm_world, pD->GData[n][m][l].ID_Comm_Domain, pD->GData[n][m][l].ID_Comm_Parent, n, m, l);
         }}}
       }
     }

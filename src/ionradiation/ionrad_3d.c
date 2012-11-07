@@ -872,7 +872,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 #ifdef MPI_PARALLEL
   /*    if (finegrid) ionrad_prolongate(pDomain);*/
   if (finegrid) { 
-    fprintf(stderr, "Going to rcv for domain %d \n", pDomain->Level);
+    /* fprintf(stderr, "Going to rcv for domain level  %d \n", pDomain->Level); */
     ionrad_prolong_rcv(pGrid, dim, pDomain->Level, pDomain->DomNumber);
   }
 #endif
@@ -902,6 +902,8 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*If on a finer level, run under the time condition*/
   /*This assumes ONLY treats the root level as special.*/
   /* while(finegrid || niter < maxiter){ */
+  fprintf(stderr,"I am on level %d and I am in ionrad_3d.c \n",  pDomain->Level);
+  if (finegrid || !hydro_done)   fprintf(stderr,"and I am going to do the while loop \n");
   while(finegrid || !hydro_done){
     /* if (niter % 200 == 0) { */
     /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
@@ -1016,7 +1018,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
 #ifdef STATIC_MESH_REFINEMENT
 #ifdef MPI_PARALLEL
-  fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain %d \n", pDomain->Level);
+  /* fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain level %d \n", pDomain->Level); */
   ionrad_prolong_snd(pGrid, dim, pDomain->Level, pDomain->DomNumber);
 #endif
 #endif
