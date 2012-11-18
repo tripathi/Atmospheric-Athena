@@ -44,7 +44,7 @@ static Real ***e_th_init;          /* Thermal energies on entry to
 				      routine */
 static Real ***x_init;             /* Ionization fraction on entry to
 				      routine */
-Real tcoarse; /*Keep track of higher domain time step*/
+static Real tcoarse = 0; /*Keep track of higher domain time step*/
 /* ------------------------------------------------------------
  * Photoionization routines
  * ------------------------------------------------------------
@@ -840,6 +840,13 @@ void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 #endif
 }
 
+void set_coarse_time(){
+  int err;
+  Real tcoarse_glob;
+  err = MPI_Allreduce(&tcoarse, &tcoarse_glob, 1, MP_RL, MPI_MAX, MPI_COMM_WORLD);
+  tcoarse = tcoarse_glob;
+  return;
+}
 
 /* ------------------------------------------------------------
  * Main integration routine
@@ -878,7 +885,6 @@ void ion_radtransfer_3d(DomainS *pDomain)
   else { tcoarse = 0;}
 #endif
 #endif
-
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
 

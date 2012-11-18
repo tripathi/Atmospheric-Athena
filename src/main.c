@@ -532,6 +532,7 @@ int main(int argc, char *argv[])
 	  (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
 	  bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
 	}
+	if (nl==0) set_coarse_time();
       }
     }
 

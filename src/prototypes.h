@@ -143,10 +143,6 @@ void init_mesh(MeshS *pM);
 void get_myGridIndex(DomainS *pD, const int my_id, int *pi, int *pj, int *pk);
 
 /*----------------------------------------------------------------------------*/
-/* main.c */
-extern Real tcoarse;
-
-/*----------------------------------------------------------------------------*/
 /* new_dt.c */
 void new_dt(MeshS *pM);
 
