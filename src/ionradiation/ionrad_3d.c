@@ -44,7 +44,7 @@ static Real ***e_th_init;          /* Thermal energies on entry to
 				      routine */
 static Real ***x_init;             /* Ionization fraction on entry to
 				      routine */
-static Real tcoarse =0; /*Keep track of higher domain time step*/
+Real tcoarse; /*Keep track of higher domain time step*/
 /* ------------------------------------------------------------
  * Photoionization routines
  * ------------------------------------------------------------
@@ -875,6 +875,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* fprintf(stderr, "Going to rcv for domain level  %d \n", pDomain->Level); */
     ionrad_prolong_rcv(pGrid, dim, pDomain->Level, pDomain->DomNumber);
   }
+  else { tcoarse = 0;}
 #endif
 #endif
 
@@ -1024,7 +1025,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 #endif
 
   /* Write status */
-  ath_pout(0, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
+  fprintf(stderr, "Radiation done in %d iterations: %d thermal, %d chemical; new dt = %e\n", niter, ntherm, nchem, pGrid->dt);
 
   /* Sanity check */
   if (!finegrid && (pGrid->dt < 0)) {
