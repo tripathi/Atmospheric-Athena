@@ -526,6 +526,7 @@ int main(int argc, char *argv[])
     /* Note that we do the ionizing radiative transfer step first
        because it is capable of decreasing the time step relative to
        the value computed by Courant. */
+    clear_coarse_time();
     for (nl=0; nl<(Mesh.NLevels); nl++){
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
         if (Mesh.Domain[nl][nd].Grid != NULL){

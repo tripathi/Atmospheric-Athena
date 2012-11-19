@@ -40,6 +40,7 @@ void ion_radtransfer_3d(DomainS *pD);
 void ion_radtransfer_init_3d(GridS *pG, DomainS *pD, int ires);
 void ion_radtransfer_init_domain_3d(GridS *pG, DomainS *pD);
 void set_coarse_time();
+void clear_coarse_time();
 
 /*----------------------------------------------------------------------------*/
 /* ionrad_chemistry.c */

@@ -848,6 +848,12 @@ void set_coarse_time(){
   return;
 }
 
+void clear_coarse_time(){
+  MPI_Barrier(MPI_COMM_WORLD);
+  tcoarse = 0;
+  return;
+}
+
 /* ------------------------------------------------------------
  * Main integration routine
  * ------------------------------------------------------------
@@ -882,7 +888,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* fprintf(stderr, "Going to rcv for domain level  %d \n", pDomain->Level); */
     ionrad_prolong_rcv(pGrid, dim, pDomain->Level, pDomain->DomNumber);
   }
-  else { tcoarse = 0;}
+  else { tcoarse = 0;} /*Will need to fix placement of calls to be valid for MPI+-SMR*/
 #endif
 #endif
   /* Set all temperatures below the floor to the floor */
