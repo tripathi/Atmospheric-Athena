@@ -255,13 +255,13 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed];
-	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i);
+	    /* fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
 
 	    for (i=s; i<=e; i+=lr) {
 	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 
-	      	      fprintf(stderr, "I am %d My flux at k: %d j: %d i: %d is %f \n", myID_Comm_world, k-pGrid->ks, j-pGrid->js, i-pGrid->is, pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);
+	      	      /* fprintf(stderr, "I am %d My flux at k: %d j: %d i: %d is %f \n", myID_Comm_world, k-pGrid->ks, j-pGrid->js, i-pGrid->is, pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]); */
 
 /* 	      if (pGrid->Nx[0] != 64){ */
 /* 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { */
@@ -280,7 +280,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 	      flux_frac = flux / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed]; /*Check if this should still be 0 or not*/
 	      if (flux_frac < MINFLUXFRAC){
 		for (ii=i; ii<=e; ii+=lr) {
-		  pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][ii-s] = 0.0;
+		  pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][ii-s+1] = 0.0;
 		}
 		break;
 	      }
