@@ -203,13 +203,15 @@ void save_energy_and_x(GridS *pGrid)
 
 /* Routine to check if we have changed the total energy, thermal
    energy, or x_n as much as we are allowed. */
-int check_range(GridS *pGrid, MPI_Comm Comm_Domain) {
+int check_range(DomainS *pDomain) {
+  GridS *pGrid = pDomain->Grid;
   int i, j, k;
   Real e_thermal, n_H, n_Hplus, n_e, x;
   long cellcount = 0;
 #ifdef MPI_PARALLEL
   int err;
   long cellcount_glob = 0;
+  MPI_Comm Comm_Domain = pDomain->Comm_Domain;
 #endif
 
   /* Check thermal energy */
@@ -582,13 +584,15 @@ void ionization_update(GridS *pGrid, Real dt)
 }
 
 
-Real compute_dt_hydro(GridS *pGrid, MPI_Comm Comm_Domain) {
+Real compute_dt_hydro(DomainS *pDomain) {
+  GridS *pGrid = pDomain->Grid;
   int i,j,k;
   Real di,v1,v2,v3,qsq,p,asq,cf1sq,cf2sq,cf3sq,max_dti=0.0,dt;
 #ifdef MHD
   Real b1,b2,b3,bsq,tsum,tdif;
 #endif /* MHD */
 #ifdef MPI_PARALLEL
+  MPI_Comm Comm_Domain = pDomain->Comm_Domain;
   Real dt_glob;
   int err;
 #endif /* MPI_PARALLEL */
@@ -938,11 +942,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
       {
 
-#ifdef MPI_PARALLEL
-	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid, pDomain->Comm_Domain);
-#else
-	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid);
-#endif
+	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pDomain);
       }
 #endif
 
@@ -996,7 +996,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
       /* Check new energies and ionization fractions against initial
 	 values to see if we've changed them as much as possible. If so,
 	 exit loop. */
-      if (check_range(pGrid, pDomain->Comm_Domain)) {
+      if (check_range(pDomain)) {
 	pGrid->dt = dt_done;
 	/* fprintf(stderr,"In check range \n"); */
 	break;
@@ -1011,7 +1011,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
       /* Compute a new hydro time step based on the new temperature
 	 distribution. If it's smaller than the time step we've already 
 	 advanced, then exit. */
-      dt_hydro = compute_dt_hydro(pGrid, pDomain->Comm_Domain);
+      dt_hydro = compute_dt_hydro(pDomain);
       if (dt_hydro < dt_done) {
       	/* fprintf(stderr,"dt_hydro %e dt done %e \n", dt_hydro, dt_done); */
       	pGrid->dt = dt_done;
