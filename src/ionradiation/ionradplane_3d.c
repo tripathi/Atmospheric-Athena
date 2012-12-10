@@ -86,7 +86,7 @@ void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
  */
 void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain) {
   GridS *pGrid = pDomain->Grid;
-  int lr;
+  int lr, fixed;
   Real tau, n_H, kph, etau, cell_len;
   Real flux, flux_frac;
   int i, j, k, ii;
@@ -98,7 +98,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
   Real *planeflux = NULL;
   Real max_flux_frac, max_flux_frac_glob;
   MPI_Status stat;
-  int fixed, npg, ncg, arrsize;
+  int npg, ncg, arrsize;
   MPI_Comm Comm_Domain = pDomain->Comm_Domain;
 #endif
 #ifdef STATIC_MESH_REFINEMENT
