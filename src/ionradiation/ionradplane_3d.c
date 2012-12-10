@@ -84,9 +84,13 @@ void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
  * source.
  * --------------------------------------------------------------
  */
+#ifdef MPI_PARALLEL
+void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid, MPI_Comm Comm_Domain) {
+#else
+void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, GridS *pGrid) {
+#endif
 
-void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, 
-		       GridS *pGrid, MPI_Comm Comm_Domain) {
+
   int lr;
   Real tau, n_H, kph, etau, cell_len;
   Real flux, flux_frac;
@@ -255,13 +259,13 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate,
 	    else
 #endif /* MPI_PARALLEL */
 	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed];
-/* 	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i); */
+	    fprintf(stderr,"Input: k: %d j: %d, i:0 Here: %e Mesh: %e\n",k-pGrid->ks, j-pGrid->js, flux, (pMesh->radplanelist)->flux_i);
 
 	    for (i=s; i<=e; i+=lr) {
 	      pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s] = flux;
 	      n_H = pGrid->U[k][j][i].s[0] / m_H;
 
-	      /*	      fprintf(stderr, "I am %d My flux at k: %d j: %d i: %d is %f \n", myID_Comm_world, k-pGrid->ks, j-pGrid->js, i-pGrid->is, pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);*/
+	      	      fprintf(stderr, "I am %d My flux at k: %d j: %d i: %d is %f \n", myID_Comm_world, k-pGrid->ks, j-pGrid->js, i-pGrid->is, pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][i-s]);
 
 /* 	      if (pGrid->Nx[0] != 64){ */
 /* 		if ((j<pGrid->js+1) && (k<pGrid->ks+1) && (i<s+2)) { */

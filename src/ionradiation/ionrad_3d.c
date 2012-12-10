@@ -841,17 +841,21 @@ void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 }
 
 void set_coarse_time(){
+#ifdef MPI_PARALLEL
   int err;
   Real tcoarse_glob;
   err = MPI_Allreduce(&tcoarse, &tcoarse_glob, 1, MP_RL, MPI_MAX, MPI_COMM_WORLD);
   tcoarse = tcoarse_glob;
   return;
+#endif
 }
 
 void clear_coarse_time(){
+#ifdef MPI_PARALLEL
   MPI_Barrier(MPI_COMM_WORLD);
   tcoarse = 0;
   return;
+#endif
 }
 
 /* ------------------------------------------------------------
@@ -929,10 +933,16 @@ void ion_radtransfer_3d(DomainS *pDomain)
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
       {
+
+#ifdef MPI_PARALLEL
 	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid, pDomain->Comm_Domain);
+#else
+	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pGrid);
+#endif
       }
 #endif
 
+#ifdef MPI_PARALLEL
     /* Compute rates and time step for chemistry update */
     dt_chem = compute_chem_rates(pGrid, pDomain->Comm_Domain);
 
