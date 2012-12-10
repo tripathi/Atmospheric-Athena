@@ -283,8 +283,9 @@ int check_range(GridS *pGrid, MPI_Comm Comm_Domain) {
 
 #define MAXSIGNCOUNT 4
 #define DAMPFACTOR 0.5
-Real compute_chem_rates(GridS *pGrid, MPI_Comm Comm_Domain)
+Real compute_chem_rates(DomainS *pDomain)
 {
+  GridS *pGrid = pDomain->Grid;
   int i, j, k, n;
   Real n_H, n_Hplus, n_e, d_nlim;
   Real e_sp, T, x;
@@ -293,6 +294,7 @@ Real compute_chem_rates(GridS *pGrid, MPI_Comm Comm_Domain)
 #ifdef MPI_PARALLEL
   int err;
   Real dt_chem_min_glob;
+  MPI_Comm Comm_Domain = pDomain->Comm_Domain;
 #endif
 
   /* Initialize chemistry time step to large time step */
@@ -405,8 +407,9 @@ Real compute_chem_rates(GridS *pGrid, MPI_Comm Comm_Domain)
 #undef DAMPFACTOR
 
 
-Real compute_therm_rates(GridS *pGrid, MPI_Comm Comm_Domain)
+Real compute_therm_rates(DomainS *pDomain)
 {
+  GridS *pGrid = pDomain->Grid;
   int i, j, k;
   Real n_H, n_Hplus, n_e, e_thermal;
   Real e_sp, T, x, e_sp_min, e_th_min, e_min, d_nlim;
@@ -415,6 +418,7 @@ Real compute_therm_rates(GridS *pGrid, MPI_Comm Comm_Domain)
 #ifdef MPI_PARALLEL
   int err;
   Real dt_therm_min_glob;
+  MPI_Comm Comm_Domain = pDomain->Comm_Domain;
 #endif
 
   /* Initialize thermal time step to large value */
@@ -942,12 +946,12 @@ void ion_radtransfer_3d(DomainS *pDomain)
       }
 #endif
 
-#ifdef MPI_PARALLEL
+
     /* Compute rates and time step for chemistry update */
-    dt_chem = compute_chem_rates(pGrid, pDomain->Comm_Domain);
+    dt_chem = compute_chem_rates(pDomain);
 
     /* Compute rates and time step for thermal energy update */
-    dt_therm = compute_therm_rates(pGrid, pDomain->Comm_Domain);
+    dt_therm = compute_therm_rates(pDomain);
 
     /* fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm); */
   
