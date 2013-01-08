@@ -936,12 +936,13 @@ void ion_radtransfer_3d(DomainS *pDomain)
     
     /* Initialize photoionization rate array */
     ph_rate_init(pGrid);
+    /* if isnan(pMesh->dt) fprintf(stderr,"It's nan at %e \n", pGrid->U[0][0][0].d); */
 
     /* Compute photoionization rate from all sources */
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
       {
-
+	/* fprintf(stderr, "I made it in here\n"); */
 	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pDomain);
       }
 #endif
@@ -1035,6 +1036,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
 
     /*Set mesh timestep equal to grid timestep*/
     pMesh->dt = pGrid->dt;
+    /* if isnan(pGrid->dt) fprintf(stderr, "Setting mesh to nan timestep \n"); */
     
     if (niter==maxiter) {
 	pGrid->dt = dt_done;
