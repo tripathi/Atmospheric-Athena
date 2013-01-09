@@ -31,25 +31,30 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   MeshS *pMesh = pGrid->Mesh;
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
-  MPI_Status stat;
-  MPI_Request *rcv_rq;
   int err, ierr;
-  GridOvrlpS *pPO;
+  GridOvrlpS *pPO, *pCO;
+#ifdef MPI_PARALLEL
   int allrcv =0;
   int rcvd = 0;
   int receive_done;
   int *succtest;
   int tag1, tag2, tag3;
   char temp[10];
+  MPI_Status stat;
+  MPI_Request *rcv_rq;
 
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
-  
+#else
+  GridS *parentgrid;
+#endif
+
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
       /*#ifndef MPI_PARALLEL*/
       /*      pPO->ionFlx[dim] = pCO->ionFlx[dim]*/
+#ifdef MPI_PARALLEL
       if(pPO->ionFlx[dim] != NULL) {
 	fprintf(stderr, "Beginning receive call for domain level %d \n", level);
 	
@@ -138,16 +143,43 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	  } else {
 	    fixed = pPO->ijke[2] + 1 - nghost;
 	  }
-	for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
-	  for (i=pPO->ijks[0] - nghost; i<= pPO->ijke[0]+1 - nghost; i++) {
-	    indexarith = (j-(pPO->ijks[1]-nghost))*(pPO->ijke[0] - pPO->ijks[0] + 2)+i-(pPO->ijks[0]-nghost);
-	    pGrid->EdgeFlux[fixed][k][i] = pPO->ionFlx[dim][indexarith];
+	  for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
+	    for (i=pPO->ijks[0] - nghost; i<= pPO->ijke[0]+1 - nghost; i++) {
+	      indexarith = (j-(pPO->ijks[1]-nghost))*(pPO->ijke[0] - pPO->ijks[0] + 2)+i-(pPO->ijks[0]-nghost);
+	      pGrid->EdgeFlux[fixed][k][i] = pPO->ionFlx[dim][indexarith];
+	    }
 	  }
-	}
-	break;
+	  break;
 	}
 	}
       }
+#else
+      parentgrid = pM->Domain[level+1][pPO->DomN].Grid;
+      pCO=(GridOvrlpS*)&(pGrid->CGrid[npg]);
+      /*Use the parent grid's child grid ionFlx array to fill this grid's edgeflux array*/
+      /*Do so along the appropriate dimension*/
+
+      /* AT 12/23/12 Add case statement back in when 1 direction works*/
+      /* switch(dim) { */
+      /* case 0: case 1: { */
+	/*AT 12/23/12 BE CAREFUL WITH FACTORS OF 2 IN INDICES*/
+	if (fmod(dim,2) == 0) {
+	  fixed = (pPO->ijks[0] - nghost) * 2.;
+	} else {
+	  fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
+	}
+	fprintf(stderr,"%%%DIM: %d FIXED: %d", dim, fixed);
+
+      if(pCO->ionFlx[dim] != NULL) {
+	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
+	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
+	    pGrid->EdgeFlux[k][j][fixed] = pCO->ionFlx[dim][indexarith];
+	  }
+	}
+      }
+
+#endif
     }
 }
 
@@ -156,13 +188,15 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
   MeshS *pMesh = pGrid->Mesh;
   int ncg, ierr;
   GridOvrlpS *pCO;
-  MPI_Request *send_rq;
-  send_rq = (MPI_Request*) calloc_1d_array(pGrid->NCGrid,sizeof(MPI_Request)) ;
-
   int fixed, arrsize;
   int i, j, k;
+
+#ifdef MPI_PARALLEL
+  MPI_Request *send_rq;
+  send_rq = (MPI_Request*) calloc_1d_array(pGrid->NCGrid,sizeof(MPI_Request)) ;
   int tag1, tag2, tag3;
   char temp[10];
+#endif
 
   /* Loop over children grids to fill their buffer arrays*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
@@ -228,6 +262,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
     /* The point of such a check is to ensure that we're not trying to communicate, when there's an overlapping grid not in the direction of propagation*/
     /*Send buffer arrays of radiation flux to children grids*/
     if(pCO->ionFlx[dim] != NULL) {
+#ifdef MPI_PARALLEL
       /* fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID); */
 
       /* sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID); */
@@ -239,7 +274,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 
       ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Children, &send_rq[ncg]);
       fprintf(stderr, "Sent data to child ID %d using tag %d. I'm on level %d \n", pCO->ID, tag3, level);
-      /* fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid); */
+      /* fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);*/
+#endif
     }
   }
 }
@@ -311,6 +347,12 @@ void ionrad_prolongate(DomainS *pD)
 	  upperj = (int) (floor(j/2) + thisd.ijkl[1] - higherdom->Disp[1]);
 	  /* fprintf(stderr, "This: %d Upper: %d This: %d Upper: %d \n", k, upperk, j, upperj); */
   	  pG->EdgeFlux[k][j][fixed] =highergrid->EdgeFlux[upperk][upperj][thisd.ijkl[0]-higherdom->Disp[0]];
+	  /*AT: 12/23/12  - Trying to write pPO equivalent*/
+	  /* Instead of using highergrid, need to use pPO->ionFlx.  The question is >> -how to identify what is the higher grid >>-or if I'm using pPO how do I fill ionFlx, since I can see filling my pCO->ionFlx.  >> If I'm a child, can I access my parent's pCO?
+ */
+
+
+
   	}
       }
     } else {ath_error("Doesnt work yet \n");}
