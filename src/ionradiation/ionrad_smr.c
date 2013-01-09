@@ -46,7 +46,9 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
 #else
+  DomainS *pDomain = pMesh->Domain[level][domnumber];
   GridS *parentgrid;
+  int is, js, ks;
 #endif
 
   for (npg=0; npg<(pGrid->NPGrid); npg++)
@@ -154,8 +156,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	}
       }
 #else
-      parentgrid = pM->Domain[level+1][pPO->DomN].Grid;
-      pCO=(GridOvrlpS*)&(pGrid->CGrid[npg]);
+      parentgrid = pMesh->Domain[level-1][pPO->DomN].Grid;
+      pCO=(GridOvrlpS*)&(parentgrid->CGrid[npg]);
       /*Use the parent grid's child grid ionFlx array to fill this grid's edgeflux array*/
       /*Do so along the appropriate dimension*/
 
@@ -168,13 +170,16 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	} else {
 	  fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
 	}
-	fprintf(stderr,"%%%DIM: %d FIXED: %d", dim, fixed);
+	fprintf(stderr,"\n DIM: %d FIXED: %d", dim, fixed);
 
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
+	    ks = k - pDomain->Disp[2];
+	    fprintf(stderr,"disp2 :%d \n", pDomain->Disp[2]);
 	    pGrid->EdgeFlux[k][j][fixed] = pCO->ionFlx[dim][indexarith];
+	    fprintf(stderr,"k:%d, j:%d, fixed:%d, indexarith:%d", k, j, fixed, indexarith);
 	  }
 	}
       }
@@ -209,6 +214,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       } else {
 	fixed = pCO->ijke[0] + 1 - nghost;
       }
+
+      fprintf(stderr, "I think my child's x- start is %d and end %d. So the edgeflux corresponds to those - %d", pCO->ijks[0], pCO->ijke[0], nghost);
 
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
