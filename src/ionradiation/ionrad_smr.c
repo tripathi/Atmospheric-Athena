@@ -46,7 +46,9 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
 #else
-  DomainS *pDomain = pMesh->Domain[level][domnumber];
+  DomainS *pDomain;
+  pDomain = (DomainS*)&(pMesh->Domain[level][domnumber]);  /* ptr to Domain */
+
   GridS *parentgrid;
   int is, js, ks;
 #endif
@@ -165,21 +167,23 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
       /* switch(dim) { */
       /* case 0: case 1: { */
 	/*AT 12/23/12 BE CAREFUL WITH FACTORS OF 2 IN INDICES*/
-	if (fmod(dim,2) == 0) {
+      /*AT 1/11/13: Changing the if and else conditions to be reversed of what they originally were*/
+	if (fmod(dim,2) != 0) {
 	  fixed = (pPO->ijks[0] - nghost) * 2.;
 	} else {
 	  fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
 	}
-	fprintf(stderr,"\n DIM: %d FIXED: %d", dim, fixed);
+	/* fprintf(stderr,"\n DIM: %d FIXED: %d \n", dim, fixed); */
 
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
-	    ks = k - pDomain->Disp[2];
-	    fprintf(stderr,"disp2 :%d \n", pDomain->Disp[2]);
-	    pGrid->EdgeFlux[k][j][fixed] = pCO->ionFlx[dim][indexarith];
-	    fprintf(stderr,"k:%d, j:%d, fixed:%d, indexarith:%d", k, j, fixed, indexarith);
+	    ks = k*2 - pDomain->Disp[2];
+	    js = j*2 - pDomain->Disp[1];
+	    /* fprintf(stderr," k:%d, ks:%d, j:%d, js:%d ydisp :%d \n", k, ks, j, js, pDomain->Disp[2]); */
+	    pGrid->EdgeFlux[ks][js][fixed] = pCO->ionFlx[dim][indexarith];
+	    /* fprintf(stderr,"k:%d, j:%d, fixed:%d, indexarith:%d \n", k, j, fixed, indexarith); */
 	  }
 	}
       }
