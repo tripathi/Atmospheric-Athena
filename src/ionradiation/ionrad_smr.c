@@ -182,8 +182,25 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	    ks = k*2 - pDomain->Disp[2];
 	    js = j*2 - pDomain->Disp[1];
 	    /* fprintf(stderr," k:%d, ks:%d, j:%d, js:%d ydisp :%d \n", k, ks, j, js, pDomain->Disp[2]); */
+
+	    /*AT 01/14/13: This is a clumsy way of linearly interpolating the values to 2 cells.*/
+	    /*I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
+
 	    pGrid->EdgeFlux[ks][js][fixed] = pCO->ionFlx[dim][indexarith];
-	    /* fprintf(stderr,"k:%d, j:%d, fixed:%d, indexarith:%d \n", k, j, fixed, indexarith); */
+	    if (js < (pCO->ijke[1]+1)/2 -1) {
+	      if (ks < (pCO->ijke[2]+1)/2 -1) {	
+		pGrid->EdgeFlux[ks+1][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+	      } else {
+		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+	      } 
+	    } else {
+	      if (ks < (pCO->ijke[2]+1)/2 -1) {
+		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
+	      }
+	    }
+	    
+	    /* fprintf(stderr, "Doing k: %d - %d, j: %d - %d \n", ks, ks+1, js, js+1); */
+	    fprintf(stderr,"k:%d, j:%d, ks:%d, js:%d, fixed:%d, indexarith:%d \n", k, j, ks, js, fixed, indexarith);
 	  }
 	}
       }
@@ -199,6 +216,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
   GridOvrlpS *pCO;
   int fixed, arrsize;
   int i, j, k;
+  int indexarith;
 
 #ifdef MPI_PARALLEL
   MPI_Request *send_rq;
@@ -224,7 +242,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
-	    pCO->ionFlx[dim][(k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost)] = pGrid->EdgeFlux[k][j][fixed];
+	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
+	    pCO->ionFlx[dim][indexarith] = pGrid->EdgeFlux[k][j][fixed];
 	  }
 	}
 	/*Will need to check indexing to see if it's +1 or +2*/
