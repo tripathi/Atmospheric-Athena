@@ -187,9 +187,14 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	    /*I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
 
 	    pGrid->EdgeFlux[ks][js][fixed] = pCO->ionFlx[dim][indexarith];
+	    if (pCO->ionFlx[dim][indexarith] > .1)
+	      fprintf(stderr,"Setting ks and js to be %e \n", pCO->ionFlx[dim][indexarith]);
+
 	    if (js < (pCO->ijke[1]+1)/2 -1) {
 	      if (ks < (pCO->ijke[2]+1)/2 -1) {	
 		pGrid->EdgeFlux[ks+1][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
 	      } else {
 		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 	      } 
@@ -200,7 +205,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	    }
 	    
 	    /* fprintf(stderr, "Doing k: %d - %d, j: %d - %d \n", ks, ks+1, js, js+1); */
-	    fprintf(stderr,"k:%d, j:%d, ks:%d, js:%d, fixed:%d, indexarith:%d \n", k, j, ks, js, fixed, indexarith);
+	    /* fprintf(stderr,"k:%d, j:%d, ks:%d, js:%d, fixed:%d, indexarith:%d \n", k, j, ks, js, fixed, indexarith); */
 	  }
 	}
       }
@@ -244,6 +249,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
 	    pCO->ionFlx[dim][indexarith] = pGrid->EdgeFlux[k][j][fixed];
+	    if (pGrid->EdgeFlux[k][j][fixed] > 1.)
+	      fprintf(stderr,"On level: %d setting ionflx[%d][%d] to [%d][%d][%d] %e \n", level, dim, indexarith,k, j, fixed, pGrid->EdgeFlux[k][j][fixed]);
 	  }
 	}
 	/*Will need to check indexing to see if it's +1 or +2*/
