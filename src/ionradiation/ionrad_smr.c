@@ -159,7 +159,15 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
       }
 #else
       parentgrid = pMesh->Domain[level-1][pPO->DomN].Grid;
-      pCO=(GridOvrlpS*)&(parentgrid->CGrid[npg]);
+      for (i = 0; i <= parentgrid->NCGrid; i++) {
+	pCO=(GridOvrlpS*)&(parentgrid->CGrid[i]);
+	if (pCO->DomN == domnumber) {
+	  break;
+	}
+      }
+
+
+
       /*Use the parent grid's child grid ionFlx array to fill this grid's edgeflux array*/
       /*Do so along the appropriate dimension*/
 
@@ -187,8 +195,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	    /*I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
 
 	    pGrid->EdgeFlux[ks][js][fixed] = pCO->ionFlx[dim][indexarith];
-	    if (pCO->ionFlx[dim][indexarith] > .1)
-	      fprintf(stderr,"Setting ks and js to be %e \n", pCO->ionFlx[dim][indexarith]);
+	    /* if (pCO->ionFlx[dim][indexarith] > .1) */
+	    /*   fprintf(stderr,"Setting ks and js to be %e \n", pCO->ionFlx[dim][indexarith]); */
 
 	    if (js < (pCO->ijke[1]+1)/2 -1) {
 	      if (ks < (pCO->ijke[2]+1)/2 -1) {	
@@ -234,6 +242,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
     /* fprintf(stderr, "Actually filling buffer \n"); */
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
+      fprintf(stderr, "CHILD # %d of %d I think my child's x- start is %d and end %d. So the edgeflux corresponds to those - %d \n", ncg+1, pGrid->NCGrid, pCO->ijks[0], pCO->ijke[0], nghost);
+
     switch(dim) {
     case 0: case 1: {
       if (fmod(dim,2) != 0) {
@@ -242,15 +252,14 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	fixed = pCO->ijke[0] + 1 - nghost;
       }
 
-      fprintf(stderr, "I think my child's x- start is %d and end %d. So the edgeflux corresponds to those - %d", pCO->ijks[0], pCO->ijke[0], nghost);
 
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
 	    pCO->ionFlx[dim][indexarith] = pGrid->EdgeFlux[k][j][fixed];
-	    if (pGrid->EdgeFlux[k][j][fixed] > 1.)
-	      fprintf(stderr,"On level: %d setting ionflx[%d][%d] to [%d][%d][%d] %e \n", level, dim, indexarith,k, j, fixed, pGrid->EdgeFlux[k][j][fixed]);
+	    /* if (pGrid->EdgeFlux[k][j][fixed] > 1.) */
+	    /*   fprintf(stderr,"On level: %d setting ionflx[%d][%d] to [%d][%d][%d] %e \n", level, dim, indexarith,k, j, fixed, pGrid->EdgeFlux[k][j][fixed]); */
 	  }
 	}
 	/*Will need to check indexing to see if it's +1 or +2*/
