@@ -926,7 +926,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*This assumes ONLY treats the root level as special.*/
   /* while(finegrid || niter < maxiter){ */
   fprintf(stderr,"I am on level %d and I am in ionrad_3d.c \n",  pDomain->Level);
-  if (finegrid || !hydro_done)   fprintf(stderr,"and I am going to do the while loop \n");
+  /* if (finegrid || !hydro_done)   fprintf(stderr,"and I am going to do the while loop \n"); */
   while(finegrid || !hydro_done){
     /* if (niter % 200 == 0) { */
     /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
