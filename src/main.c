@@ -87,6 +87,8 @@ int main(int argc, char *argv[])
 /*Added A. Tripathi 01/10/12*/
 #ifdef ION_RADIATION 
   VDFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
+  GridS *pGrid;
+  int j, k;
 #endif
   int nl,nd;
   char *definput = "athinput";  /* default input filename */
@@ -537,9 +539,17 @@ int main(int argc, char *argv[])
         if (Mesh.Domain[nl][nd].Grid != NULL){
 	  (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
 	  bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
-	  /* for (k=pGrid->ks; k<=pGrid->ke; k++) { */
-	  /*   for (j=pGrid->js; j<=pGrid->je; j++) { */
-	  /*     for (i=pGrid->is; i<=pGrid->ie; i++) { */
+	  pGrid=Mesh.Domain[nl][nd].Grid;
+	  
+	  for (k=pGrid->ks; k<=pGrid->ke; k++) {
+	    for (j=pGrid->js; j<=pGrid->je; j++) {
+	      for (i=pGrid->is; i<=pGrid->ie; i++) {
+		if (isnan(pGrid->U[k][j][i].d)) fprintf(stderr, "MAIN: Level: %d, Domain: %d, k: %d, j: %d, i: %d, dens: %e \n", nl, nd, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d);
+	      }
+	    }
+	  }
+	 fprintf(stderr, "MAIN: Level: %d, Domain: %d, Cell 000 dens: %e \n", nl, nd, pGrid->U[4][4][4].d);
+
 	}
 	if (nl==0) set_coarse_time();
       }
