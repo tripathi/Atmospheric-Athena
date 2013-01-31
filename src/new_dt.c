@@ -31,6 +31,7 @@
 
 void new_dt(MeshS *pM)
 {
+  int newvar =0;
   GridS *pGrid;
 #ifndef SPECIAL_RELATIVITY
   int i,j,k;
@@ -74,6 +75,11 @@ void new_dt(MeshS *pM)
         v2 = pGrid->U[k][j][i].M2*di;
         v3 = pGrid->U[k][j][i].M3*di;
         qsq = v1*v1 + v2*v2 + v3*v3;
+	if (isnan(di) || isnan(v1)) {
+	    newvar = -999;
+	    fprintf(stderr, "Level: %d, Domain: %d, k:%d, j:%d, i:%d, d = %f, m1 = %f, s=%f \n", nl, nd, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d, pGrid->U[k][j][i].M1, pGrid->U[k][j][i].s[0]);
+	  }
+
 
 #ifdef MHD
 
@@ -129,7 +135,7 @@ void new_dt(MeshS *pM)
 #endif
         if (pGrid->Nx[2] > 1)
           max_v3 = MAX(max_v3,fabs(v3)+sqrt((double)cf3sq));
-  
+
       }
     }}
 
@@ -158,6 +164,9 @@ void new_dt(MeshS *pM)
   }}} /*--- End loop over Domains --------------------------------------------*/
 
 /* new timestep.  Limit increase to 2x old value */
+
+  /* if (pM->nstep > 75)  */
+fprintf(stderr, "pM->dt = %e, maxdt=%e, maxv1=%e, maxv2=%e, maxv3=%e \n", pM->dt, max_dti, max_v1, max_v2, max_v3);
 
   if (pM->nstep == 0) {
     pM->dt = CourNo/max_dti;
