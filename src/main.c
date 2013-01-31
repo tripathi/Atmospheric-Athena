@@ -44,6 +44,8 @@ static char *athena_version = "version 4.0 - 01-Jul-2010";
 #include "athena.h"
 #include "globals.h"
 #include "prototypes.h"
+/* #define _GNU_SOURCE */
+/* #include <fenv.h> */
 
 /*==============================================================================
  * PRIVATE FUNCTION PROTOTYPES:
@@ -103,6 +105,9 @@ int main(int argc, char *argv[])
   int iflush, nflush;             /* flush buffers every iflush cycles */
 
   int iquit=0;  /* quit signal sent to ath_sig_act, our system signal handler */
+
+  /* int myret = feenableexcept(FE_ALL_EXCEPT); */
+  /* if(myret==-1) printf(stderr,"My check for NaNs doesn't work! \n"); */
 
 /* local variables used for timing and performance measures */
 
@@ -532,6 +537,9 @@ int main(int argc, char *argv[])
         if (Mesh.Domain[nl][nd].Grid != NULL){
 	  (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
 	  bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
+	  /* for (k=pGrid->ks; k<=pGrid->ke; k++) { */
+	  /*   for (j=pGrid->js; j<=pGrid->je; j++) { */
+	  /*     for (i=pGrid->is; i<=pGrid->ie; i++) { */
 	}
 	if (nl==0) set_coarse_time();
       }
