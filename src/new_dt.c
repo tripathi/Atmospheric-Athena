@@ -75,10 +75,10 @@ void new_dt(MeshS *pM)
         v2 = pGrid->U[k][j][i].M2*di;
         v3 = pGrid->U[k][j][i].M3*di;
         qsq = v1*v1 + v2*v2 + v3*v3;
-	if (isnan(di) || isnan(v1)) {
-	    newvar = -999;
-	    fprintf(stderr, "Level: %d, Domain: %d, k:%d, j:%d, i:%d, d = %f, m1 = %f, s=%f \n", nl, nd, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d, pGrid->U[k][j][i].M1, pGrid->U[k][j][i].s[0]);
-	  }
+	/* if (isnan(di) || isnan(v1)) { */
+	/*     newvar = -999; */
+	/*     fprintf(stderr, "Level: %d, Domain: %d, k:%d, j:%d, i:%d, d = %f, m1 = %f, s=%f \n", nl, nd, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d, pGrid->U[k][j][i].M1, pGrid->U[k][j][i].s[0]); */
+	/*   } */
 
 
 #ifdef MHD

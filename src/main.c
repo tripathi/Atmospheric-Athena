@@ -541,14 +541,14 @@ int main(int argc, char *argv[])
 	  bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
 	  pGrid=Mesh.Domain[nl][nd].Grid;
 	  
+	  fprintf(stderr, "MAIN: Cycle:%d Level: %d, Domain: %d, Cell 000 dens: %e \n", Mesh.nstep, nl, nd, pGrid->U[4][4][4].d);
 	  for (k=pGrid->ks; k<=pGrid->ke; k++) {
 	    for (j=pGrid->js; j<=pGrid->je; j++) {
 	      for (i=pGrid->is; i<=pGrid->ie; i++) {
-		if (isnan(pGrid->U[k][j][i].d)) fprintf(stderr, "MAIN: Level: %d, Domain: %d, k: %d, j: %d, i: %d, dens: %e \n", nl, nd, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d);
+		if (isnan(pGrid->U[k][j][i].d)) fprintf(stderr, "MAIN:PostRad: Level: %d, Domain: %d, k: %d, j: %d, i: %d, dens: %e \n", nl, nd, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d);
 	      }
 	    }
 	  }
-	 fprintf(stderr, "MAIN: Level: %d, Domain: %d, Cell 000 dens: %e \n", nl, nd, pGrid->U[4][4][4].d);
 
 	}
 	if (nl==0) set_coarse_time();
@@ -561,6 +561,7 @@ int main(int argc, char *argv[])
     RestrictCorrect(&Mesh);
 #endif
 
+
 #endif
 /*--- Step 9c. ---------------------------------------------------------------*/
 /* Loop over all Domains and call Integrator */
@@ -568,6 +569,19 @@ int main(int argc, char *argv[])
     for (nl=0; nl<(Mesh.NLevels); nl++){ 
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){  
         if (Mesh.Domain[nl][nd].Grid != NULL){
+	  pGrid=Mesh.Domain[nl][nd].Grid;
+	  for (k=pGrid->ks; k<=pGrid->ke; k++) {
+	    for (j=pGrid->js; j<=pGrid->je; j++) {
+	      for (i=pGrid->is; i<=pGrid->ie; i++) {
+	  /* k = 8+nghost; */
+	  /* j = 4+nghost; */
+	  /* i = 6+nghost; */
+	  /* if (isnan(pGrid->U[k][j][i].d) || (Mesh.nstep > 75)) */
+		if (pGrid->U[k][j][i].d < 0)
+		  fprintf(stderr, "PreHydro: Level: %d, Domain: %d, k: %d, j: %d, i: %d, dens: %e, E:%e, px:%e, py:%e, pz:%e \n", Mesh.Domain[nl][nd].Level, Mesh.Domain[nl][nd].DomNumber, k-nghost, j-nghost, i-nghost, pGrid->U[k][j][i].d, pGrid->U[k][j][i].E, pGrid->U[k][j][i].M1, pGrid->U[k][j][i].M2, pGrid->U[k][j][i].M3);
+	      }
+	    }
+	  }
           (*Integrate)(&(Mesh.Domain[nl][nd]));
 
 #ifdef FARGO
@@ -576,6 +590,8 @@ int main(int argc, char *argv[])
           advect_particles(&level0_Grid, &level0_Domain);
 #endif
 #endif /* FARGO */
+	  pGrid=Mesh.Domain[nl][nd].Grid;
+
         }
       }
     }
