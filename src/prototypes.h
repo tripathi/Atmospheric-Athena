@@ -225,6 +225,8 @@ void RestrictCorrect(MeshS *pM);
 void Prolongate(MeshS *pM);
 void SMR_init(MeshS *pM);
 
+void ionradRestrictCorrect(MeshS *pM);
+
 /*----------------------------------------------------------------------------*/
 /* utils.c */
 char *ath_strdup(const char *in);

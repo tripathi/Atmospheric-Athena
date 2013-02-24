@@ -67,6 +67,1177 @@ void ProFld(Real3Vect BGZ[][3][3], Real3Vect PFld[][3][3],
 static Real mcd_slope(const Real vl, const Real vc, const Real vr);
 #endif /* FIRST_ORDER */
 
+
+void ionradRestrictCorrect(MeshS *pM)
+{
+  GridS *pG;
+  int nl,nd,ncg,dim,nDim,npg,rbufN,start_addr,cnt,nCons,nFlx;
+  int i,ii,ics,ice,ips,ipe;
+  int j,jj,jcs,jce,jps,jpe;
+  int k,kk,kcs,kce,kps,kpe;
+  Real q1,q2,q3,fact;
+  double *pRcv,*pSnd;
+  double addedstuff;
+  GridOvrlpS *pCO, *pPO;
+#if (NSCALARS > 0)
+  int n;
+#endif
+#ifdef MHD
+  int ib,jb,kb,nFld=0;
+#endif
+#ifdef MPI_PARALLEL
+  int ierr,mAddress,mIndex,mCount;
+#endif
+
+/* number of dimensions in Grid. */
+  nDim=1;
+  for (i=1; i<3; i++) if (pM->Nx[i]>1) nDim++;
+
+/* Loop over all Domains, starting at maxlevel */
+
+  for (nl=(pM->NLevels)-1; nl>=0; nl--){
+
+#ifdef MPI_PARALLEL
+/* Post non-blocking receives at level nl-1 for data from child Grids at this
+ * level (nl).  This data is sent in Step 3 below, and will be read in Step 1
+ * at the next iteration of the loop. */ 
+
+  if (nl>0) {
+    for (nd=0; nd<(pM->DomainsPerLevel[nl-1]); nd++){
+      if (pM->Domain[nl-1][nd].Grid != NULL) {
+        pG=pM->Domain[nl-1][nd].Grid;
+
+/* Recv buffer is addressed from 0 for first MPI message, even if NmyCGrid>0.
+ * First index alternates between 0 and 1 for even/odd values of nl, since if
+ * there are Grids on multiple levels there may be 2 receives posted at once */
+        mAddress = 0;
+        rbufN = ((nl-1) % 2);
+        for (ncg=(pG->NmyCGrid); ncg<(pG->NCGrid); ncg++){
+          mIndex = ncg - pG->NmyCGrid;
+          ierr = MPI_Irecv(&(recv_bufRC[rbufN][nd][mAddress]),
+            pG->CGrid[ncg].nWordsRC, MPI_DOUBLE, pG->CGrid[ncg].ID,
+            pG->CGrid[ncg].DomN, pM->Domain[nl-1][nd].Comm_Children,
+            &(recv_rq[nl-1][nd][mIndex]));
+          mAddress += pG->CGrid[ncg].nWordsRC;
+        }
+
+      }
+    }
+  }
+#endif /* MPI_PARALLEL */
+
+/*=== Step 1. Get child solution, inject into parent Grid ====================*/
+/* Loop over Domains and child Grids.  Maxlevel domains skip this step because
+ * they have NCGrids=0 */
+
+  for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
+
+  if (pM->Domain[nl][nd].Grid != NULL) { /* there is a Grid on this processor */
+    pG=pM->Domain[nl][nd].Grid;
+    rbufN = (nl % 2);
+
+    for (ncg=0; ncg<(pG->NCGrid); ncg++){
+
+/*--- Step 1a. Get restricted solution and fluxes. ---------------------------*/
+
+/* If child Grid is on this processor, set pointer to start of send buffer
+ * loaded by this child Grid in Step 3 below during last iteration of loop. */
+
+      if (ncg < pG->NmyCGrid) {
+        pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);
+        pRcv = (double*)&(send_bufRC[pCO->DomN][0]);
+      } else {
+
+#ifdef MPI_PARALLEL
+/* Check non-blocking receives posted above for restricted solution from child
+ * Grids, sent in Step 3 during last iteration of loop over nl.  Accept messages
+ * in any order. */
+
+        mCount = pG->NCGrid - pG->NmyCGrid;
+        ierr = MPI_Waitany(mCount,recv_rq[nl][nd],&mIndex,MPI_STATUS_IGNORE);
+        if(mIndex == MPI_UNDEFINED){
+          ath_error("[RestCorr]: Invalid request index nl=%i nd=%i\n",nl,nd);
+        }
+      
+/* Recv buffer is addressed from 0 for first MPI message, even if NmyCGrid>0 */
+        mAddress = 0;
+        mIndex += pG->NmyCGrid;
+        for (i=pG->NmyCGrid; i<mIndex; i++) mAddress += pG->CGrid[i].nWordsRC;
+        pCO=(GridOvrlpS*)&(pG->CGrid[mIndex]);
+        pRcv = (double*)&(recv_bufRC[rbufN][nd][mAddress]);
+#else
+/* If not MPI_PARALLEL, and child Grid not on this processor, then error */
+
+        ath_error("[RestCorr]: no Child grid on Domain[%d][%d]\n",nl,nd);
+#endif /* MPI_PARALLEL */
+      }
+
+/* Get coordinates ON THIS GRID of overlap region of child Grid */
+
+      ics = pCO->ijks[0];
+      ice = pCO->ijke[0];
+      jcs = pCO->ijks[1];
+      jce = pCO->ijke[1];
+      kcs = pCO->ijks[2];
+      kce = pCO->ijke[2];
+
+/*--- Step 1b. Set conserved variables on parent Grid ------------------------*/
+
+      for (k=kcs; k<=kce; k++) {
+        for (j=jcs; j<=jce; j++) {
+          for (i=ics; i<=ice; i++) {
+/*             pG->U[k][j][i].d  = *(pRcv++); */
+/*             pG->U[k][j][i].M1 = *(pRcv++); */
+/*             pG->U[k][j][i].M2 = *(pRcv++); */
+/*             pG->U[k][j][i].M3 = *(pRcv++); */
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+#ifndef BAROTROPIC
+            pG->U[k][j][i].E  = *(pRcv++);
+#endif /* BAROTROPIC */
+#ifdef MHD
+            pG->U[k][j][i].B1c = *(pRcv++);
+            pG->U[k][j][i].B2c = *(pRcv++);
+            pG->U[k][j][i].B3c = *(pRcv++);
+#endif /* MHD */
+#if (NSCALARS > 0)
+            for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
+#endif
+          }
+        }
+      }
+
+#ifdef MHD
+/*--- Step 1c. Set face-centered fields. -------------------------------------*/
+/* Also recompute cell-centered fields based on new face-centered values.
+ * Do not set face-centered fields on fine/coarse boundaries (e.g. ics and ice+1
+ * for B1i), but use the flux-correction step below to do that */
+
+      if (nDim == 1){ /* 1D problem - set face-centered to cell-centered */
+        for (i=ics; i<=ice; i++) {
+          pG->B1i[kcs][jcs][i] = pG->U[kcs][jcs][i].B1c;
+          pG->B2i[kcs][jcs][i] = pG->U[kcs][jcs][i].B2c;
+          pG->B3i[kcs][jcs][i] = pG->U[kcs][jcs][i].B3c;
+        }
+      } else {
+
+        if (nDim == 2){  /* 2D problem */
+/* Correct B1i */
+          for (j=jcs  ; j<=jce; j++) {
+          for (i=ics+1; i<=ice; i++) {
+            /* Set B1i at ics if no flux correction will be made.  Increment
+             * pointer even if value in Rcv pointer is ignored. */
+            if (i==ics+1){
+              if (pCO->myFlx[0] == NULL) {pG->B1i[kcs][j][ics] = *(pRcv++);}
+              else {pRcv++;}
+            }
+
+            pG->B1i[kcs][j][i] = *(pRcv++);
+
+            /* Set B1i at ice+1 if no flux correction will be made.  Increment
+             * pointer even if value in Rcv pointer is ignored. */
+            if (i==ice){
+              if (pCO->myFlx[1] == NULL) {pG->B1i[kcs][j][ice+1] = *(pRcv++);}
+              else {pRcv++;}
+            }
+          }}
+
+/* Correct B2i */
+          /* Set B2i at jcs if no flux correction will be made.  Increment
+           * pointer even if value in Rcv pointer is ignored. */
+          for (i=ics; i<=ice; i++) {
+            if (pCO->myFlx[2] == NULL) {pG->B2i[kcs][jcs][i] = *(pRcv++);}
+            else {pRcv++;}
+          }
+
+          for (j=jcs+1; j<=jce; j++) {
+          for (i=ics  ; i<=ice; i++) {
+            pG->B2i[kcs][j][i] = *(pRcv++);
+          }}
+
+          /* Set B2i at jce+1 if no flux correction will be made.  Increment
+           * pointer even if value in Rcv pointer is ignored. */
+          for (i=ics; i<=ice; i++) {
+            if (pCO->myFlx[3] == NULL) {pG->B2i[kcs][jce+1][i] = *(pRcv++);}
+            else {pRcv++;}
+          }
+
+/* Set cell-centered fields */
+          for (j=jcs; j<=jce; j++) {
+          for (i=ics; i<=ice; i++) {
+            pG->U[kcs][j][i].B1c=0.5*(pG->B1i[kcs][j][i] +pG->B1i[kcs][j][i+1]);
+            pG->U[kcs][j][i].B2c=0.5*(pG->B2i[kcs][j][i] +pG->B2i[kcs][j+1][i]);
+            pG->B3i[kcs][j][i] = pG->U[kcs][j][i].B3c;
+          }}
+
+        } else { /* 3D problem */
+/* Correct B1i */
+          for (k=kcs  ; k<=kce; k++) {
+          for (j=jcs  ; j<=jce; j++) {
+          for (i=ics+1; i<=ice; i++) {
+            /* Set B1i at ics if no flux correction will be made.  Increment
+             * pointer even if value in Rcv pointer is ignored. */
+            if (i==ics+1){
+              if (pCO->myFlx[0] == NULL) {pG->B1i[k][j][ics] = *(pRcv++);}
+              else {pRcv++;}
+            }
+
+            pG->B1i[k][j][i] = *(pRcv++);
+
+            /* Set B1i at ice+1 if no flux correction will be made.  Increment
+             * pointer even if value in Rcv pointer is ignored. */
+            if (i==ice){
+              if (pCO->myFlx[1] == NULL) {pG->B1i[k][j][ice+1] = *(pRcv++);}
+              else {pRcv++;}
+            }
+
+          }}}
+
+/* Correct B2i */
+          for (k=kcs  ; k<=kce; k++) {
+            /* Set B2i at jcs if no flux correction will be made.  Increment
+             * pointer even if value in Rcv pointer is ignored. */
+            for (i=ics; i<=ice; i++) {
+              if (pCO->myFlx[2] == NULL) {pG->B2i[k][jcs][i] = *(pRcv++);}
+              else {pRcv++;}
+            }
+
+            for (j=jcs+1; j<=jce; j++) {
+            for (i=ics  ; i<=ice; i++) {
+              pG->B2i[k][j][i] = *(pRcv++);
+            }}
+
+            /* Set B2i at jce+1 if no flux correction will be made.  Increment
+             * pointer even if value in Rcv pointer is ignored. */
+            for (i=ics; i<=ice; i++) {
+              if (pCO->myFlx[3] == NULL) {pG->B2i[k][jce+1][i] = *(pRcv++);}
+              else {pRcv++;}
+            }
+          }
+
+/* Correct B3i */
+          /* Set B3i at kcs if no flux correction will be made.  Increment
+           * pointer even if value in Rcv pointer is ignored. */
+          for (j=jcs; j<=jce; j++) {
+          for (i=ics; i<=ice; i++) {
+            if (pCO->myFlx[4] == NULL) {pG->B3i[kcs][j][i] = *(pRcv++);}
+            else {pRcv++;}
+          }}
+
+          for (k=kcs+1; k<=kce; k++) {
+          for (j=jcs  ; j<=jce; j++) {
+          for (i=ics  ; i<=ice; i++) {
+            pG->B3i[k][j][i] = *(pRcv++);
+          }}}
+
+          /* Set B3i at kce+1 if no flux correction will be made.  Increment
+           * pointer even if value in Rcv pointer is ignored. */
+          for (j=jcs; j<=jce; j++) {
+          for (i=ics; i<=ice; i++) {
+            if (pCO->myFlx[5] == NULL) {pG->B3i[kce+1][j][i] = *(pRcv++);}
+            else {pRcv++;}
+          }}
+
+/* Set cell-centered fields */
+          for (k=kcs; k<=kce; k++) {
+          for (j=jcs; j<=jce; j++) {
+          for (i=ics; i<=ice; i++) {
+            pG->U[k][j][i].B1c = 0.5*(pG->B1i[k][j][i] + pG->B1i[k][j][i+1]);
+            pG->U[k][j][i].B2c = 0.5*(pG->B2i[k][j][i] + pG->B2i[k][j+1][i]);
+            pG->U[k][j][i].B3c = 0.5*(pG->B3i[k][j][i] + pG->B3i[k+1][j][i]);
+          }}}
+
+        }
+
+      }
+#endif /* MHD */
+
+/*=== Step 2. Flux correction ================================================*/
+/*--- Step 2a. Flux correction to conserved variables. -----------------------*/
+/* Subtract off flux from this Grid, then add in restricted flux, both
+ * multiplied by dt/dx with sign chosen depending on whether flux is L/R of cell
+ * center. */
+
+/* Correct solution at x1-faces */
+
+      for (dim=0; dim<2; dim++){
+        if (pCO->myFlx[dim] != NULL) {
+          if (dim == 0) {i=ics-1; q1=-(pG->dt/pG->dx1);}
+          if (dim == 1) {i=ice+1; q1= (pG->dt/pG->dx1);}
+          for (k=kcs, kk=0; k<=kce; k++, kk++) {
+          for (j=jcs, jj=0; j<=jce; j++, jj++) {
+/*             pG->U[k][j][i].d  -= q1*(pCO->myFlx[dim][kk][jj].d  - *(pRcv++)); */
+/*             pG->U[k][j][i].M1 -= q1*(pCO->myFlx[dim][kk][jj].M1 - *(pRcv++)); */
+/*             pG->U[k][j][i].M2 -= q1*(pCO->myFlx[dim][kk][jj].M2 - *(pRcv++)); */
+/*             pG->U[k][j][i].M3 -= q1*(pCO->myFlx[dim][kk][jj].M3 - *(pRcv++)); */
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+#ifndef BAROTROPIC
+            pG->U[k][j][i].E  -= q1*(pCO->myFlx[dim][kk][jj].E  - *(pRcv++));
+#endif /* BAROTROPIC */
+#ifdef MHD
+            pG->U[k][j][i].B1c -= q1*(pCO->myFlx[dim][kk][jj].B1c - *(pRcv++));
+            pG->U[k][j][i].B2c -= q1*(pCO->myFlx[dim][kk][jj].B2c - *(pRcv++));
+            pG->U[k][j][i].B3c -= q1*(pCO->myFlx[dim][kk][jj].B3c - *(pRcv++));
+#endif /* MHD */
+#if (NSCALARS > 0)
+            for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] -= 
+              q1*(pCO->myFlx[dim][kk][jj].s[n] - *(pRcv++));
+#endif
+          }}
+        }
+      }
+
+/* Correct solution at x2-faces */
+
+      for (dim=2; dim<4; dim++){
+        if (pCO->myFlx[dim] != NULL) {
+          if (dim == 2) {j=jcs-1; q2=-(pG->dt/pG->dx2);}
+          if (dim == 3) {j=jce+1; q2= (pG->dt/pG->dx2);}
+          for (k=kcs, kk=0; k<=kce; k++, kk++) {
+          for (i=ics, ii=0; i<=ice; i++, ii++) {
+/*             pG->U[k][j][i].d  -= q2*(pCO->myFlx[dim][kk][ii].d  - *(pRcv++)); */
+/*             pG->U[k][j][i].M1 -= q2*(pCO->myFlx[dim][kk][ii].M1 - *(pRcv++)); */
+/*             pG->U[k][j][i].M2 -= q2*(pCO->myFlx[dim][kk][ii].M2 - *(pRcv++)); */
+/*             pG->U[k][j][i].M3 -= q2*(pCO->myFlx[dim][kk][ii].M3 - *(pRcv++)); */
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+#ifndef BAROTROPIC
+            pG->U[k][j][i].E  -= q2*(pCO->myFlx[dim][kk][ii].E  - *(pRcv++));
+#endif /* BAROTROPIC */
+#ifdef MHD
+            pG->U[k][j][i].B1c -= q2*(pCO->myFlx[dim][kk][ii].B1c - *(pRcv++));
+            pG->U[k][j][i].B2c -= q2*(pCO->myFlx[dim][kk][ii].B2c - *(pRcv++));
+            pG->U[k][j][i].B3c -= q2*(pCO->myFlx[dim][kk][ii].B3c - *(pRcv++));
+#endif /* MHD */
+#if (NSCALARS > 0)
+            for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] -= 
+              q2*(pCO->myFlx[dim][kk][ii].s[n] - *(pRcv++));
+#endif
+          }}
+        }
+      }
+
+/* Correct solution at x3-faces */
+
+      for (dim=4; dim<6; dim++){
+        if (pCO->myFlx[dim] != NULL) {
+          if (dim == 4) {k=kcs-1; q3=-(pG->dt/pG->dx3);}
+          if (dim == 5) {k=kce+1; q3= (pG->dt/pG->dx3);}
+          for (j=jcs, jj=0; j<=jce; j++, jj++) {
+          for (i=ics, ii=0; i<=ice; i++, ii++) {
+/*             pG->U[k][j][i].d  -= q3*(pCO->myFlx[dim][jj][ii].d  - *(pRcv++)); */
+/*             pG->U[k][j][i].M1 -= q3*(pCO->myFlx[dim][jj][ii].M1 - *(pRcv++)); */
+/*             pG->U[k][j][i].M2 -= q3*(pCO->myFlx[dim][jj][ii].M2 - *(pRcv++)); */
+/*             pG->U[k][j][i].M3 -= q3*(pCO->myFlx[dim][jj][ii].M3 - *(pRcv++)); */
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+#ifndef BAROTROPIC
+            pG->U[k][j][i].E  -= q3*(pCO->myFlx[dim][jj][ii].E  - *(pRcv++));
+#endif /* BAROTROPIC */
+#ifdef MHD
+            pG->U[k][j][i].B1c -= q3*(pCO->myFlx[dim][jj][ii].B1c - *(pRcv++));
+            pG->U[k][j][i].B2c -= q3*(pCO->myFlx[dim][jj][ii].B2c - *(pRcv++));
+            pG->U[k][j][i].B3c -= q3*(pCO->myFlx[dim][jj][ii].B3c - *(pRcv++));
+#endif /* MHD */
+#if (NSCALARS > 0)
+            for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] -= 
+              q3*(pCO->myFlx[dim][jj][ii].s[n] - *(pRcv++));
+#endif
+          }}
+        }
+      }
+
+/*--- Step 2b. Flux correction to face-centered fields. ----------------------*/
+/* Only needed in 2D/3D.  Add EMF on this Grid back in, then subtract new, both
+ * multiplied by dt/dx with sign chosen depending on whether EMF is to L/R of
+ * cell center. */
+
+#ifdef MHD
+      if (nDim > 1) {
+
+/* On x1-faces; correct B1i, B2i, B3i */
+
+      for (dim=0; dim<2; dim++){
+        if (pCO->myEMF3[dim] != NULL) {
+          if (dim == 0) {
+            i=ics-1; ib = ics;
+            q1 = -(pG->dt/pG->dx1);
+            q2 = -(pG->dt/pG->dx2); 
+            q3 = -(pG->dt/pG->dx3);
+          } 
+          if (dim == 1) {
+            i=ice+1; ib = ice+1;
+            q1 =  (pG->dt/pG->dx1);
+            q2 = -(pG->dt/pG->dx2);
+            q3 = -(pG->dt/pG->dx3);
+          }
+
+          for (k=kcs, kk=0; k<=kce  ; k++, kk++) {
+            for (j=jcs, jj=0; j<=jce; j++, jj++) {
+              SMRemf3[kk][jj] = *(pRcv++);
+              pG->B2i[k][j][i]+= q1*(pCO->myEMF3[dim][kk][jj] -SMRemf3[kk][jj]);
+            }
+           /* only update B2i[jce+1] if ox2 [dim=3] boundary is at edge of child
+            * Domain (so ox2 boundary is between fine/coarse Grids), or at edge
+            * of this Grid. Otherwise ox2 boundary is between MPI Grids on child
+            * Domain, and it will be updated as B2i[jcs] by other child Grid */
+            jj = jce-jcs+1;
+            SMRemf3[kk][jj] = *(pRcv++);
+            if((pCO->myEMF3[3] != NULL) || (jce==pG->je)){
+              pG->B2i[k][jce+1][i] +=
+                q1*(pCO->myEMF3[dim][kk][jj] - SMRemf3[kk][jj]);
+            }
+          }
+
+          for (k=kcs, kk=0; k<=kce; k++, kk++) {
+          for (j=jcs, jj=0; j<=jce; j++, jj++) {
+            pG->B1i[k][j][ib] -=
+              q2*(pCO->myEMF3[dim][kk][jj+1] - SMRemf3[kk][jj+1]) -
+              q2*(pCO->myEMF3[dim][kk][jj  ] - SMRemf3[kk][jj  ]);
+          }}
+
+          if (nDim == 3){ /* 3D problem */
+
+            for (k=kcs, kk=0; k<=kce; k++, kk++) {
+            for (j=jcs, jj=0; j<=jce; j++, jj++) {
+              SMRemf2[kk][jj] = *(pRcv++);
+              pG->B3i[k][j][i] -= q1*(pCO->myEMF2[dim][kk][jj]-SMRemf2[kk][jj]);
+            }}
+           /* only update B3i[kce+1] if ox3 [dim=5] boundary is at edge of child
+            * Domain (so ox3 boundary is between fine/coarse Grids), or at edge
+            * of this Grid. Otherwise ox3 boundary is between MPI Grids on child
+            * Domain, and it will be updated as B3i[kcs] by other child Grid */
+            kk = kce-kcs+1;
+            for (j=jcs, jj=0; j<=jce  ; j++, jj++) {
+              SMRemf2[kk][jj] = *(pRcv++); 
+              if((pCO->myEMF2[5] != NULL) || (kce==pG->ke)){
+                pG->B3i[kce+1][j][i] -= 
+                  q1*(pCO->myEMF2[dim][kk][jj] - SMRemf2[kk][jj]);
+              }
+            }
+
+            for (k=kcs, kk=0; k<=kce; k++, kk++) {
+            for (j=jcs, jj=0; j<=jce; j++, jj++) {
+              pG->B1i[k][j][ib] +=
+                q3*(pCO->myEMF2[dim][kk+1][jj] - SMRemf2[kk+1][jj]) -
+                q3*(pCO->myEMF2[dim][kk  ][jj] - SMRemf2[kk  ][jj]);
+            }}
+
+            for (k=kcs-1; k<=kce+1; k++) {
+            for (j=jcs; j<=jce; j++) {
+              pG->U[k][j][i].B3c = 0.5*(pG->B3i[k][j][i] + pG->B3i[k+1][j][i]);
+            }}
+
+          }
+
+          for (k=kcs; k<=kce; k++) {
+            for (j=jcs; j<=jce; j++) {
+              pG->U[k][j][ib  ].B1c=0.5*(pG->B1i[k][j][ib]+pG->B1i[k][j][ib+1]);
+              pG->U[k][j][ib-1].B1c=0.5*(pG->B1i[k][j][ib-1]+pG->B1i[k][j][ib]);
+            }
+            for (j=jcs-1; j<=jce+1; j++) {
+              pG->U[k][j][i].B2c = 0.5*(pG->B2i[k][j][i] + pG->B2i[k][j+1][i]);
+            }
+          }
+        }
+      }
+
+/* On x2-faces; correct B1i, B2i, B3i */
+
+      for (dim=2; dim<4; dim++){
+        if (pCO->myEMF3[dim] != NULL) {
+          if (dim == 2) {
+            j=jcs-1; jb=jcs; 
+            q1 = -(pG->dt/pG->dx1);
+            q2 = -(pG->dt/pG->dx2);
+            q3 = -(pG->dt/pG->dx3);
+          }
+          if (dim == 3) {
+            j=jce+1; jb=jce+1; 
+            q1 = -(pG->dt/pG->dx1);
+            q2 =  (pG->dt/pG->dx2);
+            q3 = -(pG->dt/pG->dx3);
+          }
+
+          for (k=kcs, kk=0; k<=kce; k++, kk++) {
+            for (i=ics, ii=0; i<=ice; i++, ii++) {
+              SMRemf3[kk][ii] = *(pRcv++);
+              pG->B1i[k][j][i]-= q2*(pCO->myEMF3[dim][kk][ii] -SMRemf3[kk][ii]);
+            }
+           /* only update B1i[ice+1] if ox1 [dim=1] boundary is at edge of child
+            * Domain (so ox1 boundary is between fine/coarse Grids), or at edge
+            * of this Grid. Otherwise ox1 boundary is between MPI Grids on child
+            * Domain, and it will be updated as B1i[ics] by other child Grid */
+            ii = ice-ics+1;
+            SMRemf3[kk][ii] = *(pRcv++);
+            if ((pCO->myEMF3[1] != NULL) || (ice==pG->ie)){
+              pG->B1i[k][j][ice+1] -=
+                q2*(pCO->myEMF3[dim][kk][ii] - SMRemf3[kk][ii]);
+            }
+          }
+          for (k=kcs, kk=0; k<=kce; k++, kk++) {
+          for (i=ics, ii=0; i<=ice; i++, ii++) {
+            pG->B2i[k][jb][i] += 
+              q1*(pCO->myEMF3[dim][kk][ii+1] - SMRemf3[kk][ii+1]) -
+              q1*(pCO->myEMF3[dim][kk][ii  ] - SMRemf3[kk][ii  ]);
+          }}
+
+          if (nDim == 3){ /* 3D problem */
+
+            for (k=kcs, kk=0; k<=kce; k++, kk++) {
+            for (i=ics, ii=0; i<=ice; i++, ii++) {
+              SMRemf1[kk][ii] = *(pRcv++);
+              pG->B3i[k][j][i] += q2*(pCO->myEMF1[dim][kk][ii]-SMRemf1[kk][ii]);
+            }}
+           /* only update B3i[kce+1] if ox3 [dim=5] boundary is at edge of child
+            * Domain (so ox3 boundary is between fine/coarse Grids), or at edge
+            * of this Grid. Otherwise ox3 boundary is between MPI Grids on child
+            * Domain, and it will be updated as B3i[kcs] by other child Grid */
+            kk = kce-kcs+1;
+            for (i=ics, ii=0; i<=ice  ; i++, ii++) {
+              SMRemf1[kk][ii] = *(pRcv++);
+              if((pCO->myEMF1[5] != NULL) || (kce==pG->ke)){
+                pG->B3i[kce+1][j][i] +=
+                  q2*(pCO->myEMF1[dim][kk][ii] - SMRemf1[kk][ii]);
+              }
+            }
+
+            for (k=kcs, kk=0; k<=kce; k++, kk++) {
+            for (i=ics, ii=0; i<=ice; i++, ii++) {
+              pG->B2i[k][jb][i] -= 
+                q3*(pCO->myEMF1[dim][kk+1][ii] - SMRemf1[kk+1][ii]) -
+                q3*(pCO->myEMF1[dim][kk  ][ii] - SMRemf1[kk  ][ii]);
+            }}
+
+            for (k=kcs-1; k<=kce+1; k++) {
+            for (i=ics; i<=ice; i++) {
+              pG->U[k][j][i].B3c = 0.5*(pG->B3i[k][j][i] + pG->B3i[k+1][j][i]);
+            }}
+
+          }
+
+          for (k=kcs; k<=kce; k++) {
+            for (i=ics-1; i<=ice+1; i++) {
+              pG->U[k][j][i].B1c = 0.5*(pG->B1i[k][j][i] + pG->B1i[k][j][i+1]);
+            }
+            for (i=ics; i<=ice; i++) {
+              pG->U[k][jb  ][i].B2c=0.5*(pG->B2i[k][jb][i]+pG->B2i[k][jb+1][i]);
+              pG->U[k][jb-1][i].B2c=0.5*(pG->B2i[k][jb-1][i]+pG->B2i[k][jb][i]);
+            }
+          }
+        }
+      }
+
+/* On x3-faces; correct B1i, B2i, B3i.  Must be a 3D problem. */
+
+      for (dim=4; dim<6; dim++){
+        if (pCO->myEMF1[dim] != NULL) {
+          if (dim == 4) {
+            k=kcs-1; kb=kcs; 
+            q1 = -(pG->dt/pG->dx1);
+            q2 = -(pG->dt/pG->dx2);
+            q3 = -(pG->dt/pG->dx3);
+          }
+          if (dim == 5) {
+            k=kce+1; kb=kce+1; 
+            q1 = -(pG->dt/pG->dx1);
+            q2 = -(pG->dt/pG->dx2);
+            q3 =  (pG->dt/pG->dx3);
+          }
+
+          for (j=jcs, jj=0; j<=jce; j++, jj++) {
+          for (i=ics, ii=0; i<=ice; i++, ii++) {
+            SMRemf1[jj][ii] = *(pRcv++);
+            pG->B2i[k][j][i] -= q3*(pCO->myEMF1[dim][jj][ii] - SMRemf1[jj][ii]);
+          }}
+         /* only update B2i[jce+1] if ox2 [dim=3] boundary is at edge of child
+          * Domain (so ox2 boundary is between fine/coarse Grids), or at edge
+          * of this Grid. Otherwise ox2 boundary is between MPI Grids on child
+          * Domain, and it will be updated as B2i[jcs] by other child Grid */
+          jj = jce-jcs+1;
+          for (i=ics, ii=0; i<=ice  ; i++, ii++) {
+            SMRemf1[jj][ii] = *(pRcv++);
+            if((pCO->myEMF1[3] != NULL) || (jce==pG->je)){
+              pG->B2i[k][jce+1][i] -=
+                q3*(pCO->myEMF1[dim][jj][ii] - SMRemf1[jj][ii]);
+            }
+          }
+
+          for (j=jcs, jj=0; j<=jce; j++, jj++) {
+            for (i=ics, ii=0; i<=ice; i++, ii++) {
+              SMRemf2[jj][ii] = *(pRcv++);
+              pG->B1i[k][j][i]+= q3*(pCO->myEMF2[dim][jj][ii] -SMRemf2[jj][ii]);
+            }
+           /* only update B1i[ice+1] if ox1 [dim=1] boundary is at edge of child
+            * Domain (so ox1 boundary is between fine/coarse Grids), or at edge
+            * of this Grid. Otherwise ox1 boundary is between MPI Grids on child
+            * Domain, and it will be updated as B1i[ics] by other child Grid */
+            ii = ice-ics+1;
+            SMRemf2[jj][ii] = *(pRcv++);
+            if ((pCO->myEMF2[1] != NULL) || (ice==pG->ie)){
+              pG->B1i[k][j][ice+1] +=
+                q3*(pCO->myEMF2[dim][jj][ii] -SMRemf2[jj][ii]);
+            }
+          }
+
+          for (j=jcs, jj=0; j<=jce; j++, jj++) {
+          for (i=ics, ii=0; i<=ice; i++, ii++) {
+            pG->B3i[kb][j][i] +=
+              q2*(pCO->myEMF1[dim][jj+1][ii  ] - SMRemf1[jj+1][ii  ]) -
+              q2*(pCO->myEMF1[dim][jj  ][ii  ] - SMRemf1[jj  ][ii  ]) -
+              q1*(pCO->myEMF2[dim][jj  ][ii+1] - SMRemf2[jj  ][ii+1]) +
+              q1*(pCO->myEMF2[dim][jj  ][ii  ] - SMRemf2[jj  ][ii  ]);
+          }}
+
+          for (j=jcs; j<=jce; j++) {
+          for (i=ics-1; i<=ice+1; i++) {
+            pG->U[k][j][i].B1c = 0.5*(pG->B1i[k][j][i] + pG->B1i[k][j][i+1]);
+          }}
+
+          for (j=jcs-1; j<=jce+1; j++) {
+          for (i=ics; i<=ice; i++) {
+            pG->U[k][j][i].B2c = 0.5*(pG->B2i[k][j][i] + pG->B2i[k][j+1][i]);
+          }}
+
+          for (j=jcs; j<=jce; j++) {
+          for (i=ics; i<=ice; i++) {
+            pG->U[kb  ][j][i].B3c=0.5*(pG->B3i[kb][j][i] + pG->B3i[kb+1][j][i]);
+            pG->U[kb-1][j][i].B3c=0.5*(pG->B3i[kb-1][j][i] + pG->B3i[kb][j][i]);
+          }}
+        }
+      }
+
+      } /* end test for 2D/3D */
+#endif /* MHD */
+
+    }  /* end loop over child grids */
+  }} /* end loop over Domains */
+
+/*=== Step 3. Restrict child solution and fluxes and send ====================*/
+/* Loop over all Domains and parent Grids.  Maxlevel grids skip straight to this
+ * step to start the chain of communication.  Root (level=0) skips this step
+ * since it has NPGrid=0.  If there is a parent Grid on this processor, it will
+ * be first in the PGrid array, so it will be at start of send_bufRC */
+
+  for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
+
+  if (pM->Domain[nl][nd].Grid != NULL) { /* there is a Grid on this processor */
+    pG=pM->Domain[nl][nd].Grid;          /* set pointer to this Grid */
+    start_addr=0;
+
+    for (npg=0; npg<(pG->NPGrid); npg++){
+      pPO=(GridOvrlpS*)&(pG->PGrid[npg]);    /* ptr to Grid overlap */
+      cnt = 0;
+
+/* Get coordinates ON THIS GRID of overlap region of parent Grid */
+
+      ips = pPO->ijks[0];
+      ipe = pPO->ijke[0];
+      jps = pPO->ijks[1];
+      jpe = pPO->ijke[1];
+      kps = pPO->ijks[2];
+      kpe = pPO->ijke[2];
+
+/*--- Step 3a. Restrict conserved variables  ---------------------------------*/
+/* 1D/2D/3D problem: Conservative average of conserved variables in x1. */
+
+      pSnd = (double*)&(send_bufRC[nd][start_addr]);
+      for (k=kps; k<=kpe; k+=2) {
+      for (j=jps; j<=jpe; j+=2) {
+      for (i=ips; i<=ipe; i+=2) {
+/*         *(pSnd++) = pG->U[k][j][i].d  + pG->U[k][j][i+1].d; */
+/*         *(pSnd++) = pG->U[k][j][i].M1 + pG->U[k][j][i+1].M1; */
+/*         *(pSnd++) = pG->U[k][j][i].M2 + pG->U[k][j][i+1].M2; */
+/*         *(pSnd++) = pG->U[k][j][i].M3 + pG->U[k][j][i+1].M3; */
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+#ifndef BAROTROPIC
+        *(pSnd++) = pG->U[k][j][i].E  + pG->U[k][j][i+1].E;
+#endif
+#ifdef MHD
+        *(pSnd++) = pG->U[k][j][i].B1c + pG->U[k][j][i+1].B1c;
+        *(pSnd++) = pG->U[k][j][i].B2c + pG->U[k][j][i+1].B2c;
+        *(pSnd++) = pG->U[k][j][i].B3c + pG->U[k][j][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++) 
+          *(pSnd++) = pG->U[k][j][i].s[n] + pG->U[k][j][i+1].s[n];
+#endif
+      }}}
+      fact = 0.5;
+      nCons = (ipe-ips+1)*(NVAR)/2;
+
+/* 2D/3D problem: Add conservative average in x2 */
+
+      if (pG->Nx[1] > 1) {
+        pSnd = (double*)&(send_bufRC[nd][start_addr]); /* restart pointer */
+        for (k=kps; k<=kpe; k+=2) {
+        for (j=jps; j<=jpe; j+=2) {
+        for (i=ips; i<=ipe; i+=2) {
+/*           *(pSnd++) += pG->U[k][j+1][i].d  + pG->U[k][j+1][i+1].d; */
+/*           *(pSnd++) += pG->U[k][j+1][i].M1 + pG->U[k][j+1][i+1].M1; */
+/*           *(pSnd++) += pG->U[k][j+1][i].M2 + pG->U[k][j+1][i+1].M2; */
+/*           *(pSnd++) += pG->U[k][j+1][i].M3 + pG->U[k][j+1][i+1].M3; */
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+	   pRcv++;
+#ifndef BAROTROPIC
+          *(pSnd++) += pG->U[k][j+1][i].E  + pG->U[k][j+1][i+1].E;
+#endif
+#ifdef MHD
+          *(pSnd++) += pG->U[k][j+1][i].B1c + pG->U[k][j+1][i+1].B1c;
+          *(pSnd++) += pG->U[k][j+1][i].B2c + pG->U[k][j+1][i+1].B2c;
+          *(pSnd++) += pG->U[k][j+1][i].B3c + pG->U[k][j+1][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+          for (n=0; n<NSCALARS; n++) 
+            *(pSnd++) += pG->U[k][j+1][i].s[n] + pG->U[k][j+1][i+1].s[n];
+#endif
+        }}}
+        fact = 0.25;
+        nCons = (jpe-jps+1)*(ipe-ips+1)*(NVAR)/4;
+      }
+
+/* 3D problem: Add conservative average in x3 */
+
+      if (pG->Nx[2] > 1) {
+        pSnd = (double*)&(send_bufRC[nd][start_addr]);  /* restart pointer */
+        for (k=kps; k<=kpe; k+=2) {
+        for (j=jps; j<=jpe; j+=2) {
+        for (i=ips; i<=ipe; i+=2) {
+          *(pSnd++) += pG->U[k+1][j  ][i].d  + pG->U[k+1][j  ][i+1].d +
+                       pG->U[k+1][j+1][i].d  + pG->U[k+1][j+1][i+1].d;
+          *(pSnd++) += pG->U[k+1][j  ][i].M1 + pG->U[k+1][j  ][i+1].M1 +
+                       pG->U[k+1][j+1][i].M1 + pG->U[k+1][j+1][i+1].M1;
+          *(pSnd++) += pG->U[k+1][j  ][i].M2 + pG->U[k+1][j  ][i+1].M2 +
+                       pG->U[k+1][j+1][i].M2 + pG->U[k+1][j+1][i+1].M2;
+          *(pSnd++) += pG->U[k+1][j  ][i].M3 + pG->U[k+1][j  ][i+1].M3 +
+                       pG->U[k+1][j+1][i].M3 + pG->U[k+1][j+1][i+1].M3;
+#ifndef BAROTROPIC
+          *(pSnd++) += pG->U[k+1][j  ][i].E  + pG->U[k+1][j  ][i+1].E +
+                       pG->U[k+1][j+1][i].E  + pG->U[k+1][j+1][i+1].E;
+#endif
+#ifdef MHD
+          *(pSnd++) += pG->U[k+1][j  ][i].B1c + pG->U[k+1][j  ][i+1].B1c +
+                       pG->U[k+1][j+1][i].B1c + pG->U[k+1][j+1][i+1].B1c;
+          *(pSnd++) += pG->U[k+1][j  ][i].B2c + pG->U[k+1][j  ][i+1].B2c +
+                       pG->U[k+1][j+1][i].B2c + pG->U[k+1][j+1][i+1].B2c;
+          *(pSnd++) += pG->U[k+1][j  ][i].B3c + pG->U[k+1][j  ][i+1].B3c +
+                       pG->U[k+1][j+1][i].B3c + pG->U[k+1][j+1][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+          for (n=0; n<NSCALARS; n++) 
+            *(pSnd++) += pG->U[k+1][j  ][i].s[n] + pG->U[k+1][j  ][i+1].s[n] +
+                         pG->U[k+1][j+1][i].s[n] + pG->U[k+1][j+1][i+1].s[n];
+#endif
+        }}}
+        fact = 0.125;
+        nCons = (kpe-kps+1)*(jpe-jps+1)*(ipe-ips+1)*(NVAR)/8;
+      }
+
+/* reset pointer to beginning and normalize averages */
+      pSnd = (double*)&(send_bufRC[nd][start_addr]);  
+      for (i=start_addr; i<(start_addr+nCons); i++) *(pSnd++) *= fact;
+      cnt = nCons;
+
+#ifdef MHD
+/*--- Step 3b. Restrict face-centered fields  --------------------------------*/
+/* Average face-centered magnetic fields.  Send fields at Grid boundaries
+ * (e.g. ips/ipe+1 for B1i) in case they are needed at edges of MPI blocks on
+ * same level.  Step 1c decides whether to use or ignore them. */
+
+      if (nDim == 3) { /* 3D problem, restrict B1i,B2i,B3i */
+
+        for (k=kps; k<=kpe  ; k+=2) {
+        for (j=jps; j<=jpe  ; j+=2) {
+        for (i=ips; i<=ipe+1; i+=2) {
+          *(pSnd++) = 0.25*(pG->B1i[k  ][j][i] + pG->B1i[k  ][j+1][i]
+                         +  pG->B1i[k+1][j][i] + pG->B1i[k+1][j+1][i]);
+        }}}
+        for (k=kps; k<=kpe  ; k+=2) {
+        for (j=jps; j<=jpe+1; j+=2) {
+        for (i=ips; i<=ipe  ; i+=2) {
+          *(pSnd++) = 0.25*(pG->B2i[k  ][j][i] + pG->B2i[k  ][j][i+1]
+                          + pG->B2i[k+1][j][i] + pG->B2i[k+1][j][i+1]);
+        }}}
+        for (k=kps; k<=kpe+1; k+=2) {
+        for (j=jps; j<=jpe  ; j+=2) {
+        for (i=ips; i<=ipe  ; i+=2) {
+          *(pSnd++) = 0.25*(pG->B3i[k][j  ][i] + pG->B3i[k][j  ][i+1]
+                          + pG->B3i[k][j+1][i] + pG->B3i[k][j+1][i+1]);
+        }}}
+        nFld = ((kpe-kps+1)/2    )*((jpe-jps+1)/2    )*((ipe-ips+1)/2 + 1) +
+               ((kpe-kps+1)/2    )*((jpe-jps+1)/2 + 1)*((ipe-ips+1)/2    ) +
+               ((kpe-kps+1)/2 + 1)*((jpe-jps+1)/2    )*((ipe-ips+1)/2    );
+
+      } else {
+
+        if (nDim == 2) { /* 2D problem, restrict B1i,B2i */
+          for (j=jps; j<=jpe  ; j+=2) {
+          for (i=ips; i<=ipe+1; i+=2) {
+            *(pSnd++) = 0.5*(pG->B1i[kps][j][i] + pG->B1i[kps][j+1][i]);
+          }}
+          for (j=jps; j<=jpe+1; j+=2) {
+          for (i=ips; i<=ipe  ; i+=2) {
+            *(pSnd++) = 0.5*(pG->B2i[kps][j][i] + pG->B2i[kps][j][i+1]);
+          }}
+          nFld = ((jpe-jps+1)/2    )*((ipe-ips+1)/2 + 1) +
+                 ((jpe-jps+1)/2 + 1)*((ipe-ips+1)/2    );
+        }
+
+      }
+      cnt += nFld;
+#endif /* MHD */
+
+/*--- Step 3c. Restrict fluxes of conserved variables ------------------------*/
+/*---------------- Restrict fluxes at x1-faces -------------------------------*/
+
+      for (dim=0; dim<2; dim++){
+      if (pPO->myFlx[dim] != NULL) {
+
+      pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);  
+
+      if (nDim == 1) {  /*----- 1D problem -----*/
+
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].d ;
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].M1;
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].M2;
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].M3;
+#ifndef BAROTROPIC
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].E ;
+#endif
+#ifdef MHD
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].B1c;
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].B2c;
+        *(pSnd++) = pPO->myFlx[dim][kps][jps].B3c;
+#endif
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++) *(pSnd++) = pPO->myFlx[dim][kps][jps].s[n];
+#endif
+        nFlx = NVAR;
+      } else {  /*----- 2D or 3D problem -----*/
+
+/* Conservative average in x2 of x1-fluxes */
+
+        for (k=0; k<=(kpe-kps); k+=2) {
+        for (j=0; j<=(jpe-jps); j+=2) {
+          *(pSnd++) = pPO->myFlx[dim][k][j].d  + pPO->myFlx[dim][k][j+1].d;
+          *(pSnd++) = pPO->myFlx[dim][k][j].M1 + pPO->myFlx[dim][k][j+1].M1;
+          *(pSnd++) = pPO->myFlx[dim][k][j].M2 + pPO->myFlx[dim][k][j+1].M2;
+          *(pSnd++) = pPO->myFlx[dim][k][j].M3 + pPO->myFlx[dim][k][j+1].M3;
+#ifndef BAROTROPIC
+          *(pSnd++) = pPO->myFlx[dim][k][j].E  + pPO->myFlx[dim][k][j+1].E;
+#endif
+#ifdef MHD
+          *(pSnd++) = pPO->myFlx[dim][k][j].B1c + pPO->myFlx[dim][k][j+1].B1c;
+          *(pSnd++) = pPO->myFlx[dim][k][j].B2c + pPO->myFlx[dim][k][j+1].B2c;
+          *(pSnd++) = pPO->myFlx[dim][k][j].B3c + pPO->myFlx[dim][k][j+1].B3c;
+#endif
+#if (NSCALARS > 0)
+          for (n=0; n<NSCALARS; n++) *(pSnd++) =
+            pPO->myFlx[dim][k][j].s[n] + pPO->myFlx[dim][k][j+1].s[n];
+#endif
+        }}
+        fact = 0.5;
+        nFlx = ((jpe-jps+1)/2)*(NVAR);
+
+/* Add conservative average in x3 of x1-fluxes */
+
+        if (nDim == 3) {  /*----- 3D problem -----*/
+          pSnd = (double*)&(send_bufRC[nd][start_addr+cnt]); /* restart ptr */
+          for (k=0; k<=(kpe-kps); k+=2) {
+          for (j=0; j<=(jpe-jps); j+=2) {
+            *(pSnd++)+=pPO->myFlx[dim][k+1][j].d  +pPO->myFlx[dim][k+1][j+1].d;
+            *(pSnd++)+=pPO->myFlx[dim][k+1][j].M1 +pPO->myFlx[dim][k+1][j+1].M1;
+            *(pSnd++)+=pPO->myFlx[dim][k+1][j].M2 +pPO->myFlx[dim][k+1][j+1].M2;
+            *(pSnd++)+=pPO->myFlx[dim][k+1][j].M3 +pPO->myFlx[dim][k+1][j+1].M3;
+#ifndef BAROTROPIC
+            *(pSnd++)+=pPO->myFlx[dim][k+1][j].E  +pPO->myFlx[dim][k+1][j+1].E;
+#endif
+#ifdef MHD
+          *(pSnd++)+=pPO->myFlx[dim][k+1][j].B1c +pPO->myFlx[dim][k+1][j+1].B1c;
+          *(pSnd++)+=pPO->myFlx[dim][k+1][j].B2c +pPO->myFlx[dim][k+1][j+1].B2c;
+          *(pSnd++)+=pPO->myFlx[dim][k+1][j].B3c +pPO->myFlx[dim][k+1][j+1].B3c;
+#endif
+#if (NSCALARS > 0)
+            for (n=0; n<NSCALARS; n++) *(pSnd++) +=
+              pPO->myFlx[dim][k+1][j].s[n] + pPO->myFlx[dim][k+1][j+1].s[n];
+#endif
+          }}
+          fact = 0.25;
+          nFlx = ((kpe-kps+1)*(jpe-jps+1)/4)*(NVAR);
+        }
+
+/* reset pointer to beginning of x1-fluxes and normalize averages */
+        pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);  
+        for (i=(start_addr+cnt); i<(start_addr+cnt+nFlx); i++) *(pSnd++) *=fact;
+      }
+      cnt += nFlx;
+
+      }}
+
+/*---------------- Restrict fluxes at x2-faces -------------------------------*/
+
+      for (dim=2; dim<4; dim++){
+      if (pPO->myFlx[dim] != NULL) {
+
+      pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);
+
+/* Conservative average in x1 of x2-fluxes */
+
+      for (k=0; k<=(kpe-kps); k+=2) {
+      for (i=0; i<=(ipe-ips); i+=2) {
+        *(pSnd++) = pPO->myFlx[dim][k][i].d  + pPO->myFlx[dim][k][i+1].d;
+        *(pSnd++) = pPO->myFlx[dim][k][i].M1 + pPO->myFlx[dim][k][i+1].M1;
+        *(pSnd++) = pPO->myFlx[dim][k][i].M2 + pPO->myFlx[dim][k][i+1].M2;
+        *(pSnd++) = pPO->myFlx[dim][k][i].M3 + pPO->myFlx[dim][k][i+1].M3;
+#ifndef BAROTROPIC
+        *(pSnd++) = pPO->myFlx[dim][k][i].E  + pPO->myFlx[dim][k][i+1].E;
+#endif
+#ifdef MHD
+        *(pSnd++) = pPO->myFlx[dim][k][i].B1c + pPO->myFlx[dim][k][i+1].B1c;
+        *(pSnd++) = pPO->myFlx[dim][k][i].B2c + pPO->myFlx[dim][k][i+1].B2c;
+        *(pSnd++) = pPO->myFlx[dim][k][i].B3c + pPO->myFlx[dim][k][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++) *(pSnd++) =
+          pPO->myFlx[dim][k][i].s[n] + pPO->myFlx[dim][k][i+1].s[n];
+#endif
+      }}
+      fact = 0.5;
+      nFlx = ((ipe-ips+1)/2)*(NVAR);
+
+/* Add conservative average in x3 of x2-fluxes */
+
+      if (nDim == 3) {  /*----- 3D problem -----*/
+        pSnd = (double*)&(send_bufRC[nd][start_addr+cnt]); /* restart ptr */
+        for (k=0; k<=(kpe-kps); k+=2) {
+        for (i=0; i<=(ipe-ips); i+=2) {
+          *(pSnd++) +=pPO->myFlx[dim][k+1][i].d  + pPO->myFlx[dim][k+1][i+1].d;
+          *(pSnd++) +=pPO->myFlx[dim][k+1][i].M1 + pPO->myFlx[dim][k+1][i+1].M1;
+          *(pSnd++) +=pPO->myFlx[dim][k+1][i].M2 + pPO->myFlx[dim][k+1][i+1].M2;
+          *(pSnd++) +=pPO->myFlx[dim][k+1][i].M3 + pPO->myFlx[dim][k+1][i+1].M3;
+#ifndef BAROTROPIC
+          *(pSnd++) +=pPO->myFlx[dim][k+1][i].E  + pPO->myFlx[dim][k+1][i+1].E;
+#endif
+#ifdef MHD
+          *(pSnd++)+= pPO->myFlx[dim][k+1][i].B1c+pPO->myFlx[dim][k+1][i+1].B1c;
+          *(pSnd++)+= pPO->myFlx[dim][k+1][i].B2c+pPO->myFlx[dim][k+1][i+1].B2c;
+          *(pSnd++)+= pPO->myFlx[dim][k+1][i].B3c+pPO->myFlx[dim][k+1][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+          for (n=0; n<NSCALARS; n++) *(pSnd++) +=
+            pPO->myFlx[dim][k+1][i].s[n] + pPO->myFlx[dim][k+1][i+1].s[n];
+#endif
+        }}
+        fact = 0.25;
+        nFlx = ((kpe-kps+1)*(ipe-ips+1)/4)*(NVAR);
+      }
+
+/* reset pointer to beginning of x2-fluxes and normalize averages */
+      pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);  
+      for (i=(start_addr+cnt); i<(start_addr+cnt+nFlx); i++) *(pSnd++) *= fact;
+      cnt += nFlx;
+
+      }}
+
+/*---------------- Restrict fluxes at x3-faces -------------------------------*/
+
+      for (dim=4; dim<6; dim++){
+      if (pPO->myFlx[dim] != NULL) {
+
+      pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);
+
+/* Conservative average in x1 of x3-fluxes */
+
+      for (j=0; j<=(jpe-jps); j+=2) {
+      for (i=0; i<=(ipe-ips); i+=2) {
+        *(pSnd++) = pPO->myFlx[dim][j][i].d  + pPO->myFlx[dim][j][i+1].d;
+        *(pSnd++) = pPO->myFlx[dim][j][i].M1 + pPO->myFlx[dim][j][i+1].M1;
+        *(pSnd++) = pPO->myFlx[dim][j][i].M2 + pPO->myFlx[dim][j][i+1].M2;
+        *(pSnd++) = pPO->myFlx[dim][j][i].M3 + pPO->myFlx[dim][j][i+1].M3;
+#ifndef BAROTROPIC
+        *(pSnd++) = pPO->myFlx[dim][j][i].E  + pPO->myFlx[dim][j][i+1].E;
+#endif
+#ifdef MHD
+        *(pSnd++) = pPO->myFlx[dim][j][i].B1c + pPO->myFlx[dim][j][i+1].B1c;
+        *(pSnd++) = pPO->myFlx[dim][j][i].B2c + pPO->myFlx[dim][j][i+1].B2c;
+        *(pSnd++) = pPO->myFlx[dim][j][i].B3c + pPO->myFlx[dim][j][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++) *(pSnd++) =
+          pPO->myFlx[dim][j][i].s[n] + pPO->myFlx[dim][j][i+1].s[n];
+#endif
+      }}
+
+/* Add conservative average in x2 of x3-fluxes */
+
+      pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);
+      for (j=0; j<=(jpe-jps); j+=2) {
+      for (i=0; i<=(ipe-ips); i+=2) {
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].d  + pPO->myFlx[dim][j+1][i+1].d;
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].M1 + pPO->myFlx[dim][j+1][i+1].M1;
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].M2 + pPO->myFlx[dim][j+1][i+1].M2;
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].M3 + pPO->myFlx[dim][j+1][i+1].M3;
+#ifndef BAROTROPIC
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].E  + pPO->myFlx[dim][j+1][i+1].E;
+#endif
+#ifdef MHD
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].B1c + pPO->myFlx[dim][j+1][i+1].B1c;
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].B2c + pPO->myFlx[dim][j+1][i+1].B2c;
+        *(pSnd++) +=pPO->myFlx[dim][j+1][i].B3c + pPO->myFlx[dim][j+1][i+1].B3c;
+#endif
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++) *(pSnd++) +=
+          pPO->myFlx[dim][j+1][i].s[n] + pPO->myFlx[dim][j+1][i+1].s[n];
+#endif
+      }}
+      fact = 0.25;
+      nFlx = ((jpe-jps+1)*(ipe-ips+1)/4)*(NVAR);
+
+/* reset pointer to beginning of x3-fluxes and normalize averages */
+      pSnd = (double*)&(send_bufRC[nd][(start_addr+cnt)]);  
+      for (i=(start_addr+cnt); i<(start_addr+cnt+nFlx); i++) *(pSnd++) *= fact;
+      cnt += nFlx;
+
+      }}
+
+/*--- Step 3d. Restrict fluxes (EMFs) of face-centered fields ----------------*/
+
+/*------------------ Restrict EMF at x1-faces --------------------------------*/
+/* Only required for 2D or 3D problems.  Since EMF is a line integral, only
+ * averaging along direction of EMF is required.  */
+
+#ifdef MHD
+      for (dim=0; dim<2; dim++){
+        if (pPO->myEMF3[dim] != NULL) {
+
+/* 2D problem -- Copy EMF3 */
+
+          if (pG->Nx[2] == 1) {  
+            for (k=0; k<=(kpe-kps)  ; k+=2) {
+            for (j=0; j<=(jpe-jps)+1; j+=2) {
+              *(pSnd++) = pPO->myEMF3[dim][k][j];
+            }}
+
+          } else {  
+
+/* 3D problem -- Conservative averages of EMF3 and EMF2 */
+
+            for (k=0; k<=(kpe-kps)  ; k+=2) {
+            for (j=0; j<=(jpe-jps)+1; j+=2) {
+              *(pSnd++) = 0.5*(pPO->myEMF3[dim][k][j]+pPO->myEMF3[dim][k+1][j]);
+            }}
+
+            for (k=0; k<=(kpe-kps)+1; k+=2) {
+            for (j=0; j<=(jpe-jps)  ; j+=2) {
+              *(pSnd++) = 0.5*(pPO->myEMF2[dim][k][j]+pPO->myEMF2[dim][k][j+1]);
+            }}
+          }
+        }
+      }
+
+/*------------------- Restrict EMF at x2-faces -------------------------------*/
+
+      for (dim=2; dim<4; dim++){
+        if (pPO->myEMF3[dim] != NULL) {
+
+/* 2D problem --  Copy EMF3 */
+
+          if (pG->Nx[2] == 1) {
+            for (k=0; k<=(kpe-kps)  ; k+=2) {
+            for (i=0; i<=(ipe-ips)+1; i+=2) {
+              *(pSnd++) = pPO->myEMF3[dim][k][i];
+            }}
+
+          } else {
+
+/* 3D problem -- Conservative averages of EMF3 and EMF1 */
+
+            for (k=0; k<=(kpe-kps)  ; k+=2) {
+            for (i=0; i<=(ipe-ips)+1; i+=2) {
+              *(pSnd++) = 0.5*(pPO->myEMF3[dim][k][i]+pPO->myEMF3[dim][k+1][i]);
+            }}
+
+            for (k=0; k<=(kpe-kps)+1; k+=2) {
+            for (i=0; i<=(ipe-ips)  ; i+=2) {
+              *(pSnd++) = 0.5*(pPO->myEMF1[dim][k][i]+pPO->myEMF1[dim][k][i+1]);
+            }}
+          }
+        }
+      }
+
+/*------------------- Restrict EMF at x3-faces -------------------------------*/
+/* Must be a 3D problem */
+
+      for (dim=4; dim<6; dim++){
+        if (pPO->myEMF1[dim] != NULL) {
+
+/*----- 3D problem ----- Conservative averages of EMF1 and EMF2 */
+
+          for (j=0; j<=(jpe-jps)+1; j+=2) {
+          for (i=0; i<=(ipe-ips)  ; i+=2) {
+            *(pSnd++) = 0.5*(pPO->myEMF1[dim][j][i] + pPO->myEMF1[dim][j][i+1]);
+          }}
+
+          for (j=0; j<=(jpe-jps)  ; j+=2) {
+          for (i=0; i<=(ipe-ips)+1; i+=2) {
+            *(pSnd++) = 0.5*(pPO->myEMF2[dim][j][i] + pPO->myEMF2[dim][j+1][i]);
+          }}
+        }
+      }
+
+#endif
+
+#ifdef MPI_PARALLEL
+/*--- Step 3e. Send rectricted soln and fluxes -------------------------------*/
+/* non-blocking send with MPI, using Domain number as tag.  */
+
+      if (npg >= pG->NmyPGrid){
+        mIndex = npg - pG->NmyPGrid;
+        ierr = MPI_Isend(&(send_bufRC[nd][start_addr]), pG->PGrid[npg].nWordsRC,
+          MPI_DOUBLE, pG->PGrid[npg].ID, nd, pM->Domain[nl][nd].Comm_Parent,
+          &(send_rq[nd][mIndex]));
+      }
+#endif /* MPI_PARALLEL */
+
+      start_addr += pG->PGrid[npg].nWordsRC;
+
+    }  /* end loop over parent grids */
+  }} /* end loop over Domains per level */
+
+#ifdef MPI_PARALLEL
+/*--- Step 4. Check non-blocking sends completed. ----------------------------*/
+/* For MPI jobs, wait for all non-blocking sends in Step 3e to complete.  This
+ * is more efficient if there are multiple messages per Grid. */
+
+  for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
+    if (pM->Domain[nl][nd].Grid != NULL) {
+      pG=pM->Domain[nl][nd].Grid;
+
+      if (pG->NPGrid > pG->NmyPGrid) {
+        mCount = pG->NPGrid - pG->NmyPGrid;
+        ierr = MPI_Waitall(mCount, send_rq[nd], MPI_STATUS_IGNORE);
+      }
+    }
+  }
+#endif /* MPI_PARALLEL */
+
+  } /* end loop over levels */
+}
+
 /*=========================== PUBLIC FUNCTIONS ===============================*/
 /*----------------------------------------------------------------------------*/
 /*! \fn void RestrictCorrect(MeshS *pM)

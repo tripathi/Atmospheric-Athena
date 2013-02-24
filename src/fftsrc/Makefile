@@ -8,7 +8,7 @@
 #
 #-------------------  object files  --------------------------------------------
 ifeq (NO_FFT,FFT_ENABLED)
-ifeq (MPI_PARALLEL,MPI_PARALLEL)
+ifeq (NO_MPI_PARALLEL,MPI_PARALLEL)
 CORE_OBJ = ath_fft.o \
            factor.o \
            fft_2d.o \
@@ -66,7 +66,7 @@ Makedepend:
 # this forces a rebuild of all objects, if code re-configure'd
 
 ifeq (NO_FFT,FFT_ENABLED)
-ifeq (MPI_PARALLEL,MPI_PARALLEL)
+ifeq (NO_MPI_PARALLEL,MPI_PARALLEL)
 include Makedepend
 endif
 endif
