@@ -3,7 +3,7 @@
 /*==============================================================================
  * FILE: ionrad_smr.c
  *
- * PURPOSE: Contains functions to set values on coarse/fine grids appropriately
+ * PURPOSE: Contains functions to set ionizing flux values on fine grids 
  *   when SMR is used
  *
  *   Use of these routines requires that --enable-ion-radiation and --enable-smr
@@ -12,7 +12,7 @@
  * CONTAINS PUBLIC FUNCTIONS:
  *   ionrad_prolong_rcv - Receives radiative flux from coarser grid
  *   ionrad_prolong_snd - Sends radiative flux to finer grid
- *   ion_prolongate - prolongates coarse grid radiative flux into fine grid
+ *   ion_prolongate - prolongates coarse grid radiative flux into fine grid - DEPRECATED
  *============================================================================*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +33,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   int i, j, k, fixed, arrsize, indexarith;
   int err, ierr;
   GridOvrlpS *pPO, *pCO;
+
 #ifdef MPI_PARALLEL
   int allrcv =0;
   int rcvd = 0;
@@ -45,40 +46,50 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
+
 #else
+  int is, js, ks;
+  GridS *parentgrid; /*Parent grid of current grid*/
   DomainS *pDomain;
   pDomain = (DomainS*)&(pMesh->Domain[level][domnumber]);  /* ptr to Domain */
-
-  GridS *parentgrid;
-  int is, js, ks;
 #endif
 
+/*Find my parent grid overlap structure(s if MPI) to receive data from it*/
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
+
       /*#ifndef MPI_PARALLEL*/
       /*      pPO->ionFlx[dim] = pCO->ionFlx[dim]*/
+
 #ifdef MPI_PARALLEL
       if(pPO->ionFlx[dim] != NULL) {
 	fprintf(stderr, "Beginning receive call for domain level %d \n", level);
 	
-	/* sprintf(temp,"%d%d%d%d", level - 1, pPO->ID, level, myID_Comm_world); */
+	/*Old tagging strategies*/
 	/* tag1 = atoi(temp); */
 	/* tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + domnumber; */
-	tag3 = pPO->DomN + 100;
 	/* fprintf(stderr, "rcvconcat: %d, powers:%d domno: %d, myid :%d \n", tag1, tag2, domnumber, myID_Comm_world); */
+	tag3 = pPO->DomN + 100;
+
 	
-	/*AT 9/21/12: Insert case statement, so that arrsize is pulled from the correct indices*/
+	/*AT 9/21/12: TO_DO: Insert case statement, so that arrsize is pulled from the correct indices*/
+	
+	/*Find the size of the array of flux values being transferred*/
 	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
-	/* fprintf(stderr, "myid: %d, pPO ID: %d \n", myID_Comm_world, pPO->ID); */
+
+	/*Initiate non-blocking receive*/
 	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Parent, &(rcv_rq[npg]));
 	/* fprintf (stderr, "did i get here? %d \n", ierr); */
+
       } else {
 	/*AT 9/26/12: Faking a successful test for grids that are not in the direction of propagation*/
 	succtest[npg] = 1;
 	rcvd++;
       }
     }
+
+/*Loop over all possible communications to check which parent grids have been received from*/
   while(allrcv==0)
     {
       for (npg=0; npg<(pGrid->NPGrid); npg++)
@@ -94,13 +105,16 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 		  
 		} 
 	      else {
-		/*		fprintf(stderr, "Still waiting \n");*/
+			/*fprintf(stderr, "Still waiting \n");*/
 	      }
 	    }
 	}
       allrcv = (rcvd == pGrid->NPGrid) ? 1 : 0;
     }
 
+
+/* Populate the cells on this (fine) grid with the values received from the coarse grid */
+/*AT 2/28/13: TO_DO: Indexing needs to be fixed*/
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
@@ -157,8 +171,11 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	}
 	}
       }
-#else
+#else /*single processor*/
+
+/*Let the parent grid be the grid whose domain is one level higher and has domain number matching pPO->DomN*/
       parentgrid = pMesh->Domain[level-1][pPO->DomN].Grid;
+/*Find which child of my parent I am.  Assign that grid overlap structure to pCO*/
       for (i = 0; i <= parentgrid->NCGrid; i++) {
 	pCO=(GridOvrlpS*)&(parentgrid->CGrid[i]);
 	if (pCO->DomN == domnumber) {
@@ -168,52 +185,68 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 
 
-      /*Use the parent grid's child grid ionFlx array to fill this grid's edgeflux array*/
-      /*Do so along the appropriate dimension*/
+/*Use the parent grid's child grid overlap ionFlx array to fill this grid's edgeflux array*/
 
-      /* AT 12/23/12 Add case statement back in when 1 direction works*/
+
+      /*AT 1/11/13: Changing the if and else conditions to be reversed of what they originally were so that dimensions match*/
+      /* AT 12/23/12 TO_DO Add case statement back in when 1 direction works to account for other directions of propagation*/
       /* switch(dim) { */
       /* case 0: case 1: { */
-	/*AT 12/23/12 BE CAREFUL WITH FACTORS OF 2 IN INDICES*/
-      /*AT 1/11/13: Changing the if and else conditions to be reversed of what they originally were*/
-	if (fmod(dim,2) != 0) {
-	  fixed = (pPO->ijks[0] - nghost) * 2.;
-	} else {
-	  fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
-	}
-	/* fprintf(stderr,"\n DIM: %d FIXED: %d \n", dim, fixed); */
 
+/*Find the face where radiation is incoming from the coarse grid*/
+      /*If in the +x direction*/
+      if (fmod(dim,2) != 0) {
+	fixed = (pPO->ijks[0] - nghost) * 2.;
+      }
+      /*If in the -x direction*/	
+      else {
+	fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
+      }
+      
+/*Loop over all cells orthogonal to the direction of propagation */
+/*Loop indices range over all the cells, as indexed by the coarse grid*/
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+
+	    /*Calculate the index on the ionFlx array corresponding to a given cell on this (fine) grid*/
+	    /*Remember that ionFlx is a 1D array of values*/
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
+
+	    /*Find my location on the current (fine) grid*/
+	    /*AT 12/23/12 BE CAREFUL WITH FACTORS OF 2 IN INDICES*/
 	    ks = k*2 - pDomain->Disp[2];
 	    js = j*2 - pDomain->Disp[1];
-	    /* fprintf(stderr," k:%d, ks:%d, j:%d, js:%d ydisp :%d \n", k, ks, j, js, pDomain->Disp[2]); */
 
-	    /*AT 01/14/13: This is a clumsy way of linearly interpolating the values to 2 cells.*/
-	    /*I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
-
-	    pGrid->EdgeFlux[ks][js][fixed] = pCO->ionFlx[dim][indexarith];
 	    /* if (pCO->ionFlx[dim][indexarith] > .1) */
 	    /*   fprintf(stderr,"Setting ks and js to be %e \n", pCO->ionFlx[dim][indexarith]); */
 
+	    /*Assign my parent's ionizing flux to my EdgeFlux cell */
+	    pGrid->EdgeFlux[ks][js][fixed] = pCO->ionFlx[dim][indexarith];
+
+	    /*AT 01/14/13: The following is a clumsy way of linearly interpolating the values to 2 cells.*/
+	    /*TO_DO: I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
+	    
+	    /*Assign the same value to the other 3 fine cells that make up the one coarse cell */
 	    if (js < (pCO->ijke[1]+1)/2 -1) {
 	      if (ks < (pCO->ijke[2]+1)/2 -1) {	
 		pGrid->EdgeFlux[ks+1][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
-	      } else {
+	      }
+	      
+	      /*Handle edge cases*/
+	      else {
 		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 	      } 
-	    } else {
+	    }
+	    /*Handle edge cases*/
+	    else {
 	      if (ks < (pCO->ijke[2]+1)/2 -1) {
 		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
 	      }
 	    }
 	    
-	    /* fprintf(stderr, "Doing k: %d - %d, j: %d - %d \n", ks, ks+1, js, js+1); */
-	    /* fprintf(stderr,"k:%d, j:%d, ks:%d, js:%d, fixed:%d, indexarith:%d \n", k, j, ks, js, fixed, indexarith); */
 	  }
 	}
       }
@@ -238,13 +271,18 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
   char temp[10];
 #endif
 
-  /* Loop over children grids to fill their buffer arrays*/
+/* Loop over children grids to fill their buffer arrays*/
+/* If not using MPI, this is the only operation that is performed*/
+/* If using MPI, data will be sent to child grid in next step*/
   for (ncg=0; ncg<(pGrid->NCGrid); ncg++){
-    /* fprintf(stderr, "Actually filling buffer \n"); */
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
+
+    /* fprintf(stderr, "Actually filling buffer \n"); */
       fprintf(stderr, "CHILD # %d of %d I think my child's x- start is %d and end %d. So the edgeflux corresponds to those - %d \n", ncg+1, pGrid->NCGrid, pCO->ijks[0], pCO->ijke[0], nghost);
 
     switch(dim) {
+
+    /*For the +x/-x direction*/
     case 0: case 1: {
       if (fmod(dim,2) != 0) {
 	fixed = pCO->ijks[0] - nghost;
@@ -252,22 +290,24 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	fixed = pCO->ijke[0] + 1 - nghost;
       }
 
-
       if(pCO->ionFlx[dim] != NULL) {
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
+
+	    /*Store data in the child grid overlap structure ionFlx (which is a 1D array for the purposes of MPI communication)*/
 	    pCO->ionFlx[dim][indexarith] = pGrid->EdgeFlux[k][j][fixed];
 	    /* if (pGrid->EdgeFlux[k][j][fixed] > 1.) */
 	    /*   fprintf(stderr,"On level: %d setting ionflx[%d][%d] to [%d][%d][%d] %e \n", level, dim, indexarith,k, j, fixed, pGrid->EdgeFlux[k][j][fixed]); */
 	  }
 	}
-	/*Will need to check indexing to see if it's +1 or +2*/
+	/*TO_DO: Will need to check indexing to see if it's +1 or +2*/
 	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
       }
       break;
     }
 
+    /*For the +y/-y direction*/
     case 2: case 3: {
       if (fmod(dim,2) != 0) {
 	fixed = pCO->ijks[1] - nghost;
@@ -286,6 +326,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       break;
     }
 
+    /*For the +z/-z direction*/
     case 4: case 5: {
       if (fmod(dim,2) != 0) {
 	fixed = pCO->ijks[2] - nghost;
@@ -307,18 +348,18 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
     /*AT 9/26/12: I think the NULL check only needs to be here and needs to be modified above.*/
     /* The point of such a check is to ensure that we're not trying to communicate, when there's an overlapping grid not in the direction of propagation*/
     /*Send buffer arrays of radiation flux to children grids*/
+
     if(pCO->ionFlx[dim] != NULL) {
 #ifdef MPI_PARALLEL
-      /* fprintf(stderr, "myid: %d, pCO ID: %d \n", myID_Comm_world, pCO->ID); */
-
-      /* sprintf(temp,"%d%d%d%d", level, myID_Comm_world, level+1, pCO->ID); */
       /* 	tag1 = atoi(temp); */
       /* 	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID; */
 	/* fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2); */
-	tag3 = domnumber + 100;
 
+      tag3 = domnumber + 100;
 
+      /*Send data to child grid*/
       ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Children, &send_rq[ncg]);
+      
       fprintf(stderr, "Sent data to child ID %d using tag %d. I'm on level %d \n", pCO->ID, tag3, level);
       /* fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);*/
 #endif
@@ -326,6 +367,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
   }
 }
 
+
+/*Older function for prolonging on a single processor.  Has been modified since it's initial use, so don't trust.*/
 void ionrad_prolongate(DomainS *pD)
 {
   MeshS *pM = pD->Mesh;
