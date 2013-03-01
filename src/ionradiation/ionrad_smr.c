@@ -23,6 +23,11 @@
 #include "../prototypes.h"
 #include "ionrad.h"
 
+
+/* #define RESET_COLOR2 "\e[m" */
+/* #define MAKE_BLUE "\e[34m" */
+/* #define MAKE_RED "\e[31m" */
+
 #ifdef STATIC_MESH_REFINEMENT
 
 void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
@@ -206,8 +211,12 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 /*Loop over all cells orthogonal to the direction of propagation */
 /*Loop indices range over all the cells, as indexed by the coarse grid*/
       if(pCO->ionFlx[dim] != NULL) {
+	/* fprintf(stderr, "j Start: %d End: %d   k Start: %d End:%d \n", pCO->ijks[1] - nghost, pCO->ijke[1]- nghost, pCO->ijks[2]- nghost, pCO->ijke[2]- nghost) ; */
+
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
+
+
 
 	    /*Calculate the index on the ionFlx array corresponding to a given cell on this (fine) grid*/
 	    /*Remember that ionFlx is a 1D array of values*/
@@ -228,22 +237,34 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	    /*TO_DO: I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
 	    
 	    /*Assign the same value to the other 3 fine cells that make up the one coarse cell */
-	    if (js < (pCO->ijke[1]+1)/2 -1) {
-	      if (ks < (pCO->ijke[2]+1)/2 -1) {	
+	    if (j < (pCO->ijke[2]+1 - nghost)) {
+		if (k < (pCO->ijke[1]+1 - nghost)) {	
 		pGrid->EdgeFlux[ks+1][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
+
+		/* if ( pCO->ionFlx[dim][indexarith] > 1.) */
+		/*   fprintf(stderr,"On level: %d setting [%d +=1][%d +=1][%d] ionflx[%d][%d]  %e \n", level, ks, js, fixed, dim, indexarith, pCO->ionFlx[dim][indexarith]); */
+
 	      }
 	      
 	      /*Handle edge cases*/
 	      else {
 		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+
+		/* if ( pCO->ionFlx[dim][indexarith] > 1.) */
+		/*   fprintf(stderr,MAKE_BLUE "1: On level: %d setting [%d][%d +=1][%d] ionflx[%d][%d]  %e \n" RESET_COLOR2, level, ks, js, fixed, dim, indexarith, pCO->ionFlx[dim][indexarith]); */
+
 	      } 
 	    }
 	    /*Handle edge cases*/
 	    else {
-	      if (ks < (pCO->ijke[2]+1)/2 -1) {
+	      if (k < pCO->ijke[2]+1 - nghost ) {
 		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
+
+		/* if ( pCO->ionFlx[dim][indexarith] > 1.) */
+		/*   fprintf(stderr,MAKE_RED"2: On level: %d setting [%d +=1][%d][%d] ionflx[%d][%d]  %e \n" RESET_COLOR2, level, ks, js, fixed, dim, indexarith, pCO->ionFlx[dim][indexarith]); */
+
 	      }
 	    }
 	    
@@ -298,7 +319,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	    /*Store data in the child grid overlap structure ionFlx (which is a 1D array for the purposes of MPI communication)*/
 	    pCO->ionFlx[dim][indexarith] = pGrid->EdgeFlux[k][j][fixed];
 	    /* if (pGrid->EdgeFlux[k][j][fixed] > 1.) */
-	    /*   fprintf(stderr,"On level: %d setting ionflx[%d][%d] to [%d][%d][%d] %e \n", level, dim, indexarith,k, j, fixed, pGrid->EdgeFlux[k][j][fixed]); */
+	    /*   fprintf(stderr,"On level: %d setting ionflx[%d][%d] to [%d][%d][%d] %e \n", level, dim, indexarith,k-2, j-2, fixed-2, pGrid->EdgeFlux[k][j][fixed]); */
 	  }
 	}
 	/*TO_DO: Will need to check indexing to see if it's +1 or +2*/
