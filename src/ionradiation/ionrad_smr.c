@@ -237,8 +237,8 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	    /*TO_DO: I also need to check that the if statements will hold up for grids of diff. size and that it works with MPI in the right area*/
 	    
 	    /*Assign the same value to the other 3 fine cells that make up the one coarse cell */
-	    if (j < (pCO->ijke[2]+1 - nghost)) {
-		if (k < (pCO->ijke[1]+1 - nghost)) {	
+	    if (j < (pCO->ijke[1]+1 - nghost)) {
+		if (k < (pCO->ijke[2]+1 - nghost)) {	
 		pGrid->EdgeFlux[ks+1][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 		pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
 		pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
