@@ -36,8 +36,12 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   MeshS *pMesh = pGrid->Mesh;
   int npg;
   int i, j, k, fixed, arrsize, indexarith;
+  int is, js, ks;
   int err, ierr;
   GridOvrlpS *pPO, *pCO;
+
+  DomainS *pDomain;
+  pDomain = (DomainS*)&(pMesh->Domain[level][domnumber]);  /* ptr to Domain */
 
 #ifdef MPI_PARALLEL
   int allrcv =0;
@@ -53,10 +57,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
 
 #else
-  int is, js, ks;
   GridS *parentgrid; /*Parent grid of current grid*/
-  DomainS *pDomain;
-  pDomain = (DomainS*)&(pMesh->Domain[level][domnumber]);  /* ptr to Domain */
 #endif
 
 /*Find my parent grid overlap structure(s if MPI) to receive data from it*/
@@ -82,6 +83,9 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	
 	/*Find the size of the array of flux values being transferred*/
 	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
+	printf(stderr, "k - 2s: %d 2e: %d \n", pPO->ijks[2], pPO->ijke[2]);
+	/* arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]); */
+
 
 	/*Initiate non-blocking receive*/
 	ierr = MPI_Irecv(pPO->ionFlx[dim], arrsize, MP_RL, pPO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Parent, &(rcv_rq[npg]));
@@ -130,16 +134,41 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	switch(dim) { 
 	case 0: case 1: { 
 	  if (fmod(dim,2) != 0) {
-	    fixed = pPO->ijks[0] - nghost;
+	    fixed = (pPO->ijks[0] - nghost) * 2.;
 	  } else {
-	    fixed = pPO->ijke[0] + 1 - nghost; /*Should this be +1 or +2? */
+	    fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
 	  }  
 	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
 	    for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
 	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
-	      pGrid->EdgeFlux[k][j][fixed] = pPO->ionFlx[dim][indexarith];
+
+	      ks = k*2 - pDomain->Disp[2];
+	      js = j*2 - pDomain->Disp[1];
+
+	      pGrid->EdgeFlux[ks][js][fixed] = pPO->ionFlx[dim][indexarith];
+
+	      if (j < (pPO->ijke[1]+1 - nghost)) {
+		if (k < (pPO->ijke[2]+1 - nghost)) {	
+		  /*pPO is very likely the wrong place to store this since we really want hte parent's pCO*/
+		  pGrid->EdgeFlux[ks+1][js+1][fixed] = pPO->ionFlx[dim][indexarith];
+		  pGrid->EdgeFlux[ks][js+1][fixed] = pPO->ionFlx[dim][indexarith];
+		  pGrid->EdgeFlux[ks+1][js][fixed] = pPO->ionFlx[dim][indexarith];
+		}
+		
+		/*Handle edge cases*/
+		else {
+		  pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+
+		}
+		/*Handle edge cases*/
+	      }else {
+		if (k < pCO->ijke[2]+1 - nghost ) {
+		  pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
+		  
 	      /*Will need to check indexing to see if it's +1 or +2*/
 	      /*	      fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); */
+		}
+	      }
 	    }
 	  }
 	  break; 
@@ -324,6 +353,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	}
 	/*TO_DO: Will need to check indexing to see if it's +1 or +2*/
 	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
+	printf(stderr, "k - 2s: %d 2e: %d [SENT] \n", pCO->ijks[2], pCO->ijke[2]);
       }
       break;
     }
