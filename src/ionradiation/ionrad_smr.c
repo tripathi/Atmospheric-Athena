@@ -24,9 +24,10 @@
 #include "ionrad.h"
 
 
-/* #define RESET_COLOR2 "\e[m" */
-/* #define MAKE_BLUE "\e[34m" */
-/* #define MAKE_RED "\e[31m" */
+#define RESET_COLOR "\e[m"
+#define MAKE_BLUE "\e[34m"
+#define MAKE_RED "\e[31m"
+
 
 #ifdef STATIC_MESH_REFINEMENT
 
@@ -60,6 +61,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   GridS *parentgrid; /*Parent grid of current grid*/
 #endif
 
+
 /*Find my parent grid overlap structure(s if MPI) to receive data from it*/
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
@@ -82,8 +84,11 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	/*AT 9/21/12: TO_DO: Insert case statement, so that arrsize is pulled from the correct indices*/
 	
 	/*Find the size of the array of flux values being transferred*/
-	arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]);
-	printf(stderr, "k - 2s: %d 2e: %d \n", pPO->ijks[2], pPO->ijke[2]);
+	/* arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]); */
+	arrsize = (pPO->ijke[2] - pPO->ijks[2]+3)/2. * (pPO->ijke[1] - pPO->ijks[1]+3)/2.;
+
+
+	fprintf(stderr, MAKE_BLUE "ARR SIZE %d being received k - 2s: %d 2e: %d \n" RESET_COLOR, arrsize, pPO->ijks[2], pPO->ijke[2]);
 	/* arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]); */
 
 
@@ -353,7 +358,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	}
 	/*TO_DO: Will need to check indexing to see if it's +1 or +2*/
 	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
-	printf(stderr, "k - 2s: %d 2e: %d [SENT] \n", pCO->ijks[2], pCO->ijke[2]);
+	fprintf(stderr, MAKE_RED "Sending array size %d with 2s: %d 2e: %d [SENT] \n" RESET_COLOR, arrsize, pCO->ijks[2], pCO->ijke[2]);
       }
       break;
     }
