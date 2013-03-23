@@ -53,11 +53,12 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
   char temp[10];
   MPI_Status stat;
   MPI_Request *rcv_rq;
-  Real *rcvdflux;
+  int *rcvdarrsize;
+  int dy, dz, coarsek;
 
   rcv_rq = (MPI_Request*) calloc_1d_array(pGrid->NPGrid,sizeof(MPI_Request));
   succtest = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
-
+  rcvdarrsize = (int*) calloc_1d_array(pGrid->NPGrid,sizeof(int)) ;
 #else
   GridS *parentgrid; /*Parent grid of current grid*/
 #endif
@@ -87,16 +88,21 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	
 	/*Find the size of the array of flux values being transferred*/
 	/* arrsize = (pPO->ijke[2] + 2 - pPO->ijks[2]) * (pPO->ijke[1] + 2 - pPO->ijks[1]); */
-	arrsize = (pPO->ijke[2] - pPO->ijks[2]+3)/2. * (pPO->ijke[1] - pPO->ijks[1]+3)/2.;
-	rcvdflux = (Real*) calloc_1d_array(arrsize,sizeof(Real)) ;
+	dz = floor((pPO->ijke[2] - pPO->ijks[2])/2.)+2.;
+	dy = floor((pPO->ijke[1] - pPO->ijks[1])/2.)+2.;
+
+	rcvdarrsize[npg] = dy * dz;
+	/*(pPO->ijke[2] - pPO->ijks[2]+3)/2. * (pPO->ijke[1] - pPO->ijks[1]+3)/2.;*/
 
 
-	fprintf(stderr, MAKE_BLUE "ARR SIZE %d being received k - 2s: %d 2e: %d \n" RESET_COLOR, arrsize, pPO->ijks[2], pPO->ijke[2]);
+
+
+	fprintf(stderr, MAKE_BLUE "ARR SIZE %d being received k: s: %d e: %d j: s: %d e: %d\n" RESET_COLOR, rcvdarrsize[npg], pPO->ijks[2], pPO->ijke[2], pPO->ijks[1], pPO->ijke[1]);
 	/* arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]); */
 
 
 	/*Initiate non-blocking receive*/
-	ierr = MPI_Irecv(rcvdflux, arrsize, MP_RL, pPO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Parent, &(rcv_rq[npg]));
+	ierr = MPI_Irecv(pPO->ionFlx[dim], rcvdarrsize[npg], MP_RL, pPO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Parent, &(rcv_rq[npg]));
 	/* fprintf (stderr, "did i get here? %d \n", ierr); */
 
       } else {
@@ -133,6 +139,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 /* Populate the cells on this (fine) grid with the values received from the coarse grid */
 /*AT 2/28/13: TO_DO: Indexing needs to be fixed*/
+
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
       pPO=(GridOvrlpS*)&(pGrid->PGrid[npg]);
@@ -147,42 +154,58 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	  } else {
 	    fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
 	  }  
-  fprintf(stderr,"I'm here at line 150 \n");
+  /* fprintf(stderr,"I'm here at line 150 \n"); */
+
+
 
 	  for (k=pPO->ijks[2] - nghost; k<= pPO->ijke[2]+1 - nghost; k++) {
 	    for (j=pPO->ijks[1] - nghost; j<= pPO->ijke[1]+1 - nghost; j++) {
-	      indexarith = (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost);
-  fprintf(stderr,"I'm here at line 155 \n");
+	      coarsek = floor(k/2) + pDomain->Disp[2];
 
-	      ks = k*2 - pDomain->Disp[2];
-	      js = j*2 - pDomain->Disp[1];
+	      indexarith = floor((k - pPO->ijks[2] + nghost)/2.) * (floor((pPO->ijke[1] - pPO->ijks[1])/2.) + 2) + floor((j - pPO->ijks[1] + nghost)/2.);
+	      
+	      /* indexarith = floor(( (k-(pPO->ijks[2]-nghost))*(pPO->ijke[1] - pPO->ijks[1] + 2)+j-(pPO->ijks[1]-nghost))/2.); */
+	      /* indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost); */
 
+
+
+	      /* fprintf(stderr, "I'm here at line 155 k:%d j:%d \n", k, j); */
+
+	      ks = k;
+
+/* *2 - pDomain->Disp[2]; */
+
+	      js = j;
+/* *2 - pDomain->Disp[1]; */
+
+	      /* fprintf(stderr, MAKE_RED"Now here at line 162. ks: %d, js:%d, indexarith: %d \n"RESET_COLOR, ks, js, indexarith); */
 	      pGrid->EdgeFlux[ks][js][fixed] = pPO->ionFlx[dim][indexarith];
-
-	      if (j < (pPO->ijke[1]+1 - nghost)) {
-		if (k < (pPO->ijke[2]+1 - nghost)) {	
-		  /*pPO is very likely the wrong place to store this since we really want hte parent's pCO*/
-		  pGrid->EdgeFlux[ks+1][js+1][fixed] = pPO->ionFlx[dim][indexarith];
-		  pGrid->EdgeFlux[ks][js+1][fixed] = pPO->ionFlx[dim][indexarith];
-		  pGrid->EdgeFlux[ks+1][js][fixed] = pPO->ionFlx[dim][indexarith];
-		}
+	      /* fprintf(stderr, "Now here at line 164 \n"); */
+	      /* if (j < (pPO->ijke[1]+1 - nghost)) { */
+	      /* fprintf(stderr, "Now here at line 166 \n"); */
+	      /* 	if (k < (pPO->ijke[2]+1 - nghost)) {	 */
+	      /* 	  /\*pPO is very likely the wrong place to store this since we really want hte parent's pCO*\/ */
+	      /* 	  pGrid->EdgeFlux[ks+1][js+1][fixed] = pPO->ionFlx[dim][indexarith]; */
+	      /* 	  pGrid->EdgeFlux[ks][js+1][fixed] = pPO->ionFlx[dim][indexarith]; */
+	      /* 	  pGrid->EdgeFlux[ks+1][js][fixed] = pPO->ionFlx[dim][indexarith]; */
+	      /* 	} */
 		
-		/*Handle edge cases*/
-		else {
-		  pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith];
+	      /* 	/\*Handle edge cases*\/ */
+	      /* 	else { */
+	      /* 	  pGrid->EdgeFlux[ks][js+1][fixed] = pCO->ionFlx[dim][indexarith]; */
 
-		}
-		/*Handle edge cases*/
-	      }else {
-		if (k < pCO->ijke[2]+1 - nghost ) {
-		  pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith];
+	      /* 	} */
+	      /* 	/\*Handle edge cases*\/ */
+	      /* }else { */
+	      /* 	if (k < pCO->ijke[2]+1 - nghost ) { */
+	      /* 	  pGrid->EdgeFlux[ks+1][js][fixed] = pCO->ionFlx[dim][indexarith]; */
 		  
-	      /*Will need to check indexing to see if it's +1 or +2*/
-	      /*	      fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); */
-		}
-	      }
+	      /* /\*Will need to check indexing to see if it's +1 or +2*\/ */
+	      /* /\*	      fprintf(stderr, "Putting away received k:%d j:%d, index: %d \n", k, j, indexarith); *\/ */
+	      /* 	} */
+	      /* } */
 
-  fprintf(stderr,"I'm here at line 185 \n");
+  /* fprintf(stderr,"I'm here at line 185 \n"); */
 
 	    }
 	  }
