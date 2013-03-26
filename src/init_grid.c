@@ -983,14 +983,16 @@ if(myID_Comm_world==0){
 printf("Allocated %d x %d array for ixb PGrid.myFlx\n",n2z,n1z);
 }
 #ifdef ION_RADPLANE
-                    pG->PGrid[npg].ionFlx[2*dim] = (Real*)calloc_1d_array(
-                      n2z*n1z, sizeof(Real));
-                    if(pG->PGrid[npg].ionFlx[2*dim] == NULL) ath_error(
-                      "[init_grid]:failed to allocate PGrid ixb ionFlx\n");
-if(myID_Comm_world==0){
-printf("Allocated %d x %d array for ixb PGrid.ionFlx\n",n2z,n1z);
-}
-		    
+ if ((n2z*n1z) % 4 ==0) {
+   pG->PGrid[npg].ionFlx[2*dim] = (Real*)calloc_1d_array(((n2z/2+1)*(n1z/2+1)), sizeof(Real));
+   if(pG->PGrid[npg].ionFlx[2*dim] == NULL) ath_error("[init_grid]:failed to allocate PGrid ixb ionFlx\n");
+   /* if(myID_Comm_world==0){ */
+   printf("Allocated %f x %f (%d) array for ixb PGrid.ionFlx\n",n2z/2.,n1z/2., ((n2z/2+1)*(n1z/2+1)));   
+   /* } */
+ } else {
+   printf("Did not allocate %d /2 x %d /2 array for ixb PGrid.ionFlx\n",n2z,n1z);   
+   ath_error("[init_grid]:failed to allocate PGrid ixb ionFlx coarse size\n");
+ }
 #endif /*ION_RADPLANE*/
 
 #ifdef MHD
@@ -1103,13 +1105,17 @@ printf("Allocated %d x %d array for oxb PGrid.myFlx\n",n2z,n1z);
 }
 
 #ifdef ION_RADPLANE
-                    pG->PGrid[npg].ionFlx[(2*dim)+1] =
-                      (Real*)calloc_1d_array(n2z*n1z, sizeof(Real));
-                    if(pG->PGrid[npg].ionFlx[(2*dim)+1] == NULL) ath_error(
-                      "[init_grid]:failed to allocate PGrid oxb ionFlx\n");
-if(myID_Comm_world==0){
-printf("Allocated %d x %d array for oxb PGrid.ionFlx\n",n2z,n1z);
-}
+ if ((n2z*n1z) % 4 ==0) {
+   pG->PGrid[npg].ionFlx[(2*dim)+1] = (Real*)calloc_1d_array(((n2z/2+1)*(n1z/2+1)), sizeof(Real));
+   if(pG->PGrid[npg].ionFlx[(2*dim)+1] == NULL) ath_error("[init_grid]:failed to allocate PGrid oxb ionFlx\n");
+   /* if(myID_Comm_world==0){ */
+   printf("Allocated %f x %f (%d) array for oxb PGrid.ionFlx\n",n2z/2.,n1z/2.,((n2z/2+1)*(n1z/2+1)));
+   /* } */
+ } else {
+   printf("Did not allocate %d /2 x %d /2 array for ixb PGrid.ionFlx\n",n2z,n1z);   
+   ath_error("[init_grid]:failed to allocate PGrid oxb ionFlx\n");
+ }
+
 #endif /*ION_RADPLANE*/
 
 #ifdef MHD
