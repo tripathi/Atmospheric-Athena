@@ -886,21 +886,25 @@ void ion_radtransfer_3d(DomainS *pDomain)
   finegrid = 0;
   niter = 0;
 
+  /*Set the direction of propagation to that of the first radiation source*/
   /*AT 9/24/12: Make this dir not be hardwired to dir[0] and also consistent with the get_ph_rate_plane call*/
   dir = (pMesh->radplanelist)->dir[0];
   dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
 
+  /*Set the finegrid flag if on level number > 0*/
   if(pDomain->Level != 0) finegrid = 1;
 
-  /*Adding in SMR */
 #ifdef STATIC_MESH_REFINEMENT
-  /*    if (finegrid) ionrad_prolongate(pDomain);*/
   if (finegrid) { 
-    /* fprintf(stderr, "Going to rcv for domain level  %d with DIM %d \n", pDomain->Level, dim); */
+    /*If not on root domain, go to the receive function.  Send call in line 1046*/
     ionrad_prolong_rcv(pGrid, dim, pDomain->Level, pDomain->DomNumber);
   }
-  else { tcoarse = 0;} /*Will need to fix placement of calls to be valid for MPI+-SMR*/
+  else { 
+    /*AT 4/3/13: This step may be redundant, given the existence of the clear_coarse_time called in the main.*/
+    tcoarse = 0;
+  } /*AT 11/19/12: Will need to fix placement of calls to be valid for MPI+-SMR*/
 #endif
+
   /* Set all temperatures below the floor to the floor */
   apply_temp_floor(pGrid);
 
@@ -916,31 +920,25 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /* Begin the radiation sub-cycle */
   dt_done = 0.0;
   hydro_done = 0;
-  coarsetime_done = 0;
+  /*Flag to check that the timestep of the root level has not been exceded by the fine grids*/
+  coarsetime_done = 0; 
   nchem = ntherm = 0;
 
   /*Do radiation sub cycle differently depending on whether on a coarse or fine grid*/
 
-  /*If on the coarsest level, run under the <maxiter condition*/
+  /*If on the coarsest level, run under the regular stopping conditions condition*/
   /*If on a finer level, run under the time condition*/
-  /*This assumes ONLY treats the root level as special.*/
-  /* while(finegrid || niter < maxiter){ */
-  fprintf(stderr,"I am on level %d and I am in ionrad_3d.c \n",  pDomain->Level);
-  /* if (finegrid || !hydro_done)   fprintf(stderr,"and I am going to do the while loop \n"); */
+  /*This ONLY treats the root level as special.*/
   while(finegrid || !hydro_done){
-    /* if (niter % 200 == 0) { */
-    /*   ath_pout(0,"n: %d, done:%e, dt:%e \n", niter, dt_done, pGrid->dt); */
-    /* } */
     
     /* Initialize photoionization rate array */
     ph_rate_init(pGrid);
-    /* if isnan(pMesh->dt) fprintf(stderr,"It's nan at %e \n", pGrid->U[0][0][0].d); */
 
     /* Compute photoionization rate from all sources */
+    /* AT 4/3/13: Again, remove the for loop if there's only going to be 1 source and adjust radplane structure*/
 #ifdef ION_RADPLANE
     for (n=0; n<(pMesh->radplanelist)->nradplane; n++) 
       {
-	/* fprintf(stderr, "I made it in here\n"); */
 	get_ph_rate_plane((pMesh->radplanelist)->flux_i,(pMesh->radplanelist)->dir[n],ph_rate, pDomain);
       }
 #endif
@@ -952,8 +950,6 @@ void ion_radtransfer_3d(DomainS *pDomain)
     /* Compute rates and time step for thermal energy update */
     dt_therm = compute_therm_rates(pDomain);
 
-    /* fprintf(stderr,"dt_chem %e dt_therm %e \n", dt_chem, dt_therm); */
-  
 
     /* Set time step to smaller of thermal and chemical time
        steps, and record whether this is a thermal or chemical step */
@@ -961,7 +957,6 @@ void ion_radtransfer_3d(DomainS *pDomain)
     else ntherm++;
     dt = MIN(dt_therm, dt_chem);
 
-    /* fprintf(stderr,"Grid: %e, Mesh:%e\n", pGrid->dt, pMesh->dt);  */
 
     /* If necessary, scale back time step to avoid exceeding hydro
        time step. */
@@ -970,6 +965,8 @@ void ion_radtransfer_3d(DomainS *pDomain)
 	dt = pGrid->dt - dt_done;
 	hydro_done = 1;
       }
+    /* If necessary and on a fine grid, scale back time step to avoid 
+       exceeding coarse time step. */
     } else {
        if (dt_done + dt >tcoarse) {
 	dt = tcoarse - dt_done;
@@ -1027,24 +1024,26 @@ void ion_radtransfer_3d(DomainS *pDomain)
     }
   }
   
-  /* Have we exceeded the maximum number of iterations? If so, return
-     to hydro with the time step re-set to what we managed to do and
-     return this time to the finer levels. */
+
   if (!finegrid){
 
-    /*Set mesh timestep equal to grid timestep*/
-    pMesh->dt = pGrid->dt;
-    /* if isnan(pGrid->dt) fprintf(stderr, "Setting mesh to nan timestep \n"); */
-    
+  /* Have we exceeded the maximum number of iterations? If so, return
+     to hydro with the time step re-set to what we managed to do and
+     return this time to the finer levels. */    
     if (niter==maxiter) {
 	pGrid->dt = dt_done;
 	/* fprintf(stderr,"Reached maxiter \n"); */
     }
+
+    /*Set mesh timestep equal to grid timestep*/
+    pMesh->dt = pGrid->dt;
+
+    /*Set coarsetime to the timestep done on this root grid*/
     tcoarse = dt_done;
   }
 
 #ifdef STATIC_MESH_REFINEMENT
-  /* fprintf(stderr, "Now going to SMR+MPI send call in ionrad_3d.c for Domain level %d \n", pDomain->Level); */
+  /*Send radiation flux to finer grids that overlap*/
   ionrad_prolong_snd(pGrid, dim, pDomain->Level, pDomain->DomNumber);
 #endif
 
