@@ -1227,7 +1227,7 @@ void RestrictCorrect(MeshS *pM)
 
       if (npg >= pG->NmyPGrid){
         mIndex = npg - pG->NmyPGrid;
-	fprintf(stderr, "Registering a send from processor with cgrid id %d tag %d \n",  pG->PGrid[ncg].ID, nd);
+	fprintf(stderr, "Registering a send from processor with pgrid id %d tag %d \n",  pG->PGrid[ncg].ID, nd);
         ierr = MPI_Isend(&(send_bufRC[nd][start_addr]), pG->PGrid[npg].nWordsRC,
           MPI_DOUBLE, pG->PGrid[npg].ID, nd, pM->Domain[nl][nd].Comm_Parent,
           &(send_rq[nd][mIndex]));
