@@ -92,7 +92,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
   int i, j, k, ii;
   int s, e;
 #ifdef MPI_PARALLEL
-  int n, nGrid;
+  int n, nGrid=0;
   int myrank, nextproc, prevproc, err;
   int planesize;
   Real *planeflux = NULL;
