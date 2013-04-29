@@ -165,9 +165,6 @@ void new_dt(MeshS *pM)
 
 /* new timestep.  Limit increase to 2x old value */
 
-  /* if (pM->nstep > 75)  */
-fprintf(stderr, "pM->dt = %e, maxdt=%e, maxv1=%e, maxv2=%e, maxv3=%e \n", pM->dt, max_dti, max_v1, max_v2, max_v3);
-
   if (pM->nstep == 0) {
     pM->dt = CourNo/max_dti;
   } else {
