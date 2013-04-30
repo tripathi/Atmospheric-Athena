@@ -886,7 +886,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
   finegrid = 0;
   niter = 0;
 
-  fprintf(stderr,"My level is %d. My time is %f [grid] %f [mesh] \n ", pDomain->Level, pMesh->time, pGrid->time);
+  /* fprintf(stderr,"My level is %d. My time is %f [grid] %f [mesh] \n ", pDomain->Level, pMesh->time, pGrid->time); */
 
   /*Set the direction of propagation to that of the first radiation source*/
   /*AT 9/24/12: Make this dir not be hardwired to dir[0] and also consistent with the get_ph_rate_plane call*/

@@ -64,7 +64,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 #endif
 
 
-  fprintf (stderr, "Grid disp : %d \n", pGrid->Disp[0]);
+  fprintf (stderr, "Level: %d Grid disp : %d \n", level, pGrid->Disp[0]);
 /*Find my parent grid overlap structure(s if MPI) to receive data from it*/
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
@@ -75,7 +75,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 #ifdef MPI_PARALLEL
       if(pPO->ionFlx[dim] != NULL) {
-	fprintf(stderr, "Beginning receive call for domain level %d \n", level);
+	/* fprintf(stderr, "Beginning receive call for domain level %d \n", level); */
 	
 	/*Old tagging strategies*/
 	/* tag1 = atoi(temp); */
@@ -97,7 +97,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 
 
-	fprintf(stderr, MAKE_BLUE "ARR SIZE %d being received k: s: %d e: %d j: s: %d e: %d\n" RESET_COLOR, rcvdarrsize[npg], pPO->ijks[2], pPO->ijke[2], pPO->ijks[1], pPO->ijke[1]);
+	/* fprintf(stderr, MAKE_BLUE "ARR SIZE %d being received k: s: %d e: %d j: s: %d e: %d\n" RESET_COLOR, rcvdarrsize[npg], pPO->ijks[2], pPO->ijke[2], pPO->ijks[1], pPO->ijke[1]); */
 	/* arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]); */
 
 
@@ -135,7 +135,6 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
       allrcv = (rcvd == pGrid->NPGrid) ? 1 : 0;
     }
 
-  fprintf(stderr,"I'm here at line 132 \n");
 
 /* Populate the cells on this (fine) grid with the values received from the coarse grid */
 /*AT 2/28/13: TO_DO: Indexing needs to be fixed*/
@@ -366,7 +365,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
     pCO=(GridOvrlpS*)&(pGrid->CGrid[ncg]);
 
     /* fprintf(stderr, "Actually filling buffer \n"); */
-      fprintf(stderr, "CHILD # %d of %d I think my child's x- start is %d and end %d. So the edgeflux corresponds to those - %d \n", ncg+1, pGrid->NCGrid, pCO->ijks[0], pCO->ijke[0], nghost);
+      /* fprintf(stderr, "CHILD # %d of %d I think my child's x- start is %d and end %d. So the edgeflux corresponds to those - %d \n", ncg+1, pGrid->NCGrid, pCO->ijks[0], pCO->ijke[0], nghost); */
 
     switch(dim) {
 
@@ -379,6 +378,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       }
 
       if(pCO->ionFlx[dim] != NULL) {
+	fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and sending data to i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost);
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
@@ -391,8 +391,9 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	}
 	/*TO_DO: Will need to check indexing to see if it's +1 or +2*/
 	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
-	fprintf(stderr, MAKE_RED "Sending array size %d with 2s: %d 2e: %d [SENT] \n" RESET_COLOR, arrsize, pCO->ijks[2], pCO->ijke[2]);
+	/* fprintf(stderr, MAKE_RED "Sending array size %d with 2s: %d 2e: %d [SENT] \n" RESET_COLOR, arrsize, pCO->ijks[2], pCO->ijke[2]); */
       }
+      fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and didn't fill a buffer. For reference, I have i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost);
       break;
     }
 
