@@ -148,7 +148,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 	switch(dim) { 
 	case 0: case 1: { 
-	  if (fmod(dim,2) != 0) {
+	  if (fmod(dim,2) == 0) {
 	    fixed = (pPO->ijks[0] - nghost) * 2.;
 	  } else {
 	    fixed = (pPO->ijke[0] + 1 - nghost) * 2.;
@@ -212,7 +212,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	}
 
 	case 2: case 3: {
-	  if (fmod(dim,2) != 0) {
+	  if (fmod(dim,2) == 0) {
 	    fixed = pPO->ijks[1] - nghost;
 	  } else {
 	    fixed = pPO->ijke[1] + 1 - nghost;
@@ -227,7 +227,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	}
 
 	case 4: case 5: {
-	  if (fmod(dim,2) != 0) {
+	  if (fmod(dim,2) == 0) {
 	    fixed = pPO->ijks[2] - nghost;
 	  } else {
 	    fixed = pPO->ijke[2] + 1 - nghost;
@@ -266,7 +266,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 
 /*Find the face where radiation is incoming from the coarse grid*/
       /*If in the +x direction*/
-      if (fmod(dim,2) != 0) {
+      if (fmod(dim,2) == 0) {
 	fixed = (pPO->ijks[0] - nghost) * 2.;
       }
       /*If in the -x direction*/	
@@ -371,7 +371,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 
     /*For the +x/-x direction*/
     case 0: case 1: {
-      if (fmod(dim,2) != 0) {
+      if (fmod(dim,2) == 0) {
 	fixed = pCO->ijks[0] - nghost;
       } else {
 	fixed = pCO->ijke[0] + 1 - nghost;
@@ -399,7 +399,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 
     /*For the +y/-y direction*/
     case 2: case 3: {
-      if (fmod(dim,2) != 0) {
+      if (fmod(dim,2) == 0) {
 	fixed = pCO->ijks[1] - nghost;
       } else {
 	fixed = pCO->ijke[1] + 1 - nghost;
@@ -418,7 +418,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 
     /*For the +z/-z direction*/
     case 4: case 5: {
-      if (fmod(dim,2) != 0) {
+      if (fmod(dim,2) == 0) {
 	fixed = pCO->ijks[2] - nghost;
       } else {
 	fixed = pCO->ijke[2] + 1 - nghost;
