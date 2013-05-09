@@ -891,7 +891,7 @@ void ion_radtransfer_3d(DomainS *pDomain)
   /*Set the direction of propagation to that of the first radiation source*/
   /*AT 9/24/12: Make this dir not be hardwired to dir[0] and also consistent with the get_ph_rate_plane call*/
   dir = (pMesh->radplanelist)->dir[0];
-  dim = (dir > 0) ? 2*(dir - 1): 2*fabs(dir) - 1;
+  dim = (dir < 0) ? 2*(fabs(dir) - 1): 2*dir - 1;
 
   /*Set the finegrid flag if on level number > 0*/
   if(pDomain->Level != 0) finegrid = 1;
