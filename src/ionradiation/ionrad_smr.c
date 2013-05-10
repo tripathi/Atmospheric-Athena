@@ -394,8 +394,8 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	/* fprintf(stderr, MAKE_RED "Sending array size %d with 2s: %d 2e: %d [SENT] \n" RESET_COLOR, arrsize, pCO->ijks[2], pCO->ijke[2]); */
       } else{
 	fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and didn't fill a buffer. For reference, I have i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost);
-      break;
       }
+      break;
     }
 
     /*For the +y/-y direction*/
