@@ -281,7 +281,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 	      kph = flux * (1.0-etau) / (n_H*cell_len);
 	      ph_rate[k][j][i] += kph;
 	      flux *= etau;
-	      flux_frac = (flux +1e-12) / pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed]; /*Check if this should still be 0 or not*/
+	      flux_frac = flux / (pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed] +1e-12); /*Check if this should still be 0 or not*/
 	      if (flux_frac < MINFLUXFRAC){
 		/*AT 1/15/13: Should this really not be here??*/
 		for (ii=i; ii<=e; ii+=lr) {
