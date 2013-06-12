@@ -463,10 +463,12 @@ void init_grid(MeshS *pM)
 
 	      /*Adding in tag for use in MPI communications for ionizing flux*/
 #ifdef MPI_PARALLEL
+#ifdef ION_RADPLANE
+	      /*AT 6/12/13: These tags not currently used since how they would be accessed by the parent is unclear.  Please remove if unecessary*/
 	      pG->CGrid[ncg].ion_mpitag = ncd << 21; /* Let the */
 	      pG->CGrid[ncg].ion_mpitag +=  pG->CGrid[ncg].ID << 8; /* Let the ?? grid ID be bitshifted 8 to the left*/
 	      pG->CGrid[ncg].ion_mpitag += myID_Comm_world; /*Let the ?? grid  ID not be bitshifted*/
-	      
+#endif	      
 #endif
 
 
