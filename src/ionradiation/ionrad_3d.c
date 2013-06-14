@@ -346,7 +346,7 @@ Real compute_chem_rates(DomainS *pDomain)
 	  if (last_sign[k][j][i] == -1) sign_count[k][j][i]++;
 	  else if (sign_count[k][j][i] > 0) sign_count[k][j][i]--;
 	  last_sign[k][j][i] = 1;
-	} else {sizei, sizej, sizek
+	} else {
 	  sign_count[k][j][i] = last_sign[k][j][i] = 0;
 	}
 
