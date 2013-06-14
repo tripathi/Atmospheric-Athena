@@ -346,7 +346,7 @@ Real compute_chem_rates(DomainS *pDomain)
 	  if (last_sign[k][j][i] == -1) sign_count[k][j][i]++;
 	  else if (sign_count[k][j][i] > 0) sign_count[k][j][i]--;
 	  last_sign[k][j][i] = 1;
-	} else {
+	} else {sizei, sizej, sizek
 	  sign_count[k][j][i] = last_sign[k][j][i] = 0;
 	}
 
@@ -730,7 +730,7 @@ void set_energy_manually(GridS *pGrid)
  *
  */
 
-void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
+void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires, int sizei, int sizej, int sizek) {
   Real area1, area2, area3, maxdx;
   int j, k;
 
@@ -752,61 +752,58 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires) {
   tceil = par_getd("ionradiation", "tceil");
   maxiter = par_getd("ionradiation", "maxiter");
 
+  sizei = sizei + 2*nghost;
+  sizej = sizej + 2*nghost;
+  sizek = sizek + 2*nghost;
+
   /* Allocate memory for rate arrays */
   ph_rate = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(Real));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
+  fprintf(stderr, "I'm level :%d, sized k: %d j:%d i:%d \n", pDomain->Level, sizek, sizej, sizei);
   edot = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(Real));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
   nHdot = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(Real));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
   last_sign = (int***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(int));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
   sign_count = (int***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(int));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
   e_init = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0],  
-		    sizeof(Real));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
   e_th_init = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(Real));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
   x_init = (Real***) 
-    calloc_3d_array(pGrid->Nx[2], pGrid->Nx[1], pGrid->Nx[0], 
-		    sizeof(Real));
+    calloc_3d_array(sizek, sizej, sizei, sizeof(Real));
 
   /* Offset pointers to account for ghost cells */
-  ph_rate -= pGrid->ks;
-  edot -= pGrid->ks;
-  nHdot -= pGrid->ks;
-  last_sign -= pGrid->ks;
-  sign_count -= pGrid->ks;
-  e_init -= pGrid->ks;
-  e_th_init -= pGrid->ks;
-  x_init -= pGrid->ks;
-  for (k=pGrid->ks; k<=pGrid->ke; k++) {
-    ph_rate[k] -= pGrid->js;
-    edot[k] -= pGrid->js;
-    nHdot[k] -= pGrid->js;
-    last_sign[k] -= pGrid->js;
-    sign_count[k] -= pGrid->js;
-    e_init[k] -= pGrid->js;
-    e_th_init[k] -= pGrid->js;
-    x_init[k] -= pGrid->js;
-    for (j=pGrid->js; j<=pGrid->je; j++) {
-      ph_rate[k][j] -= pGrid->is;
-      edot[k][j] -= pGrid->is;
-      nHdot[k][j] -= pGrid->is;
-      last_sign[k][j] -= pGrid->is;
-      sign_count[k][j] -= pGrid->is;
-      e_init[k][j] -= pGrid->is;
-      e_th_init[k][j] -= pGrid->is;
-      x_init[k][j] -= pGrid->is;
-    }
-  }
+  /* ph_rate -= pGrid->ks; */
+  /* edot -= pGrid->ks; */
+  /* nHdot -= pGrid->ks; */
+  /* last_sign -= pGrid->ks; */
+  /* sign_count -= pGrid->ks; */
+  /* e_init -= pGrid->ks; */
+  /* e_th_init -= pGrid->ks; */
+  /* x_init -= pGrid->ks; */
+  /* for (k=pGrid->ks; k<=pGrid->ke; k++) { */
+  /*   ph_rate[k] -= pGrid->js; */
+  /*   edot[k] -= pGrid->js; */
+  /*   nHdot[k] -= pGrid->js; */
+  /*   last_sign[k] -= pGrid->js; */
+  /*   sign_count[k] -= pGrid->js; */
+  /*   e_init[k] -= pGrid->js; */
+  /*   e_th_init[k] -= pGrid->js; */
+  /*   x_init[k] -= pGrid->js; */
+  /*   for (j=pGrid->js; j<=pGrid->je; j++) { */
+  /*     ph_rate[k][j] -= pGrid->is; */
+  /*     edot[k][j] -= pGrid->is; */
+  /*     nHdot[k][j] -= pGrid->is; */
+  /*     last_sign[k][j] -= pGrid->is; */
+  /*     sign_count[k][j] -= pGrid->is; */
+  /*     e_init[k][j] -= pGrid->is; */
+  /*     e_th_init[k][j] -= pGrid->is; */
+  /*     x_init[k][j] -= pGrid->is; */
+  /*   } */
+  /* } */
 
 
   /* What's the smallest area a cell face can have? */
@@ -1017,6 +1014,8 @@ void ion_radtransfer_3d(DomainS *pDomain)
       }
 
     } else {
+      /* if (check_range(pDomain)) {fprintf(stderr, "I've hit check range! on domn: %d \n", pDomain->DomNumber);} */
+
       /*Check time to stop fine grid */
       if (coarsetime_done) {
 	pGrid->dt = dt_done;

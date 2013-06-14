@@ -51,13 +51,14 @@ void ion_radtransfer_init_domain(MeshS *pM) {
   case 2: break;
   case 3:
     ion_radtransfer_init_domain_3d(pG, pD);
-    return;
+    break;
   }
       }
     }
   }
-  ath_error("[ion_radtransfer_init_domain]: Unsupported dim. Nx[0]=%d, Nx[1]=%d, Nx[2]=%d\n",
-	    pG->Nx[0],pG->Nx[1],pG->Nx[2]);
+  return;
+  /* ath_error("[ion_radtransfer_init_domain]: Unsupported dim. Nx[0]=%d, Nx[1]=%d, Nx[2]=%d\n", */
+  /* 	    pG->Nx[0],pG->Nx[1],pG->Nx[2]); */
 }
 
 VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
@@ -68,6 +69,24 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
   int nl,nd;
   DomainS *pD;
   GridS *pG;
+  int sizei=0,sizej=0,sizek=0;
+
+/* Cycle over all Grids on this processor to find maximum Nx1, Nx2, Nx3 */
+  for (nl=0; nl<(pM->NLevels); nl++){
+    for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
+      if (pM->Domain[nl][nd].Grid != NULL) {
+        if (pM->Domain[nl][nd].Grid->Nx[0] > sizei){
+          sizei = pM->Domain[nl][nd].Grid->Nx[0];
+        }
+        if (pM->Domain[nl][nd].Grid->Nx[1] > sizej){
+          sizej = pM->Domain[nl][nd].Grid->Nx[1];
+        }
+        if (pM->Domain[nl][nd].Grid->Nx[2] > sizek){
+          sizek = pM->Domain[nl][nd].Grid->Nx[2];
+        }
+      }
+    }
+  }
 
   for (nl=0; nl<pM->NLevels; nl++){
     for (nd=0; nd<pM->DomainsPerLevel[nl]; nd++){
@@ -85,7 +104,7 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
 	case 1: break;
 	case 2: break;
 	case 3:
-	  ion_radtransfer_init_3d(pG, pD, ires);
+	  ion_radtransfer_init_3d(pG, pD, ires, sizei, sizej, sizek);
 	  return ion_radtransfer_3d;
 	}
 	

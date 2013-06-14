@@ -37,7 +37,7 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires);
 /*----------------------------------------------------------------------------*/
 /* ionrad_3d.c */
 void ion_radtransfer_3d(DomainS *pD);
-void ion_radtransfer_init_3d(GridS *pG, DomainS *pD, int ires);
+void ion_radtransfer_init_3d(GridS *pG, DomainS *pD, int ires, int sizei, int sizej, int sizek);
 void ion_radtransfer_init_domain_3d(GridS *pG, DomainS *pD);
 void set_coarse_time();
 void clear_coarse_time();
