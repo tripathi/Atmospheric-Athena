@@ -1,38 +1,36 @@
 #include "../copyright.h"
-/*============================================================================*/
-/*! \file integrate_3d_ctu.c
- *  \brief Integrate MHD equations using 3D version of the directionally
- *   unsplit CTU integrator of Colella (1990). 
+/*==============================================================================
+ * FILE: integrate_3d_ctu.c
  *
  * PURPOSE: Integrate MHD equations using 3D version of the directionally
  *   unsplit CTU integrator of Colella (1990).  The variables updated are:
- *   -  U.[d,M1,M2,M3,E,B1c,B2c,B3c,s] -- where U is of type ConsS
- *   -  B1i, B2i, B3i  -- interface magnetic field
+ *      U.[d,M1,M2,M3,E,B1c,B2c,B3c,s] -- where U is of type ConsS
+ *      B1i, B2i, B3i  -- interface magnetic field
  *   Also adds gravitational source terms, self-gravity, optically thin cooling,
  *   shearing box source terms, and the H-correction of Sanders et al.
- *   - For adb hydro, requires (9*Cons1DS +  3*Real) = 48 3D arrays
- *   - For adb mhd, requires   (9*Cons1DS + 10*Real) = 73 3D arrays
+ *     For adb hydro, requires (9*Cons1DS +  3*Real) = 48 3D arrays
+ *     For adb mhd, requires   (9*Cons1DS + 10*Real) = 73 3D arrays
  *   The H-correction of Sanders et al. adds another 3 arrays.  
  *
  * REFERENCES:
- * - P. Colella, "Multidimensional upwind methods for hyperbolic conservation
+ *   P. Colella, "Multidimensional upwind methods for hyperbolic conservation
  *   laws", JCP, 87, 171 (1990)
  *
- * - T. Gardiner & J.M. Stone, "An unsplit Godunov method for ideal MHD via
+ *   T. Gardiner & J.M. Stone, "An unsplit Godunov method for ideal MHD via
  *   constrained transport in three dimensions", JCP, 227, 4123 (2008)
  *
- * - R. Sanders, E. Morano, & M.-C. Druguet, "Multidimensinal dissipation for
+ *   R. Sanders, E. Morano, & M.-C. Druguet, "Multidimensinal dissipation for
  *   upwind schemes: stability and applications to gas dynamics", JCP, 145, 511
  *   (1998)
  *
- * - J.M. Stone et al., "Athena: A new code for astrophysical MHD", ApJS,
+ *   J.M. Stone et al., "Athena: A new code for astrophysical MHD", ApJS,
  *   178, 137 (2008)
  *
  * CONTAINS PUBLIC FUNCTIONS: 
- * - integrate_3d_ctu()
- * - integrate_init_3d()
- * - integrate_destruct_3d() */
-/*============================================================================*/
+ *   integrate_3d_ctu()
+ *   integrate_init_3d()
+ *   integrate_destruct_3d()
+ *============================================================================*/
 
 #include <math.h>
 #include <stdio.h>
@@ -104,8 +102,7 @@ static void integrate_emf3_corner(const GridS *pG);
 
 /*=========================== PUBLIC FUNCTIONS ===============================*/
 /*----------------------------------------------------------------------------*/
-/*! \fn void integrate_3d_ctu(DomainS *pD)
- *  \brief 3D CTU integrator for MHD using 6-solve method */
+/* integrate_3d: 3D CTU integrator for MHD using 6-solve method */
 
 void integrate_3d_ctu(DomainS *pD)
 {
@@ -192,6 +189,10 @@ void integrate_3d_ctu(DomainS *pD)
   feedback_predictor(pG);
 #endif
 
+#ifdef INNERB
+  Real diag;
+  Real Rbound = par_getd("problem","Rbound");
+#endif
 /*=== STEP 1: Compute L/R x1-interface states and 1D x1-Fluxes ===============*/
 
 /*--- Step 1a ------------------------------------------------------------------
@@ -226,89 +227,100 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
      for (i=is-nghost; i<=ie+nghost; i++) {
+#ifdef INNERB
+       cc_pos(pG,i,j,k,&x1,&x2,&x3);
+       diag = sqrt(x1*x1+x2*x2+x3*x3);
+       if (diag > Rbound){
+#endif	
        W[i] = Cons1D_to_Prim1D(&U1d[i],&Bxc[i]);
 
-        /* CALCULATE THE CELL-CENTERED GEOMETRIC SOURCE VECTOR NOW USING U^{n}
+       /* CALCULATE THE CELL-CENTERED GEOMETRIC SOURCE VECTOR NOW USING U^{n}
         * THIS WILL BE USED AT THE END OF THE INTEGRATION STEP AS A SOURCE TERM
         * FOR THE CELL-CENTERED CONSERVED VARIABLES (STEPS 6D,7D,8B) */
 #ifdef CYLINDRICAL
-        geom_src[k][j][i]  = W[i].d*SQR(W[i].Vy);
+       geom_src[k][j][i]  = W[i].d*SQR(W[i].Vy);
 #ifdef MHD
-        geom_src[k][j][i] += 0.5*(SQR(Bxc[i]) - SQR(W[i].By) + SQR(W[i].Bz));
+       geom_src[k][j][i] += 0.5*(SQR(Bxc[i]) - SQR(W[i].By) + SQR(W[i].Bz));
 #endif
 #ifdef ISOTHERMAL
-        geom_src[k][j][i] += Iso_csound2*W[i].d;
+       geom_src[k][j][i] += Iso_csound2*W[i].d;
 #else
-        geom_src[k][j][i] += W[i].P;
+       geom_src[k][j][i] += W[i].P;
 #endif
-        geom_src[k][j][i] /= x1vc(pG,i);
+       geom_src[k][j][i] /= x1vc(pG,i);
 #endif /* CYLINDRICAL */
+#ifdef INNERB
+     }
+#endif
      }
 
      lr_states(pG,W,Bxc,pG->dt,pG->dx1,il+1,iu-1,Wl,Wr,1);
 
+
+     
 #ifdef MHD
-      for (i=il+1; i<=iu; i++) {
-/* Source terms for left states in zone i-1 */
+     for (i=il+1; i<=iu; i++) {
+       /* Source terms for left states in zone i-1 */
 #ifdef CYLINDRICAL
-        rsf = ri[i]/r[i-1];  lsf = ri[i-1]/r[i-1];
-        dx2i = 1.0/(r[i-1]*pG->dx2);
+       rsf = ri[i]/r[i-1];  lsf = ri[i-1]/r[i-1];
+       dx2i = 1.0/(r[i-1]*pG->dx2);
 #endif
-        db1 = (rsf*pG->B1i[k  ][j  ][i  ] - lsf*pG->B1i[k][j][i-1])*dx1i;
-        db2 = (    pG->B2i[k  ][j+1][i-1] -     pG->B2i[k][j][i-1])*dx2i;
-        db3 = (    pG->B3i[k+1][j  ][i-1] -     pG->B3i[k][j][i-1])*dx3i;
-
-	if(db1 >= 0.0){
-	  l3 = db1 < -db3 ? db1 : -db3;
-	  l3 = l3 > 0.0 ? l3 : 0.0;
-
-	  l2 = db1 < -db2 ? db1 : -db2;
-	  l2 = l2 > 0.0 ? l2 : 0.0;
-	}
-	else{
-	  l3 = db1 > -db3 ? db1 : -db3;
-	  l3 = l3 < 0.0 ? l3 : 0.0;
-
-	  l2 = db1 > -db2 ? db1 : -db2;
-	  l2 = l2 < 0.0 ? l2 : 0.0;
-	}
-
-        MHD_src_By = (pG->U[k][j][i-1].M2/pG->U[k][j][i-1].d)*l2;
-        MHD_src_Bz = (pG->U[k][j][i-1].M3/pG->U[k][j][i-1].d)*l3;
-
-        Wl[i].By += hdt*MHD_src_By;
-        Wl[i].Bz += hdt*MHD_src_Bz;
-
-/* Source terms for right states in zone i */
+       db1 = (rsf*pG->B1i[k  ][j  ][i  ] - lsf*pG->B1i[k][j][i-1])*dx1i;
+       db2 = (    pG->B2i[k  ][j+1][i-1] -     pG->B2i[k][j][i-1])*dx2i;
+       db3 = (    pG->B3i[k+1][j  ][i-1] -     pG->B3i[k][j][i-1])*dx3i;
+       
+       if(db1 >= 0.0){
+	 l3 = db1 < -db3 ? db1 : -db3;
+	 l3 = l3 > 0.0 ? l3 : 0.0;
+	 
+	 l2 = db1 < -db2 ? db1 : -db2;
+	 l2 = l2 > 0.0 ? l2 : 0.0;
+       }
+       else{
+	 l3 = db1 > -db3 ? db1 : -db3;
+	 l3 = l3 < 0.0 ? l3 : 0.0;
+	 
+	 l2 = db1 > -db2 ? db1 : -db2;
+	 l2 = l2 < 0.0 ? l2 : 0.0;
+       }
+       
+       MHD_src_By = (pG->U[k][j][i-1].M2/pG->U[k][j][i-1].d)*l2;
+       MHD_src_Bz = (pG->U[k][j][i-1].M3/pG->U[k][j][i-1].d)*l3;
+       
+       Wl[i].By += hdt*MHD_src_By;
+       Wl[i].Bz += hdt*MHD_src_Bz;
+       
+       /* Source terms for right states in zone i */
 #ifdef CYLINDRICAL
-        rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
-        dx2i = 1.0/(r[i]*pG->dx2);
+       rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
+       dx2i = 1.0/(r[i]*pG->dx2);
 #endif
-        db1 = (rsf*pG->B1i[k  ][j  ][i+1] - lsf*pG->B1i[k][j][i])*dx1i;
-        db2 = (    pG->B2i[k  ][j+1][i  ] -     pG->B2i[k][j][i])*dx2i;
-        db3 = (    pG->B3i[k+1][j  ][i  ] -     pG->B3i[k][j][i])*dx3i;
-
-        if(db1 >= 0.0){
-          l3 = db1 < -db3 ? db1 : -db3;
-          l3 = l3 > 0.0 ? l3 : 0.0;
-
-          l2 = db1 < -db2 ? db1 : -db2;
-          l2 = l2 > 0.0 ? l2 : 0.0;
-        }
-        else{
-          l3 = db1 > -db3 ? db1 : -db3;
-          l3 = l3 < 0.0 ? l3 : 0.0;
-
-          l2 = db1 > -db2 ? db1 : -db2;
-          l2 = l2 < 0.0 ? l2 : 0.0;
-        }
-
-        MHD_src_By = (pG->U[k][j][i].M2/pG->U[k][j][i].d)*l2;
-        MHD_src_Bz = (pG->U[k][j][i].M3/pG->U[k][j][i].d)*l3;
-
-        Wr[i].By += hdt*MHD_src_By;
-        Wr[i].Bz += hdt*MHD_src_Bz;
+       db1 = (rsf*pG->B1i[k  ][j  ][i+1] - lsf*pG->B1i[k][j][i])*dx1i;
+       db2 = (    pG->B2i[k  ][j+1][i  ] -     pG->B2i[k][j][i])*dx2i;
+       db3 = (    pG->B3i[k+1][j  ][i  ] -     pG->B3i[k][j][i])*dx3i;
+       
+       if(db1 >= 0.0){
+	 l3 = db1 < -db3 ? db1 : -db3;
+	 l3 = l3 > 0.0 ? l3 : 0.0;
+	 
+	 l2 = db1 < -db2 ? db1 : -db2;
+	 l2 = l2 > 0.0 ? l2 : 0.0;
+       }
+       else{
+	 l3 = db1 > -db3 ? db1 : -db3;
+	 l3 = l3 < 0.0 ? l3 : 0.0;
+	 
+	 l2 = db1 > -db2 ? db1 : -db2;
+	 l2 = l2 < 0.0 ? l2 : 0.0;
+       }
+       
+       MHD_src_By = (pG->U[k][j][i].M2/pG->U[k][j][i].d)*l2;
+       MHD_src_Bz = (pG->U[k][j][i].M3/pG->U[k][j][i].d)*l3;
+       
+       Wr[i].By += hdt*MHD_src_By;
+       Wr[i].Bz += hdt*MHD_src_Bz;
       }
+
 #endif
 
 /*--- Step 1c ------------------------------------------------------------------
@@ -317,26 +329,36 @@ void integrate_3d_ctu(DomainS *pD)
 
       if (StaticGravPot != NULL){
         for (i=il+1; i<=iu; i++) {
-          cc_pos(pG,i,j,k,&x1,&x2,&x3);
-#ifdef CYLINDRICAL
-          gl = (*x1GravAcc)(x1vc(pG,i-1),x2,x3);
-          gr = (*x1GravAcc)(x1vc(pG,i),x2,x3);
-#ifdef FARGO
-          /* Correct for force in the rotating frame */
-					gl = gl - x1vc(pG,i-1)*SQR((*OrbitalProfile)(x1vc(pG,i-1)));
-					gr = gr - x1vc(pG,i)*SQR((*OrbitalProfile)(x1vc(pG,i)));
-#endif
-          /* APPLY GRAV. SOURCE TERMS TO VELOCITY USING ACCELERATION
-          * FOR (dt/2) */
-          Wl[i].Vx -= hdt*gl;
-          Wr[i].Vx -= hdt*gr;
-#else
-          phicr = (*StaticGravPot)( x1             ,x2,x3);
-          phicl = (*StaticGravPot)((x1-    pG->dx1),x2,x3);
-          phifc = (*StaticGravPot)((x1-0.5*pG->dx1),x2,x3);
+	  
+	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+	 
+	  diag = sqrt(x1*x1+x2*x2+x3*x3);
+	  if (diag > Rbound){
+#endif	
 
-          Wl[i].Vx -= dtodx1*(phifc - phicl);
-          Wr[i].Vx -= dtodx1*(phicr - phifc);
+#ifdef CYLINDRICAL
+	    gl = (*x1GravAcc)(x1vc(pG,i-1),x2,x3);
+	    gr = (*x1GravAcc)(x1vc(pG,i),x2,x3);
+#ifdef FARGO
+	    /* Correct for force in the rotating frame */
+	    gl = gl - x1vc(pG,i-1)*SQR((*OrbitalProfile)(x1vc(pG,i-1)));
+	    gr = gr - x1vc(pG,i)*SQR((*OrbitalProfile)(x1vc(pG,i)));
+#endif
+	    /* APPLY GRAV. SOURCE TERMS TO VELOCITY USING ACCELERATION
+	     * FOR (dt/2) */
+	    Wl[i].Vx -= hdt*gl;
+	    Wr[i].Vx -= hdt*gr;
+#else
+	    phicr = (*StaticGravPot)( x1             ,x2,x3);
+	    phicl = (*StaticGravPot)((x1-    pG->dx1),x2,x3);
+	    phifc = (*StaticGravPot)((x1-0.5*pG->dx1),x2,x3);
+	    
+	    Wl[i].Vx -= dtodx1*(phifc - phicl);
+	    Wr[i].Vx -= dtodx1*(phicr - phifc);
+#endif
+#ifdef INNERB
+	  }
 #endif
         }
       }
@@ -355,15 +377,24 @@ void integrate_3d_ctu(DomainS *pD)
 /*--- Step 1c (cont) -----------------------------------------------------------
  * Add source terms from optically-thin cooling for 0.5*dt to L/R states
  */
-
+      
 #ifndef BAROTROPIC
       if (CoolingFunc != NULL){
         for (i=il+1; i<=iu; i++) {
-          coolfl = (*CoolingFunc)(Wl[i].d,Wl[i].P,(0.5*pG->dt));
-          coolfr = (*CoolingFunc)(Wr[i].d,Wr[i].P,(0.5*pG->dt));
-
-          Wl[i].P -= 0.5*pG->dt*Gamma_1*coolfl;
-          Wr[i].P -= 0.5*pG->dt*Gamma_1*coolfr;
+#ifdef INNERB
+	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	  diag = sqrt(x1*x1+x2*x2+x3*x3);
+	  if (diag > Rbound){
+#endif	
+	    
+	    coolfl = (*CoolingFunc)(Wl[i].d,Wl[i].P,(0.5*pG->dt));
+	    coolfr = (*CoolingFunc)(Wr[i].d,Wr[i].P,(0.5*pG->dt));
+	    
+	    Wl[i].P -= 0.5*pG->dt*Gamma_1*coolfl;
+	    Wr[i].P -= 0.5*pG->dt*Gamma_1*coolfr;
+#ifdef INNERB
+	  }
+#endif
         }
       }
 #endif /* BAROTROPIC */
@@ -513,6 +544,11 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (i=il+1; i<=iu; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         Ul_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wl[i],&Bxi[i]);
         Ur_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wr[i],&Bxi[i]);
 
@@ -521,6 +557,9 @@ void integrate_3d_ctu(DomainS *pD)
 #endif
         fluxes(Ul_x1Face[k][j][i],Ur_x1Face[k][j][i],Wl[i],Wr[i],Bx,
           &x1Flux[k][j][i]);
+#ifdef INNERB
+	}
+#endif
       }
     }
   }
@@ -534,12 +573,15 @@ void integrate_3d_ctu(DomainS *pD)
 
   for (k=kl; k<=ku; k++) {
     for (i=il; i<=iu; i++) {
+
+
 #ifdef CYLINDRICAL
       rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
       dx2 = r[i]*pG->dx2;
       dtodx2 = pG->dt/dx2;
 #endif
       for (j=js-nghost; j<=je+nghost; j++) {
+
         U1d[j].d  = pG->U[k][j][i].d;
         U1d[j].Mx = pG->U[k][j][i].M2;
         U1d[j].My = pG->U[k][j][i].M3;
@@ -557,6 +599,9 @@ void integrate_3d_ctu(DomainS *pD)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) U1d[j].s[n] = pG->U[k][j][i].s[n];
 #endif
+
+
+
       }
 
 /*--- Step 2b ------------------------------------------------------------------
@@ -564,10 +609,20 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (j=js-nghost; j<=je+nghost; j++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         W[j] = Cons1D_to_Prim1D(&U1d[j],&Bxc[j]);
+#ifdef INNERB
+	}
+#endif
       }
 
+
       lr_states(pG,W,Bxc,pG->dt,dx2,jl+1,ju-1,Wl,Wr,2);
+
 
 #ifdef MHD
 #ifdef CYLINDRICAL
@@ -635,12 +690,19 @@ void integrate_3d_ctu(DomainS *pD)
       if (StaticGravPot != NULL){
         for (j=jl+1; j<=ju; j++) {
           cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
           phicr = (*StaticGravPot)(x1, x2             ,x3);
           phicl = (*StaticGravPot)(x1,(x2-    pG->dx2),x3);
           phifc = (*StaticGravPot)(x1,(x2-0.5*pG->dx2),x3);
 
           Wl[j].Vx -= dtodx2*(phifc - phicl);
           Wr[j].Vx -= dtodx2*(phicr - phifc);
+#ifdef INNERB
+	}
+#endif
         }
       }
 
@@ -662,11 +724,19 @@ void integrate_3d_ctu(DomainS *pD)
 #ifndef BAROTROPIC
       if (CoolingFunc != NULL){
         for (j=jl+1; j<=ju; j++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
           coolfl = (*CoolingFunc)(Wl[j].d,Wl[j].P,(0.5*pG->dt));
           coolfr = (*CoolingFunc)(Wr[j].d,Wr[j].P,(0.5*pG->dt));
 
           Wl[j].P -= 0.5*pG->dt*Gamma_1*coolfl;
           Wr[j].P -= 0.5*pG->dt*Gamma_1*coolfr;
+#ifdef INNERB
+	}
+#endif
         }
       }
 #endif /* BAROTROPIC */
@@ -701,6 +771,11 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (j=jl+1; j<=ju; j++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         Ul_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wl[j],&Bxi[j]);
         Ur_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wr[j],&Bxi[j]);
 
@@ -709,6 +784,9 @@ void integrate_3d_ctu(DomainS *pD)
 #endif
         fluxes(Ul_x2Face[k][j][i],Ur_x2Face[k][j][i],Wl[j],Wr[j],Bx,
           &x2Flux[k][j][i]);
+#ifdef INNERB
+	}
+#endif
       }
     }
   }
@@ -747,10 +825,18 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (k=ks-nghost; k<=ke+nghost; k++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         W[k] = Cons1D_to_Prim1D(&U1d[k],&Bxc[k]);
-      }
-
+#ifdef INNERB
+	}
+#endif
+	}
       lr_states(pG,W,Bxc,pG->dt,pG->dx3,kl+1,ku-1,Wl,Wr,3);
+
 
 #ifdef MHD
 #ifdef CYLINDRICAL
@@ -819,12 +905,20 @@ void integrate_3d_ctu(DomainS *pD)
       if (StaticGravPot != NULL){
         for (k=kl+1; k<=ku; k++) {
           cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
           phicr = (*StaticGravPot)(x1,x2, x3             );
           phicl = (*StaticGravPot)(x1,x2,(x3-    pG->dx3));
           phifc = (*StaticGravPot)(x1,x2,(x3-0.5*pG->dx3));
 
           Wl[k].Vx -= dtodx3*(phifc - phicl);
           Wr[k].Vx -= dtodx3*(phicr - phifc);
+#ifdef INNERB
+	}
+#endif
         }
       }
 
@@ -846,11 +940,20 @@ void integrate_3d_ctu(DomainS *pD)
 #ifndef BAROTROPIC
       if (CoolingFunc != NULL){
         for (k=kl+1; k<=ku; k++) {
+          
+#ifdef INNERB
+	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	  diag = sqrt(x1*x1+x2*x2+x3*x3);
+	  if (diag > Rbound){
+#endif	
           coolfl = (*CoolingFunc)(Wl[k].d,Wl[k].P,(0.5*pG->dt));
           coolfr = (*CoolingFunc)(Wr[k].d,Wr[k].P,(0.5*pG->dt));
   
           Wl[k].P -= 0.5*pG->dt*Gamma_1*coolfl;
           Wr[k].P -= 0.5*pG->dt*Gamma_1*coolfr;
+#ifdef INNERB
+	  }
+#endif
         }
       }
 #endif /* BAROTROPIC */
@@ -884,6 +987,11 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (k=kl+1; k<=ku; k++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         Ul_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wl[k],&Bxi[k]);
         Ur_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wr[k],&Bxi[k]);
 
@@ -892,6 +1000,9 @@ void integrate_3d_ctu(DomainS *pD)
 #endif
         fluxes(Ul_x3Face[k][j][i],Ur_x3Face[k][j][i],Wl[k],Wr[k],Bx,
           &x3Flux[k][j][i]);
+#ifdef INNERB
+	}
+#endif
       }
     }
   }
@@ -981,6 +1092,11 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef CYLINDRICAL
         q2 = hdt/(r[i-1]*pG->dx2);
 #endif
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         Ul_x1Face[k][j][i].d -=q2*(x2Flux[k][j+1][i-1].d -x2Flux[k][j][i-1].d );
         Ul_x1Face[k][j][i].Mx-=q2*(x2Flux[k][j+1][i-1].Mz-x2Flux[k][j][i-1].Mz);
         Ul_x1Face[k][j][i].My-=q2*(x2Flux[k][j+1][i-1].Mx-x2Flux[k][j][i-1].Mx);
@@ -1059,6 +1175,9 @@ void integrate_3d_ctu(DomainS *pD)
           Ur_x1Face[k][j][i].s[n] -=
              q3*(x3Flux[k+1][j][i  ].s[n] - x3Flux[k][j][i  ].s[n]);
         }
+#endif
+#ifdef INNERB
+	}
 #endif
       }
     }
@@ -1163,12 +1282,17 @@ void integrate_3d_ctu(DomainS *pD)
  * the energy source term computed at cell faces.
  *    S_{M} = -(\rho) Grad(Phi);   S_{E} = -(\rho v) Grad{Phi}
  */
+ 
 
   if (StaticGravPot != NULL){
   for (k=kl+1; k<=ku-1; k++) {
     for (j=jl+1; j<=ju-1; j++) {
       for (i=il+1; i<=iu; i++) {
         cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB	
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         phic = (*StaticGravPot)(x1, x2             ,x3);
         phir = (*StaticGravPot)(x1,(x2+0.5*pG->dx2),x3);
         phil = (*StaticGravPot)(x1,(x2-0.5*pG->dx2),x3);
@@ -1213,6 +1337,9 @@ void integrate_3d_ctu(DomainS *pD)
 #ifndef BAROTROPIC
         Ul_x1Face[k][j][i].E -= q3*(x3Flux[k  ][j][i-1].d*(phic - phil)
                                   + x3Flux[k+1][j][i-1].d*(phir - phic));
+#endif
+#ifdef INNERB
+	}
 #endif
       }
     }
@@ -1282,6 +1409,13 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=kl+1; k<=ku-1; k++) {
     for (j=jl+1; j<=ju; j++) {
       for (i=il+1; i<=iu-1; i++) {
+
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
+
 #ifdef CYLINDRICAL
         rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
 #endif
@@ -1360,6 +1494,9 @@ void integrate_3d_ctu(DomainS *pD)
           Ur_x2Face[k][j][i].s[n] -=
              q3*(x3Flux[k+1][j  ][i].s[n] - x3Flux[k][j  ][i].s[n]);
         }
+#endif
+#ifdef INNERB
+	}
 #endif
       }
     }
@@ -1465,6 +1602,10 @@ void integrate_3d_ctu(DomainS *pD)
     for (j=jl+1; j<=ju; j++) {
       for (i=il+1; i<=iu-1; i++) {
         cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         phic = (*StaticGravPot)((x1            ),x2,x3);
         phir = (*StaticGravPot)((x1+0.5*pG->dx1),x2,x3);
         phil = (*StaticGravPot)((x1-0.5*pG->dx1),x2,x3);
@@ -1520,6 +1661,9 @@ void integrate_3d_ctu(DomainS *pD)
 #ifndef BAROTROPIC
         Ul_x2Face[k][j][i].E -= q3*(x3Flux[k  ][j-1][i].d*(phic - phil)
                                   + x3Flux[k+1][j-1][i].d*(phir - phic));
+#endif
+#ifdef INNERB
+	}
 #endif
       }
     }
@@ -1636,6 +1780,7 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=kl+1; k<=ku-1; k++) {
     for (j=jl+1; j<=ju; j++) {
       for (i=il+1; i<=iu-1; i++) {
+
         Ur_x2Face[k][j][i].Mz += pG->dt*Omega_0*pG->U[k][j][i].M2;
         Ul_x2Face[k][j][i].Mz += pG->dt*Omega_0*pG->U[k][j-1][i].M2;
 #ifdef FARGO
@@ -1691,6 +1836,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=kl+1; k<=ku; k++) {
     for (j=jl+1; j<=ju-1; j++) {
       for (i=il+1; i<=iu-1; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
 #ifdef CYLINDRICAL
         rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
         q2 = hdt/(r[i]*pG->dx2);
@@ -1770,6 +1920,9 @@ void integrate_3d_ctu(DomainS *pD)
           Ur_x3Face[k][j][i].s[n] -=
              q2*(x2Flux[k  ][j+1][i].s[n] - x2Flux[k  ][j][i].s[n]);
         }
+#endif
+#ifdef INNERB
+	}
 #endif
       }
     }
@@ -1875,6 +2028,10 @@ void integrate_3d_ctu(DomainS *pD)
     for (j=jl+1; j<=ju-1; j++) {
       for (i=il+1; i<=iu-1; i++) {
         cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
         phic = (*StaticGravPot)((x1            ),x2,x3);
         phir = (*StaticGravPot)((x1+0.5*pG->dx1),x2,x3);
         phil = (*StaticGravPot)((x1-0.5*pG->dx1),x2,x3);
@@ -1931,6 +2088,9 @@ void integrate_3d_ctu(DomainS *pD)
 #ifndef BAROTROPIC
         Ul_x3Face[k][j][i].E -= q2*(x2Flux[k-1][j  ][i].d*(phic - phil)
                                   + x2Flux[k-1][j+1][i].d*(phir - phic));
+#endif
+#ifdef INNERB
+	}
 #endif
       }
     }
@@ -2108,6 +2268,12 @@ void integrate_3d_ctu(DomainS *pD)
     for (k=kl+1; k<=ku-1; k++) {
       for (j=jl+1; j<=ju-1; j++) {
 	for (i=il+1; i<=iu-1; i++) {
+	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+	  
+	  diag = sqrt(x1*x1+x2*x2+x3*x3);
+	  if (diag > Rbound){
+#endif	
 #ifdef CYLINDRICAL
           rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
           q2 = hdt/(r[i]*pG->dx2);
@@ -2118,6 +2284,9 @@ void integrate_3d_ctu(DomainS *pD)
             - q3*(    x3Flux[k+1][j  ][i  ].d -     x3Flux[k][j][i].d);
 #ifdef PARTICLES
           pG->Coup[k][j][i].grid_d = dhalf[k][j][i];
+#endif
+#ifdef INNERB
+	}
 #endif
 	}
       }
@@ -2137,6 +2306,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=kl+1; k<=ku-1; k++) {
     for (j=jl+1; j<=ju-1; j++) {
       for (i=il+1; i<=iu-1; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
 #ifdef CYLINDRICAL
         rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
         q2 = hdt/(r[i]/pG->dx2);
@@ -2166,6 +2340,7 @@ void integrate_3d_ctu(DomainS *pD)
 /* Add source terms for fixed gravitational potential */
         if (StaticGravPot != NULL){
           cc_pos(pG,i,j,k,&x1,&x2,&x3);
+
 #ifdef CYLINDRICAL
           g = (*x1GravAcc)(x1vc(pG,i),x2,x3);
 #ifdef FARGO
@@ -2274,7 +2449,9 @@ void integrate_3d_ctu(DomainS *pD)
       pG->Coup[k][j][i].grid_cs = sqrt(Gamma*phalf[k][j][i]*d1);
 #endif  /* BAROTROPIC */
 #endif /* PARTICLES */
-
+#ifdef INNERB
+	}
+#endif
       }
     }
   }
@@ -2300,6 +2477,7 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=ks-1; k<=ke+1; k++) {
     for (j=js-1; j<=je+1; j++) {
       for (i=is-1; i<=ie+2; i++) {
+
 #ifdef MHD
         Bx = B1_x1Face[k][j][i];
 #endif
@@ -2350,6 +2528,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=ks-1; k<=ke+1; k++) {
     for (j=js-1; j<=je+1; j++) {
       for (i=is; i<=ie+1; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
 #ifdef H_CORRECTION
         etah = MAX(eta2[k][j][i-1],eta2[k][j][i]);
         etah = MAX(etah,eta2[k][j+1][i-1]);
@@ -2370,6 +2553,9 @@ void integrate_3d_ctu(DomainS *pD)
 
         fluxes(Ul_x1Face[k][j][i],Ur_x1Face[k][j][i],Wl[i],Wr[i],Bx,
                &x1Flux[k][j][i]);
+#ifdef INNERB
+	}
+#endif     
       }
     }
   }
@@ -2381,6 +2567,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=ks-1; k<=ke+1; k++) {
     for (j=js; j<=je+1; j++) {
       for (i=is-1; i<=ie+1; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k][j-1][i],eta1[k][j][i]);
         etah = MAX(etah,eta1[k][j-1][i+1]);
@@ -2401,6 +2592,9 @@ void integrate_3d_ctu(DomainS *pD)
 
         fluxes(Ul_x2Face[k][j][i],Ur_x2Face[k][j][i],Wl[i],Wr[i],Bx,
                &x2Flux[k][j][i]);
+#ifdef INNERB
+	}
+#endif
       }
     }
   }
@@ -2412,6 +2606,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=ks; k<=ke+1; k++) {
     for (j=js-1; j<=je+1; j++) {
       for (i=is-1; i<=ie+1; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k-1][j][i],eta1[k][j][i]);
         etah = MAX(etah,eta1[k-1][j][i+1]);
@@ -2432,6 +2631,9 @@ void integrate_3d_ctu(DomainS *pD)
 
         fluxes(Ul_x3Face[k][j][i],Ur_x3Face[k][j][i],Wl[i],Wr[i],Bx,
                &x3Flux[k][j][i]);
+#ifdef INNERB
+	}
+#endif
       }
     }
   }
@@ -2583,7 +2785,7 @@ void integrate_3d_ctu(DomainS *pD)
   }
 #endif /* CYLINDRICAL + !Fargo */
 
-/* Add source terms using Heun's method for cylindrical fargo*/
+  /* Add source terms using Heun's method for cylindrical fargo*/
 #if defined(CYLINDRICAL) && defined(FARGO)
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
@@ -2742,7 +2944,13 @@ void integrate_3d_ctu(DomainS *pD)
     for (k=ks; k<=ke; k++) {
       for (j=js; j<=je; j++) {
         for (i=is; i<=ie; i++) {
-          cc_pos(pG,i,j,k,&x1,&x2,&x3);
+
+         cc_pos(pG,i,j,k,&x1,&x2,&x3);
+#ifdef INNERB
+	
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
           phic = (*StaticGravPot)((x1            ),x2,x3);
           phir = (*StaticGravPot)((x1+0.5*pG->dx1),x2,x3);
           phil = (*StaticGravPot)((x1-0.5*pG->dx1),x2,x3);
@@ -2775,6 +2983,9 @@ void integrate_3d_ctu(DomainS *pD)
 #ifndef BAROTROPIC
           pG->U[k][j][i].E -= dtodx3*(x3Flux[k  ][j][i].d*(phic - phil) +
                                       x3Flux[k+1][j][i].d*(phir - phic));
+#endif
+#ifdef INNERB
+	}
 #endif
         }
       }
@@ -2945,8 +3156,16 @@ void integrate_3d_ctu(DomainS *pD)
     for (k=ks; k<=ke; k++){
       for (j=js; j<=je; j++){
         for (i=is; i<=ie; i++){
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > Rbound){
+#endif	
           coolf = (*CoolingFunc)(dhalf[k][j][i],phalf[k][j][i],pG->dt);
           pG->U[k][j][i].E -= pG->dt*coolf;
+#ifdef INNERB
+	}
+#endif
         }
       }
     }
@@ -2975,12 +3194,19 @@ void integrate_3d_ctu(DomainS *pD)
 /*=== STEP 12: Update cell-centered values for a full timestep ===============*/
 
 /*--- Step 12a -----------------------------------------------------------------
- * Update cell-centered variables in pG using 3D x1-Fluxes
+ * Update cell-centered variables in pG using 3D x1-Fluxes 
+KMK:this is where we should do the extra averaging. In steps 12a-c we do the standard update outside some buffer zone, and then average
+the old value with the new value in the buffer zone. but the repetitive averaging with each dimension might be weird....
  */
 
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
       for (i=is; i<=ie; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > (Rbound + 3*pG->dx1)){
+#endif	
 #ifdef CYLINDRICAL
         rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
 #endif
@@ -2994,9 +3220,32 @@ void integrate_3d_ctu(DomainS *pD)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++)
           pG->U[k][j][i].s[n] -= dtodx1*(rsf*x1Flux[k][j][i+1].s[n]
-                                       - lsf*x1Flux[k][j][i  ].s[n]);
+					 - lsf*x1Flux[k][j][i].s[n]);
 #endif
-      }
+#ifdef INNERB
+	}
+#endif
+#ifdef INNERB
+	  else if ((Rbound+1*pG->dx1) < diag && diag <= (Rbound + 3*pG->dx1)){
+#ifdef CYLINDRICAL
+	  rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
+#endif
+	  pG->U[k][j][i].d  =  (pG->U[k][j][i].d+ (1./1)*(pG->U[k][j][i].d -dtodx1*(rsf*x1Flux[k][j][i+1].d -lsf*x1Flux[k][j][i].d )))/2;
+	  pG->U[k][j][i].M1 = (pG->U[k][j][i].M1+(1./1)*(pG->U[k][j][i].M1-dtodx1*(rsf*x1Flux[k][j][i+1].Mx-lsf*x1Flux[k][j][i].Mx)))/2;
+	  pG->U[k][j][i].M2 = (pG->U[k][j][i].M2+(1./1)*(pG->U[k][j][i].M2-dtodx1*(SQR(rsf)*x1Flux[k][j][i+1].My-SQR(lsf)*x1Flux[k][j][i].My)))/2;
+	  pG->U[k][j][i].M3 = ( pG->U[k][j][i].M3+(1./1)*( pG->U[k][j][i].M3-dtodx1*(rsf*x1Flux[k][j][i+1].Mz-lsf*x1Flux[k][j][i].Mz)))/2;
+#ifndef BAROTROPIC
+	  pG->U[k][j][i].E  = ( pG->U[k][j][i].E +(1./1)*( pG->U[k][j][i].E -dtodx1*(rsf*x1Flux[k][j][i+1].E -lsf*x1Flux[k][j][i].E )))/2;
+#endif /* BAROTROPIC */
+#if (NSCALARS > 0) /*fix this*/
+	  for (n=0; n<NSCALARS; n++)
+	    pG->U[k][j][i].s[n] = (pG->U[k][j][i].s[n]+(pG->U[k][j][i].s[n]-dtodx1*(rsf*x1Flux[k][j][i+1].s[n]
+										    - lsf*x1Flux[k][j][i  ].s[n])))/2.;
+#endif
+	}
+#endif
+					 
+	}
     }
   }
 
@@ -3007,6 +3256,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
       for (i=is; i<=ie; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > (Rbound + 3*pG->dx2)){
+#endif	
 #ifdef CYLINDRICAL
         dtodx2 = pG->dt/(r[i]*pG->dx2);
 #endif
@@ -3022,6 +3276,34 @@ void integrate_3d_ctu(DomainS *pD)
           pG->U[k][j][i].s[n] -= dtodx2*(x2Flux[k][j+1][i].s[n]
                                        - x2Flux[k][j  ][i].s[n]);
 #endif
+
+#ifdef INNERB
+	}
+#endif
+#ifdef INNERB
+	  else if ((Rbound+1*pG->dx2) < diag && diag <= (Rbound + 3*pG->dx2)){
+#ifdef CYLINDRICAL
+        dtodx2 = pG->dt/(r[i]*pG->dx2);
+#endif
+        pG->U[k][j][i].d  = (pG->U[k][j][i].d + (1./1)*(pG->U[k][j][i].d -dtodx2*(x2Flux[k][j+1][i].d -x2Flux[k][j][i].d )))/2;
+        pG->U[k][j][i].M1 = (pG->U[k][j][i].M1+ (1./1)*(pG->U[k][j][i].M1-dtodx2*(x2Flux[k][j+1][i].Mz-x2Flux[k][j][i].Mz)))/2;
+        pG->U[k][j][i].M2 = ( pG->U[k][j][i].M2+ (1./1)*( pG->U[k][j][i].M2-dtodx2*(x2Flux[k][j+1][i].Mx-x2Flux[k][j][i].Mx)))/2;
+        pG->U[k][j][i].M3 = ( pG->U[k][j][i].M3+ (1./1)*( pG->U[k][j][i].M3-dtodx2*(x2Flux[k][j+1][i].My-x2Flux[k][j][i].My)))/2;
+#ifndef BAROTROPIC
+        pG->U[k][j][i].E = (pG->U[k][j][i].E+ (1./1)*(pG->U[k][j][i].E-dtodx2*(x2Flux[k][j+1][i].E -x2Flux[k][j][i].E )))/2;
+#endif /* BAROTROPIC */
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++)
+          pG->U[k][j][i].s[n] = ( pG->U[k][j][i].s[n]+( pG->U[k][j][i].s[n]- dtodx2*(x2Flux[k][j+1][i].s[n]
+	    - x2Flux[k][j  ][i].s[n])))/2;
+#endif
+	  }
+
+
+#endif
+ 
+
+
       }
     }
   }
@@ -3033,6 +3315,11 @@ void integrate_3d_ctu(DomainS *pD)
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
       for (i=is; i<=ie; i++) {
+#ifdef INNERB
+	cc_pos(pG,i,j,k,&x1,&x2,&x3);
+	diag = sqrt(x1*x1+x2*x2+x3*x3);
+	if (diag > (Rbound + 3*pG->dx3)){
+#endif	
         pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d );
         pG->U[k][j][i].M1 -= dtodx3*(x3Flux[k+1][j][i].My-x3Flux[k][j][i].My);
         pG->U[k][j][i].M2 -= dtodx3*(x3Flux[k+1][j][i].Mz-x3Flux[k][j][i].Mz);
@@ -3045,6 +3332,35 @@ void integrate_3d_ctu(DomainS *pD)
           pG->U[k][j][i].s[n] -= dtodx3*(x3Flux[k+1][j][i].s[n]
                                        - x3Flux[k  ][j][i].s[n]);
 #endif
+#ifdef INNERB
+	}
+#endif
+
+#ifdef INNERB
+ 	else if ((Rbound+1*pG->dx3) < diag && diag <= (Rbound + 3*pG->dx3)){
+#ifdef CYLINDRICAL
+        dtodx2 = pG->dt/(r[i]*pG->dx2);
+#endif
+
+	pG->U[k][j][i].d  = (pG->U[k][j][i].d +(1./1)*(pG->U[k][j][i].d-dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d )))/2;
+	pG->U[k][j][i].M1 = (pG->U[k][j][i].M1 +(1./1)*(pG->U[k][j][i].M1- dtodx3*(x3Flux[k+1][j][i].My-x3Flux[k][j][i].My)))/2;
+	pG->U[k][j][i].M2 = (pG->U[k][j][i].M2 + (1./1)*( pG->U[k][j][i].M2-dtodx3*(x3Flux[k+1][j][i].Mz-x3Flux[k][j][i].Mz)))/2;
+	pG->U[k][j][i].M3 = (pG->U[k][j][i].M3 + (1./1)*( pG->U[k][j][i].M3-dtodx3*(x3Flux[k+1][j][i].Mx-x3Flux[k][j][i].Mx)))/2.;
+	
+#ifndef BAROTROPIC
+	pG->U[k][j][i].E = (pG->U[k][j][i].E + (1./1)*( pG->U[k][j][i].E -dtodx3*(x3Flux[k+1][j][i].E -x3Flux[k][j][i].E )))/2;
+#endif /* BAROTROPIC */
+
+#if (NSCALARS > 0)
+        for (n=0; n<NSCALARS; n++)
+          pG->U[k][j][i].s[n] = ( pG->U[k][j][i].s[n]+( pG->U[k][j][i].s[n]- dtodx3*(x3Flux[k][j+1][i].s[n]
+	    - x3Flux[k][j  ][i].s[n])))/2;
+#endif
+	}
+
+
+#endif
+
       }
     }
   }
@@ -3072,7 +3388,7 @@ void integrate_3d_ctu(DomainS *pD)
 /*--- Step 12e -----------------------------------------------------------------
  * With SMR, store fluxes at boundaries of child and parent grids.  */
 /* Loop over all child grids ------------------*/
-
+/*KMK THINKS DON'T CHANGE THIS PART??*/
   for (ncg=0; ncg<pG->NCGrid; ncg++) {
 
 /* x1-boundaries of child Grids (interior to THIS Grid) */
@@ -3368,9 +3684,9 @@ void integrate_3d_ctu(DomainS *pD)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn void integrate_init_3d(MeshS *pM)
- *  \brief Allocate temporary integration arrays 
+/* integrate_init_3d: Allocate temporary integration arrays 
 */
+
 void integrate_init_3d(MeshS *pM)
 {
   int nmax,size1=0,size2=0,size3=0,nl,nd;
@@ -3492,9 +3808,9 @@ void integrate_init_3d(MeshS *pM)
 }
 
 /*----------------------------------------------------------------------------*/
-/*! \fn void integrate_destruct_3d(void)
- *  \brief Free temporary integration arrays 
+/* integrate_destruct_3d:  Free temporary integration arrays 
  */
+
 void integrate_destruct_3d(void)
 {
 
@@ -3552,17 +3868,18 @@ void integrate_destruct_3d(void)
 /*=========================== PRIVATE FUNCTIONS ==============================*/
 
 /*----------------------------------------------------------------------------*/
-/*! \fn static void integrate_emf1_corner(const GridS *pG)
- *  \brief Integrates face centered B-fluxes to compute corner EMFs.  
- *
- *  Note: 
- * - x1Flux.By = VxBy - BxVy = v1*b2-b1*v2 = -EMFZ
- * - x1Flux.Bz = VxBz - BxVz = v1*b3-b1*v3 = EMFY
- * - x2Flux.By = VxBy - BxVy = v2*b3-b2*v3 = -EMFX
- * - x2Flux.Bz = VxBz - BxVz = v2*b1-b2*v1 = EMFZ
- * - x3Flux.By = VxBy - BxVy = v3*b1-b3*v1 = -EMFY
- * - x3Flux.Bz = VxBz - BxVz = v3*b2-b3*v2 = EMFX 
+/* integrate_emf1_corner
+ * integrate_emf2_corner
+ * integrate_emf3_corner
+ *   Integrates face centered B-fluxes to compute corner EMFs.  Note:
+ *   x1Flux.By = VxBy - BxVy = v1*b2-b1*v2 = -EMFZ
+ *   x1Flux.Bz = VxBz - BxVz = v1*b3-b1*v3 = EMFY
+ *   x2Flux.By = VxBy - BxVy = v2*b3-b2*v3 = -EMFX
+ *   x2Flux.Bz = VxBz - BxVz = v2*b1-b2*v1 = EMFZ
+ *   x3Flux.By = VxBy - BxVy = v3*b1-b3*v1 = -EMFY
+ *   x3Flux.Bz = VxBz - BxVz = v3*b2-b3*v2 = EMFX 
  */
+
 #ifdef MHD
 static void integrate_emf1_corner(const GridS *pG)
 {
@@ -3622,17 +3939,6 @@ static void integrate_emf1_corner(const GridS *pG)
   return;
 }
 
-/*! \fn static void integrate_emf2_corner(const GridS *pG)
- *  \brief Integrates face centered B-fluxes to compute corner EMFs.  
- *
- *  Note: 
- * - x1Flux.By = VxBy - BxVy = v1*b2-b1*v2 = -EMFZ
- * - x1Flux.Bz = VxBz - BxVz = v1*b3-b1*v3 = EMFY
- * - x2Flux.By = VxBy - BxVy = v2*b3-b2*v3 = -EMFX
- * - x2Flux.Bz = VxBz - BxVz = v2*b1-b2*v1 = EMFZ
- * - x3Flux.By = VxBy - BxVy = v3*b1-b3*v1 = -EMFY
- * - x3Flux.Bz = VxBz - BxVz = v3*b2-b3*v2 = EMFX 
- */
 static void integrate_emf2_corner(const GridS *pG)
 {
   int i, is = pG->is, ie = pG->ie;
@@ -3691,17 +3997,6 @@ static void integrate_emf2_corner(const GridS *pG)
   return;
 }
 
-/*! \fn static void integrate_emf3_corner(const GridS *pG)
- *  \brief Integrates face centered B-fluxes to compute corner EMFs.  
- *
- *  Note: 
- * - x1Flux.By = VxBy - BxVy = v1*b2-b1*v2 = -EMFZ
- * - x1Flux.Bz = VxBz - BxVz = v1*b3-b1*v3 = EMFY
- * - x2Flux.By = VxBy - BxVy = v2*b3-b2*v3 = -EMFX
- * - x2Flux.Bz = VxBz - BxVz = v2*b1-b2*v1 = EMFZ
- * - x3Flux.By = VxBy - BxVy = v3*b1-b3*v1 = -EMFY
- * - x3Flux.Bz = VxBz - BxVz = v3*b2-b3*v2 = EMFX 
- */
 static void integrate_emf3_corner(const GridS *pG)
 {
   int i, is = pG->is, ie = pG->ie;

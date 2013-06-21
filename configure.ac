@@ -46,6 +46,7 @@
 #   --enable-shearing box                    (include shearing box source terms)
 #   --enable-single                                 (double or single precision)
 #   --enable-smr                                        (static mesh refinement)
+#   --enable-innerb					 (inner boundary cutoff)
 #
 #-------------------------------------------------------------------------------
 # generic things
@@ -195,6 +196,21 @@ elif test "$with_coord" = "cylindrical"; then
   COORD="CYLINDRICAL"
 else
   AC_MSG_ERROR([expected --with-coord=cartesian or cylindrical])
+fi
+
+#-------------------------------------------------------------------------------
+# PHYSICS FEATURE: hydro not carried out within inner boundary
+#  --enable-innerb
+
+AC_SUBST(INNERB_MODE)
+AC_ARG_ENABLE(innerb, [  --enable-innerb  omit spherical inner region (default is no)],
+		      	 ok=$enableval, ok=no)
+if test "$ok" = "yes"; then
+   INNERB_MODE="INNERB"
+   INNERB_MODE_USER="ON"
+else
+   INNERB_MODE="NO_INNERB"
+   INNERB_MODE_USER="OFF"
 fi
 
 #-------------------------------------------------------------------------------
@@ -656,4 +672,6 @@ echo "FARGO:                   $FARGO_MODE_USER"
 echo "All-wave integration:    $HLL_ALL_WAVE_MODE_USER"
 echo "Static Mesh Refinement:  $SMR_MODE_USER"
 echo "first-order flux corr:   $FOFC_MODE_USER"
+echo "Inner boundary cutoff:   $INNERB_MODE_USER"
+
 

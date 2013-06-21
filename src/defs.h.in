@@ -52,11 +52,14 @@
 #define @PARTICLES_ALGORITHM@
 #define @FEEDBACK_DEFINE@
 
+/* define innerb*/
+#define @INNERB_MODE@
+
 /* Ionizing radiative transfer: ION_RADIATION or NO_ION_RADIATION */
 #define @ION_RADIATION_MODE@
 
-/* Ionizing radiative transfer from plane parallel fronts:
- * ION_RADPLANE or NO_ION_RADPLANE */
+/* Ionizing radiative transfer from plane parallel fronts:*/
+/* ION_RADPLANE or NO_ION_RADPLANE */
 #define @ION_PLANE_MODE@
 
 /* resistivity, viscosity, and thermal conduction */
