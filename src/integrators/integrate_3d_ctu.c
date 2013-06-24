@@ -3223,10 +3223,7 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 					 - lsf*x1Flux[k][j][i].s[n]);
 #endif
 #ifdef INNERB
-	}
-#endif
-#ifdef INNERB
-	  else if ((Rbound+1*pG->dx1) < diag && diag <= (Rbound + 3*pG->dx1)){
+	} else if ((Rbound+1*pG->dx1) < diag && diag <= (Rbound + 3*pG->dx1)){
 #ifdef CYLINDRICAL
 	  rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
 #endif
