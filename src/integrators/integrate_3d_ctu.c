@@ -191,6 +191,7 @@ void integrate_3d_ctu(DomainS *pD)
 
 #ifdef INNERB
   Real diag;
+  Real fcorrect;
   Real Rbound = par_getd("problem","Rbound");
 #endif
 /*=== STEP 1: Compute L/R x1-interface states and 1D x1-Fluxes ===============*/
@@ -3205,44 +3206,33 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > (Rbound + 3*pG->dx1)){
+	if (diag > Rbound) {
+	  if (diag > Rbound + 3*pG->dx1) {
+	    fcorrect = 1.;
+	  } else {
+	    fcorrect = (diag - Rbound) / (3 * pG->dx1);
+	  }
 #endif	
-#ifdef CYLINDRICAL
-        rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
-#endif
-        pG->U[k][j][i].d  -= dtodx1*(rsf*x1Flux[k][j][i+1].d -lsf*x1Flux[k][j][i].d );
-        pG->U[k][j][i].M1 -= dtodx1*(rsf*x1Flux[k][j][i+1].Mx-lsf*x1Flux[k][j][i].Mx);
-        pG->U[k][j][i].M2 -= dtodx1*(SQR(rsf)*x1Flux[k][j][i+1].My-SQR(lsf)*x1Flux[k][j][i].My);
-        pG->U[k][j][i].M3 -= dtodx1*(rsf*x1Flux[k][j][i+1].Mz-lsf*x1Flux[k][j][i].Mz);
-#ifndef BAROTROPIC
-        pG->U[k][j][i].E  -= dtodx1*(rsf*x1Flux[k][j][i+1].E -lsf*x1Flux[k][j][i].E );
-#endif /* BAROTROPIC */
-#if (NSCALARS > 0)
-        for (n=0; n<NSCALARS; n++)
-          pG->U[k][j][i].s[n] -= dtodx1*(rsf*x1Flux[k][j][i+1].s[n]
-					 - lsf*x1Flux[k][j][i].s[n]);
-#endif
-#ifdef INNERB
-	} else if ((Rbound+1*pG->dx1) < diag && diag <= (Rbound + 3*pG->dx1)){
 #ifdef CYLINDRICAL
 	  rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
 #endif
-	  pG->U[k][j][i].d  =  (pG->U[k][j][i].d+ (1./1)*(pG->U[k][j][i].d -dtodx1*(rsf*x1Flux[k][j][i+1].d -lsf*x1Flux[k][j][i].d )))/2;
-	  pG->U[k][j][i].M1 = (pG->U[k][j][i].M1+(1./1)*(pG->U[k][j][i].M1-dtodx1*(rsf*x1Flux[k][j][i+1].Mx-lsf*x1Flux[k][j][i].Mx)))/2;
-	  pG->U[k][j][i].M2 = (pG->U[k][j][i].M2+(1./1)*(pG->U[k][j][i].M2-dtodx1*(SQR(rsf)*x1Flux[k][j][i+1].My-SQR(lsf)*x1Flux[k][j][i].My)))/2;
-	  pG->U[k][j][i].M3 = ( pG->U[k][j][i].M3+(1./1)*( pG->U[k][j][i].M3-dtodx1*(rsf*x1Flux[k][j][i+1].Mz-lsf*x1Flux[k][j][i].Mz)))/2;
+	  pG->U[k][j][i].d  -= dtodx1*(rsf*x1Flux[k][j][i+1].d -lsf*x1Flux[k][j][i].d ) * fcorrect;
+	  pG->U[k][j][i].M1 -= dtodx1*(rsf*x1Flux[k][j][i+1].Mx-lsf*x1Flux[k][j][i].Mx) * fcorrect;
+	  pG->U[k][j][i].M2 -= dtodx1*(SQR(rsf)*x1Flux[k][j][i+1].My-SQR(lsf)*x1Flux[k][j][i].My) * fcorrect;
+	  pG->U[k][j][i].M3 -= dtodx1*(rsf*x1Flux[k][j][i+1].Mz-lsf*x1Flux[k][j][i].Mz) * fcorrect;
 #ifndef BAROTROPIC
-	  pG->U[k][j][i].E  = ( pG->U[k][j][i].E +(1./1)*( pG->U[k][j][i].E -dtodx1*(rsf*x1Flux[k][j][i+1].E -lsf*x1Flux[k][j][i].E )))/2;
+	  pG->U[k][j][i].E  -= dtodx1*(rsf*x1Flux[k][j][i+1].E -lsf*x1Flux[k][j][i].E ) * fcorrect;
 #endif /* BAROTROPIC */
-#if (NSCALARS > 0) /*fix this*/
+#if (NSCALARS > 0)
 	  for (n=0; n<NSCALARS; n++)
-	    pG->U[k][j][i].s[n] = (pG->U[k][j][i].s[n]+(pG->U[k][j][i].s[n]-dtodx1*(rsf*x1Flux[k][j][i+1].s[n]
-										    - lsf*x1Flux[k][j][i  ].s[n])))/2.;
+	    pG->U[k][j][i].s[n] -= dtodx1*(rsf*x1Flux[k][j][i+1].s[n]
+					 - lsf*x1Flux[k][j][i].s[n]) * fcorrect;
 #endif
+#ifdef INNERB
+	  fcorrect = 0;
 	}
-#endif
-					 
-	}
+#endif					 
+      }
     }
   }
 
@@ -3256,51 +3246,32 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > (Rbound + 3*pG->dx2)){
+	if (diag > Rbound) {
+	  if (diag > Rbound + 3*pG->dx2) {
+	    fcorrect = 1.;
+	  } else {
+	    fcorrect = (diag - Rbound) / (3 * pG->dx2);
+	  }
 #endif	
 #ifdef CYLINDRICAL
         dtodx2 = pG->dt/(r[i]*pG->dx2);
 #endif
-        pG->U[k][j][i].d  -= dtodx2*(x2Flux[k][j+1][i].d -x2Flux[k][j][i].d );
-        pG->U[k][j][i].M1 -= dtodx2*(x2Flux[k][j+1][i].Mz-x2Flux[k][j][i].Mz);
-        pG->U[k][j][i].M2 -= dtodx2*(x2Flux[k][j+1][i].Mx-x2Flux[k][j][i].Mx);
-        pG->U[k][j][i].M3 -= dtodx2*(x2Flux[k][j+1][i].My-x2Flux[k][j][i].My);
+        pG->U[k][j][i].d  -= dtodx2*(x2Flux[k][j+1][i].d -x2Flux[k][j][i].d ) * fcorrect;
+        pG->U[k][j][i].M1 -= dtodx2*(x2Flux[k][j+1][i].Mz-x2Flux[k][j][i].Mz) * fcorrect;
+        pG->U[k][j][i].M2 -= dtodx2*(x2Flux[k][j+1][i].Mx-x2Flux[k][j][i].Mx) * fcorrect;
+        pG->U[k][j][i].M3 -= dtodx2*(x2Flux[k][j+1][i].My-x2Flux[k][j][i].My) * fcorrect;
 #ifndef BAROTROPIC
-        pG->U[k][j][i].E -=dtodx2*(x2Flux[k][j+1][i].E -x2Flux[k][j][i].E );
+        pG->U[k][j][i].E -=dtodx2*(x2Flux[k][j+1][i].E -x2Flux[k][j][i].E ) * fcorrect;
 #endif /* BAROTROPIC */
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++)
           pG->U[k][j][i].s[n] -= dtodx2*(x2Flux[k][j+1][i].s[n]
-                                       - x2Flux[k][j  ][i].s[n]);
+                                       - x2Flux[k][j  ][i].s[n]) * fcorrect;
 #endif
-
 #ifdef INNERB
+	fcorrect = 0;
 	}
-#endif
-#ifdef INNERB
-	  else if ((Rbound+1*pG->dx2) < diag && diag <= (Rbound + 3*pG->dx2)){
-#ifdef CYLINDRICAL
-        dtodx2 = pG->dt/(r[i]*pG->dx2);
-#endif
-        pG->U[k][j][i].d  = (pG->U[k][j][i].d + (1./1)*(pG->U[k][j][i].d -dtodx2*(x2Flux[k][j+1][i].d -x2Flux[k][j][i].d )))/2;
-        pG->U[k][j][i].M1 = (pG->U[k][j][i].M1+ (1./1)*(pG->U[k][j][i].M1-dtodx2*(x2Flux[k][j+1][i].Mz-x2Flux[k][j][i].Mz)))/2;
-        pG->U[k][j][i].M2 = ( pG->U[k][j][i].M2+ (1./1)*( pG->U[k][j][i].M2-dtodx2*(x2Flux[k][j+1][i].Mx-x2Flux[k][j][i].Mx)))/2;
-        pG->U[k][j][i].M3 = ( pG->U[k][j][i].M3+ (1./1)*( pG->U[k][j][i].M3-dtodx2*(x2Flux[k][j+1][i].My-x2Flux[k][j][i].My)))/2;
-#ifndef BAROTROPIC
-        pG->U[k][j][i].E = (pG->U[k][j][i].E+ (1./1)*(pG->U[k][j][i].E-dtodx2*(x2Flux[k][j+1][i].E -x2Flux[k][j][i].E )))/2;
-#endif /* BAROTROPIC */
-#if (NSCALARS > 0)
-        for (n=0; n<NSCALARS; n++)
-          pG->U[k][j][i].s[n] = ( pG->U[k][j][i].s[n]+( pG->U[k][j][i].s[n]- dtodx2*(x2Flux[k][j+1][i].s[n]
-	    - x2Flux[k][j  ][i].s[n])))/2;
-#endif
-	  }
-
-
-#endif
- 
-
-
+#endif 
       }
     }
   }
@@ -3315,49 +3286,29 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > (Rbound + 3*pG->dx3)){
+	if (diag > Rbound) {
+	  if (diag > Rbound + 3*pG->dx3) {
+	    fcorrect = 1.;
+	  } else {
+	    fcorrect = (diag - Rbound) / (3 * pG->dx3);
+	  }
 #endif	
-        pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d );
-        pG->U[k][j][i].M1 -= dtodx3*(x3Flux[k+1][j][i].My-x3Flux[k][j][i].My);
-        pG->U[k][j][i].M2 -= dtodx3*(x3Flux[k+1][j][i].Mz-x3Flux[k][j][i].Mz);
-        pG->U[k][j][i].M3 -= dtodx3*(x3Flux[k+1][j][i].Mx-x3Flux[k][j][i].Mx);
+	  pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d ) * fcorrect;
+	  pG->U[k][j][i].M1 -= dtodx3*(x3Flux[k+1][j][i].My-x3Flux[k][j][i].My) * fcorrect;
+	  pG->U[k][j][i].M2 -= dtodx3*(x3Flux[k+1][j][i].Mz-x3Flux[k][j][i].Mz) * fcorrect;
+	  pG->U[k][j][i].M3 -= dtodx3*(x3Flux[k+1][j][i].Mx-x3Flux[k][j][i].Mx) * fcorrect;
 #ifndef BAROTROPIC
-        pG->U[k][j][i].E  -= dtodx3*(x3Flux[k+1][j][i].E -x3Flux[k][j][i].E );
+	  pG->U[k][j][i].E  -= dtodx3*(x3Flux[k+1][j][i].E -x3Flux[k][j][i].E ) * fcorrect;
 #endif /* BAROTROPIC */
 #if (NSCALARS > 0)
-        for (n=0; n<NSCALARS; n++)
-          pG->U[k][j][i].s[n] -= dtodx3*(x3Flux[k+1][j][i].s[n]
-                                       - x3Flux[k  ][j][i].s[n]);
+	  for (n=0; n<NSCALARS; n++)
+	    pG->U[k][j][i].s[n] -= dtodx3*(x3Flux[k+1][j][i].s[n]
+                                       - x3Flux[k  ][j][i].s[n]) * fcorrect;
 #endif
 #ifdef INNERB
+	  fcorrect = 0;
 	}
 #endif
-
-#ifdef INNERB
- 	else if ((Rbound+1*pG->dx3) < diag && diag <= (Rbound + 3*pG->dx3)){
-#ifdef CYLINDRICAL
-        dtodx2 = pG->dt/(r[i]*pG->dx2);
-#endif
-
-	pG->U[k][j][i].d  = (pG->U[k][j][i].d +(1./1)*(pG->U[k][j][i].d-dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d )))/2;
-	pG->U[k][j][i].M1 = (pG->U[k][j][i].M1 +(1./1)*(pG->U[k][j][i].M1- dtodx3*(x3Flux[k+1][j][i].My-x3Flux[k][j][i].My)))/2;
-	pG->U[k][j][i].M2 = (pG->U[k][j][i].M2 + (1./1)*( pG->U[k][j][i].M2-dtodx3*(x3Flux[k+1][j][i].Mz-x3Flux[k][j][i].Mz)))/2;
-	pG->U[k][j][i].M3 = (pG->U[k][j][i].M3 + (1./1)*( pG->U[k][j][i].M3-dtodx3*(x3Flux[k+1][j][i].Mx-x3Flux[k][j][i].Mx)))/2.;
-	
-#ifndef BAROTROPIC
-	pG->U[k][j][i].E = (pG->U[k][j][i].E + (1./1)*( pG->U[k][j][i].E -dtodx3*(x3Flux[k+1][j][i].E -x3Flux[k][j][i].E )))/2;
-#endif /* BAROTROPIC */
-
-#if (NSCALARS > 0)
-        for (n=0; n<NSCALARS; n++)
-          pG->U[k][j][i].s[n] = ( pG->U[k][j][i].s[n]+( pG->U[k][j][i].s[n]- dtodx3*(x3Flux[k][j+1][i].s[n]
-	    - x3Flux[k][j  ][i].s[n])))/2;
-#endif
-	}
-
-
-#endif
-
       }
     }
   }
