@@ -188,12 +188,12 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef FEEDBACK
   feedback_predictor(pG);
 #endif
-
+  Real fcorrect;
 #ifdef INNERB
   Real diag;
-  Real fcorrect;
   Real Rbound = par_getd("problem","Rbound");
 #endif
+  fcorrect = 1;
 /*=== STEP 1: Compute L/R x1-interface states and 1D x1-Fluxes ===============*/
 
 /*--- Step 1a ------------------------------------------------------------------
