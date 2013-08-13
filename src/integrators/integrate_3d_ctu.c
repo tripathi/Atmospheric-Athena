@@ -258,25 +258,25 @@ void integrate_3d_ctu(DomainS *pD)
 
      lr_states(pG,W,Bxc,pG->dt,pG->dx1,il+1,iu-1,Wl,Wr,1);
 
-#ifdef INNERB
-     for (i=il+1; i<=iu; i++) {
-       cc_pos(pG,i,j,k,&x1,&x2,&x3);
-       diag = sqrt(x1*x1+x2*x2+x3*x3);
-       if (diag > Rbound && diag < Rbound + pG->dx1){
-	 cc_pos(pG,i+1,j,k,&x1,&x2,&x3);
-	 diagn = sqrt(x1*x1+x2*x2+x3*x3);
-	 if (diagn > Rbound) {
-	   fprintf(stderr, "i: %d has W:%f and initially Wl:%f \n", i, W[i].d, Wl[i].d);
-	   Wl[i].d=W[i].d;
-	 } else if (diagn < Rbound) {
-	   fprintf(stderr, "i: %d has W:%f and initially Wr:%f \n", i, W[i].d, Wr[i].d);
-	   Wr[i].d=W[i].d;
-	   /* fprintf(stderr,"%d: %e Fixing right side (%e) \n", i, diag, diagn); */
-	 } else {fprintf(stderr,"I don't know which side I'm on \n");
-	 }
-       }
-     }
-#endif
+/* #ifdef INNERB */
+/*      for (i=il+1; i<=iu; i++) { */
+/*        cc_pos(pG,i,j,k,&x1,&x2,&x3); */
+/*        diag = sqrt(x1*x1+x2*x2+x3*x3); */
+/*        if (diag > Rbound && diag < Rbound + pG->dx1){ */
+/* 	 cc_pos(pG,i+1,j,k,&x1,&x2,&x3); */
+/* 	 diagn = sqrt(x1*x1+x2*x2+x3*x3); */
+/* 	 if (diagn > Rbound) { */
+/* 	   /\* fprintf(stderr, "i: %d has W:%f and initially Wl:%f \n", i, W[i].d, Wl[i].d); *\/ */
+/* 	   Wl[i].d=W[i].d; */
+/* 	 } else if (diagn < Rbound) { */
+/* 	   /\* fprintf(stderr, "i: %d has W:%f and initially Wr:%f \n", i, W[i].d, Wr[i].d); *\/ */
+/* 	   Wr[i].d=W[i].d; */
+/* 	   /\* fprintf(stderr,"%d: %e Fixing right side (%e) \n", i, diag, diagn); *\/ */
+/* 	 } else {fprintf(stderr,"I don't know which side I'm on \n"); */
+/* 	 } */
+/*        } */
+/*      } */
+/* #endif */
      
 #ifdef MHD
      for (i=il+1; i<=iu; i++) {
@@ -567,7 +567,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + pG->dx1){
 #endif	
         Ul_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wl[i],&Bxi[i]);
         Ur_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wr[i],&Bxi[i]);
@@ -578,7 +578,9 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x1Face[k][j][i],Ur_x1Face[k][j][i],Wl[i],Wr[i],Bx,
           &x1Flux[k][j][i]);
 #ifdef INNERB
-	} 
+	} else {
+	  x1Flux[k][j][i].d=0;
+	}
 #endif
       }
     }
@@ -643,24 +645,24 @@ void integrate_3d_ctu(DomainS *pD)
 
       lr_states(pG,W,Bxc,pG->dt,dx2,jl+1,ju-1,Wl,Wr,2);
 
-#ifdef INNERB
-     for (j=jl+1; j<=ju; j++) {
-       cc_pos(pG,i,j,k,&x1,&x2,&x3);
-       diag = sqrt(x1*x1+x2*x2+x3*x3);
-       if (diag > Rbound && diag < Rbound + pG->dx2){
-	 cc_pos(pG,i,j+1,k,&x1,&x2,&x3);
-	 diagn = sqrt(x1*x1+x2*x2+x3*x3);
-	 if (diagn > Rbound) {
-	   Wl[j].d=W[j].d;
-	   fprintf(stderr, "j: %d has W:%f and initially Wl:%f \n", j, W[j].d, Wl[j].d);
-	 } else if (diagn < Rbound) {
-	   Wr[j].d=W[j].d;
-	   fprintf(stderr, "j: %d has W:%f and initially Wl:%f \n", i, W[j].d, Wr[j].d);
-	 } else {fprintf(stderr,"I don't know which side I'm on \n");
-	 }
-       }
-     }
-#endif
+/* #ifdef INNERB */
+/*      for (j=jl+1; j<=ju; j++) { */
+/*        cc_pos(pG,i,j,k,&x1,&x2,&x3); */
+/*        diag = sqrt(x1*x1+x2*x2+x3*x3); */
+/*        if (diag > Rbound && diag < Rbound + pG->dx2){ */
+/* 	 cc_pos(pG,i,j+1,k,&x1,&x2,&x3); */
+/* 	 diagn = sqrt(x1*x1+x2*x2+x3*x3); */
+/* 	 if (diagn > Rbound) { */
+/* 	   Wl[j].d=W[j].d; */
+/* 	   fprintf(stderr, "j: %d has W:%f and initially Wl:%f \n", j, W[j].d, Wl[j].d); */
+/* 	 } else if (diagn < Rbound) { */
+/* 	   Wr[j].d=W[j].d; */
+/* 	   fprintf(stderr, "j: %d has W:%f and initially Wl:%f \n", i, W[j].d, Wr[j].d); */
+/* 	 } else {fprintf(stderr,"I don't know which side I'm on \n"); */
+/* 	 } */
+/*        } */
+/*      } */
+/* #endif */
 
 #ifdef MHD
 #ifdef CYLINDRICAL
@@ -813,7 +815,7 @@ void integrate_3d_ctu(DomainS *pD)
 	x2Flux[k][j][i].d = 0.;
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + pG->dx2){
 #endif	
         Ul_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wl[j],&Bxi[j]);
         Ur_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wr[j],&Bxi[j]);
@@ -824,6 +826,8 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x2Face[k][j][i],Ur_x2Face[k][j][i],Wl[j],Wr[j],Bx,
           &x2Flux[k][j][i]);
 #ifdef INNERB
+	}  else {
+	  x2Flux[k][j][i].d=0;
 	}
 #endif
       }
@@ -876,24 +880,24 @@ void integrate_3d_ctu(DomainS *pD)
 	}
       lr_states(pG,W,Bxc,pG->dt,pG->dx3,kl+1,ku-1,Wl,Wr,3);
 
-#ifdef INNERB
-     for (k=kl+1; k<=ku; k++) {
-       cc_pos(pG,i,j,k,&x1,&x2,&x3);
-       diag = sqrt(x1*x1+x2*x2+x3*x3);
-       if (diag > Rbound && diag < Rbound + pG->dx3){
-	 cc_pos(pG,i,j,k+1,&x1,&x2,&x3);
-	 diagn = sqrt(x1*x1+x2*x2+x3*x3);
-	 if (diagn > Rbound) {
-	   Wl[k].d=W[k].d;
-	   fprintf(stderr, "k: %d has W:%f and initially Wl:%f \n", k, W[k].d, Wl[k].d);
-	 } else if (diagn < Rbound) {
-	   Wr[k].d=W[k].d;
-	   fprintf(stderr, "k: %d has W:%f and initially Wl:%f \n", i, W[k].d, Wr[k].d);
-	 } else {fprintf(stderr,"I don't know which side I'm on \n");
-	 }
-       }
-     }
-#endif
+/* #ifdef INNERB */
+/*      for (k=kl+1; k<=ku; k++) { */
+/*        cc_pos(pG,i,j,k,&x1,&x2,&x3); */
+/*        diag = sqrt(x1*x1+x2*x2+x3*x3); */
+/*        if (diag > Rbound && diag < Rbound + pG->dx3){ */
+/* 	 cc_pos(pG,i,j,k+1,&x1,&x2,&x3); */
+/* 	 diagn = sqrt(x1*x1+x2*x2+x3*x3); */
+/* 	 if (diagn > Rbound) { */
+/* 	   Wl[k].d=W[k].d; */
+/* 	   fprintf(stderr, "k: %d has W:%f and initially Wl:%f \n", k, W[k].d, Wl[k].d); */
+/* 	 } else if (diagn < Rbound) { */
+/* 	   Wr[k].d=W[k].d; */
+/* 	   fprintf(stderr, "k: %d has W:%f and initially Wl:%f \n", i, W[k].d, Wr[k].d); */
+/* 	 } else {fprintf(stderr,"I don't know which side I'm on \n"); */
+/* 	 } */
+/*        } */
+/*      } */
+/* #endif */
 
 #ifdef MHD
 #ifdef CYLINDRICAL
@@ -1048,7 +1052,7 @@ void integrate_3d_ctu(DomainS *pD)
 	x3Flux[k][j][i].d =0;
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + pG->dx3){
 #endif	
         Ul_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wl[k],&Bxi[k]);
         Ur_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wr[k],&Bxi[k]);
@@ -1059,6 +1063,8 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x3Face[k][j][i],Ur_x3Face[k][j][i],Wl[k],Wr[k],Bx,
           &x3Flux[k][j][i]);
 #ifdef INNERB
+	}  else {
+	  x3Flux[k][j][i].d=0;
 	}
 #endif
       }
@@ -2589,7 +2595,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + pG->dx1){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta2[k][j][i-1],eta2[k][j][i]);
@@ -2612,6 +2618,8 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x1Face[k][j][i],Ur_x1Face[k][j][i],Wl[i],Wr[i],Bx,
                &x1Flux[k][j][i]);
 #ifdef INNERB
+	} else {
+	  x1Flux[k][j][i].d=0;
 	}
 #endif     
       }
@@ -2628,7 +2636,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + pG->dx2){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k][j-1][i],eta1[k][j][i]);
@@ -2651,6 +2659,8 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x2Face[k][j][i],Ur_x2Face[k][j][i],Wl[i],Wr[i],Bx,
                &x2Flux[k][j][i]);
 #ifdef INNERB
+	} else {
+	  x2Flux[k][j][i].d=0;
 	}
 #endif
       }
@@ -2667,7 +2677,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + pG->dx3){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k-1][j][i],eta1[k][j][i]);
@@ -2690,6 +2700,8 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x3Face[k][j][i],Ur_x3Face[k][j][i],Wl[i],Wr[i],Bx,
                &x3Flux[k][j][i]);
 #ifdef INNERB
+	} else {
+	  x3Flux[k][j][i].d=0;
 	}
 #endif
       }
@@ -3800,9 +3812,9 @@ void integrate_init_3d(MeshS *pM)
   for (k=nghost; k<=size3-nghost; k++) {
     for (j=nghost; j<=size2 - nghost; j++) {
       for (i=nghost; i<=size1-nghost; i++) {
-	x1Flux[i][j][k].d=0;
-	x2Flux[i][j][k].d=0;
-	x3Flux[i][j][k].d=0;
+	x1Flux[k][j][i].d=0;
+	x2Flux[k][j][i].d=0;
+	x3Flux[k][j][i].d=0;
       }
     }
   }
