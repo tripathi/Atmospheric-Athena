@@ -580,6 +580,11 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	} else {
 	  x1Flux[k][j][i].d=0;
+	  x1Flux[k][j][i].Mx=0;
+	  x1Flux[k][j][i].My=0;
+	  x1Flux[k][j][i].Mz=0;
+	  x1Flux[k][j][i].E=0;
+	  /*AT 8/20/13: Here and elsewhere, passive scalars neglected*/
 	}
 #endif
       }
@@ -815,7 +820,7 @@ void integrate_3d_ctu(DomainS *pD)
 	x2Flux[k][j][i].d = 0.;
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + pG->dx2){
+	if (diag > Rbound + 3. * pG->dx2){
 #endif	
         Ul_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wl[j],&Bxi[j]);
         Ur_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wr[j],&Bxi[j]);
@@ -826,8 +831,12 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x2Face[k][j][i],Ur_x2Face[k][j][i],Wl[j],Wr[j],Bx,
           &x2Flux[k][j][i]);
 #ifdef INNERB
-	}  else {
+	} else {
 	  x2Flux[k][j][i].d=0;
+	  x2Flux[k][j][i].Mx=0;
+	  x2Flux[k][j][i].My=0;
+	  x2Flux[k][j][i].Mz=0;
+	  x2Flux[k][j][i].E=0;
 	}
 #endif
       }
@@ -1052,7 +1061,7 @@ void integrate_3d_ctu(DomainS *pD)
 	x3Flux[k][j][i].d =0;
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + pG->dx3){
+	if (diag > Rbound + 3. * pG->dx3){
 #endif	
         Ul_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wl[k],&Bxi[k]);
         Ur_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wr[k],&Bxi[k]);
@@ -1063,8 +1072,12 @@ void integrate_3d_ctu(DomainS *pD)
         fluxes(Ul_x3Face[k][j][i],Ur_x3Face[k][j][i],Wl[k],Wr[k],Bx,
           &x3Flux[k][j][i]);
 #ifdef INNERB
-	}  else {
+	} else {
 	  x3Flux[k][j][i].d=0;
+	  x3Flux[k][j][i].Mx=0;
+	  x3Flux[k][j][i].My=0;
+	  x3Flux[k][j][i].Mz=0;
+	  x3Flux[k][j][i].E=0;
 	}
 #endif
       }
@@ -2595,7 +2608,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + pG->dx1){
+	if (diag > Rbound + 3. * pG->dx1){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta2[k][j][i-1],eta2[k][j][i]);
@@ -2620,6 +2633,10 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	} else {
 	  x1Flux[k][j][i].d=0;
+	  x1Flux[k][j][i].Mx=0;
+	  x1Flux[k][j][i].My=0;
+	  x1Flux[k][j][i].Mz=0;
+	  x1Flux[k][j][i].E=0;
 	}
 #endif     
       }
@@ -2636,7 +2653,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + pG->dx2){
+	if (diag > Rbound + 3. * pG->dx2){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k][j-1][i],eta1[k][j][i]);
@@ -2661,6 +2678,10 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	} else {
 	  x2Flux[k][j][i].d=0;
+	  x2Flux[k][j][i].Mx=0;
+	  x2Flux[k][j][i].My=0;
+	  x2Flux[k][j][i].Mz=0;
+	  x2Flux[k][j][i].E=0;
 	}
 #endif
       }
@@ -2677,7 +2698,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + pG->dx3){
+	if (diag > Rbound + 3. * pG->dx3){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k-1][j][i],eta1[k][j][i]);
@@ -2702,6 +2723,10 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	} else {
 	  x3Flux[k][j][i].d=0;
+	  x3Flux[k][j][i].Mx=0;
+	  x3Flux[k][j][i].My=0;
+	  x3Flux[k][j][i].Mz=0;
+	  x3Flux[k][j][i].E=0;
 	}
 #endif
       }
@@ -3276,11 +3301,12 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 3*pG->dx1) {
+	  if (diag > Rbound + 6.*pG->dx1) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (3 * pG->dx1);
-	    if (k ==55 && j == 69 && i == 104)
+	    fcorrect = (diag - Rbound) / (6. * pG->dx1);
+	    if (!(pG->U[k][j][i].d  >1e-17) && diag < 7e9) 
+	    /* if (k ==55 && j == 69 && i == 104) */
 	      fprintf(stderr, " (BEFORE SMOOTHING) My density at cell %d %d %d is %e,  \n", k, j, i, pG->U[k][j][i].d );
 	  }
 #endif	
@@ -3321,10 +3347,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 3*pG->dx2) {
+	  if (diag > Rbound + 6.*pG->dx2) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (3 * pG->dx2);
+	    fcorrect = (diag - Rbound) / (6. * pG->dx2);
 	  }
 #endif	
 #ifdef CYLINDRICAL
@@ -3365,10 +3391,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 3*pG->dx3) {
+	  if (diag > Rbound + 6.*pG->dx3) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (3 * pG->dx3);
+	    fcorrect = (diag - Rbound) / (6. * pG->dx3);
 	  }
 #endif	
 	  pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d ) * fcorrect;
