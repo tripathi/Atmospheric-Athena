@@ -228,11 +228,6 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
      for (i=is-nghost; i<=ie+nghost; i++) {
-#ifdef INNERB
-       cc_pos(pG,i,j,k,&x1,&x2,&x3);
-       diag = sqrt(x1*x1+x2*x2+x3*x3);
-       /* if (diag > Rbound){ */
-#endif	
        W[i] = Cons1D_to_Prim1D(&U1d[i],&Bxc[i]);
 
        /* CALCULATE THE CELL-CENTERED GEOMETRIC SOURCE VECTOR NOW USING U^{n}
@@ -250,10 +245,6 @@ void integrate_3d_ctu(DomainS *pD)
 #endif
        geom_src[k][j][i] /= x1vc(pG,i);
 #endif /* CYLINDRICAL */
-#ifdef INNERB
-     /* } */
-       /* fprintf(stderr, "W[i].d :%f\n", W[i].d); */
-#endif
      }
 
      lr_states(pG,W,Bxc,pG->dt,pG->dx1,il+1,iu-1,Wl,Wr,1);
@@ -567,7 +558,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + pG->dx1){
+	if (diag > Rbound + 3. * pG->dx1){
 #endif	
         Ul_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wl[i],&Bxi[i]);
         Ur_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wr[i],&Bxi[i]);
@@ -636,15 +627,7 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (j=js-nghost; j<=je+nghost; j++) {
-#ifdef INNERB
-	cc_pos(pG,i,j,k,&x1,&x2,&x3);
-	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	/* if (diag > Rbound){ */
-#endif	
         W[j] = Cons1D_to_Prim1D(&U1d[j],&Bxc[j]);
-#ifdef INNERB
-	/* } */
-#endif
       }
 
 
@@ -877,15 +860,7 @@ void integrate_3d_ctu(DomainS *pD)
  */
 
       for (k=ks-nghost; k<=ke+nghost; k++) {
-#ifdef INNERB
-	cc_pos(pG,i,j,k,&x1,&x2,&x3);
-	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	/* if (diag > Rbound){ */
-#endif	
         W[k] = Cons1D_to_Prim1D(&U1d[k],&Bxc[k]);
-#ifdef INNERB
-	/* } */
-#endif
 	}
       lr_states(pG,W,Bxc,pG->dt,pG->dx3,kl+1,ku-1,Wl,Wr,3);
 
