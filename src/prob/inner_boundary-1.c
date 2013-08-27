@@ -129,8 +129,17 @@ void problem(DomainS *pDomain)
 #endif
      
 	
-/* make a wave! */
-        if (diag <= Rp) {
+	if (diag < Rb){
+	  pGrid->U[k][j][i].d  = rho_c*0.99;
+	  pGrid->U[k][j][i].M1 = 0.0;
+	  pGrid->U[k][j][i].M2 = 0.0;
+	  pGrid->U[k][j][i].M3 = 0.0;
+	  pr = pow(rho_c*0.99,Gamma)*(c_s*c_s);
+#ifdef ADIABATIC
+	  pGrid->U[k][j][i].E = pr/Gamma_1;
+#endif
+
+	}else if (diag <= Rp) {
           pGrid->U[k][j][i].d  = rho_c*exp((1/diag-1/Rb)/Hor2); 
           pGrid->U[k][j][i].M1 =0.0;
           pGrid->U[k][j][i].M2 = 0.0;
@@ -146,17 +155,7 @@ void problem(DomainS *pDomain)
 #endif
 
         }
-	if (diag < Rb){
-	  pGrid->U[k][j][i].d  = rho_c*0.99;
-	  pGrid->U[k][j][i].M1 = 0.0;
-	  pGrid->U[k][j][i].M2 = 0.0;
-	  pGrid->U[k][j][i].M3 = 0.0;
-	  pr = pow(rho_c*0.99,Gamma)*(c_s*c_s);
-#ifdef ADIABATIC
-	  pGrid->U[k][j][i].E = pr/Gamma_1;
-#endif
 
-	}
       }
     }
 
@@ -218,6 +217,57 @@ VOutFun_t get_usr_out_fun(const char *name){
 
 void Userwork_in_loop(MeshS *pM)
 {
+  Real x1, x2, x3, diag;
+  int is,ie,js,je,ks,ke, nl, nd, i, j, k;
+  Real rho_at,p_at,T_at,rho_c,p_c,Rp,Hor2,c_s,rho_H,Rb, pr;
+  GridS *pGrid;
+
+
+  for (nl=0; nl<(pM->NLevels); nl++){
+    for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
+      if (pM->Domain[nl][nd].Grid != NULL) {
+	pGrid = pM->Domain[nl][nd].Grid;          /* ptr to Grid */
+
+	is = pGrid->is;  ie = pGrid->ie;
+	js = pGrid->js;  je = pGrid->je;
+	ks = pGrid->ks;  ke = pGrid->ke;
+	
+	for (k=ks; k<=ke; k++) {
+	  for (j=js; j<=je; j++) {
+	    for (i=is; i<=ie; i++) {
+	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
+	      diag = sqrt(x1*x1 + x2*x2 + x3*x3);
+	      
+	      
+	      if (diag < Rb ){
+		pGrid->U[k][j][i].d  = rho_c*0.99;
+		pGrid->U[k][j][i].M1 = 0.0;
+		pGrid->U[k][j][i].M2 = 0.0;
+		pGrid->U[k][j][i].M3 = 0.0;
+		pr = pow(rho_c*0.99,Gamma)*(c_s*c_s);
+#ifdef ADIABATIC
+		pGrid->U[k][j][i].E = pr/Gamma_1;
+#endif
+		
+	      } else if (diag <= Rp){
+		pGrid->U[k][j][i].d  = rho_c*exp((1/diag-1/Rb)/Hor2);
+		pGrid->U[k][j][i].M1 =0.0;
+		pGrid->U[k][j][i].M2 = 0.0;
+		pGrid->U[k][j][i].M3 = 0.0;
+		pr = pow(pGrid->U[k][j][i].d,Gamma)*(c_s*c_s);
+#ifdef ADIABATIC
+		pGrid->U[k][j][i].E = pr/Gamma_1;
+#endif
+#if (NSCALARS > 0)
+		pGrid->U[k][j][i].s[0] = drat;
+#endif
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
   return;
 }
 
