@@ -3231,10 +3231,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 4.*pG->dx1) {
+	  if (diag > Rbound + 8.*pG->dx1) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (4. * pG->dx1);
+	    fcorrect = (diag - Rbound) / (8. * pG->dx1);
 	    if (!(pG->U[k][j][i].d  >1e-17) && diag < 7e9) 
 	    /* if (k ==55 && j == 69 && i == 104) */
 	      fprintf(stderr, " (BEFORE SMOOTHING) My density at cell %d %d %d is %e,  \n", k, j, i, pG->U[k][j][i].d );
@@ -3277,10 +3277,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 4.*pG->dx2) {
+	  if (diag > Rbound + 8.*pG->dx2) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (4. * pG->dx2);
+	    fcorrect = (diag - Rbound) / (8. * pG->dx2);
 	  }
 #endif	
 #ifdef CYLINDRICAL
@@ -3321,10 +3321,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 4.*pG->dx3) {
+	  if (diag > Rbound + 8.*pG->dx3) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (4. * pG->dx3);
+	    fcorrect = (diag - Rbound) / (8. * pG->dx3);
 	  }
 #endif	
 	  pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d ) * fcorrect;
