@@ -189,11 +189,13 @@ void integrate_3d_ctu(DomainS *pD)
   feedback_predictor(pG);
 #endif
 
+/* Set variables used for inner hole boundary condition*/
 #ifdef INNERB
   Real diag, diagn;
-  Real fcorrect;
   Real Rbound = par_getd("problem","Rbound");
 #endif
+  Real fcorrect;
+  fcorrect =1;
 /*=== STEP 1: Compute L/R x1-interface states and 1D x1-Fluxes ===============*/
 
 /*--- Step 1a ------------------------------------------------------------------
@@ -248,26 +250,6 @@ void integrate_3d_ctu(DomainS *pD)
      }
 
      lr_states(pG,W,Bxc,pG->dt,pG->dx1,il+1,iu-1,Wl,Wr,1);
-
-/* #ifdef INNERB */
-/*      for (i=il+1; i<=iu; i++) { */
-/*        cc_pos(pG,i,j,k,&x1,&x2,&x3); */
-/*        diag = sqrt(x1*x1+x2*x2+x3*x3); */
-/*        if (diag > Rbound && diag < Rbound + pG->dx1){ */
-/* 	 cc_pos(pG,i+1,j,k,&x1,&x2,&x3); */
-/* 	 diagn = sqrt(x1*x1+x2*x2+x3*x3); */
-/* 	 if (diagn > Rbound) { */
-/* 	   /\* fprintf(stderr, "i: %d has W:%f and initially Wl:%f \n", i, W[i].d, Wl[i].d); *\/ */
-/* 	   Wl[i].d=W[i].d; */
-/* 	 } else if (diagn < Rbound) { */
-/* 	   /\* fprintf(stderr, "i: %d has W:%f and initially Wr:%f \n", i, W[i].d, Wr[i].d); *\/ */
-/* 	   Wr[i].d=W[i].d; */
-/* 	   /\* fprintf(stderr,"%d: %e Fixing right side (%e) \n", i, diag, diagn); *\/ */
-/* 	 } else {fprintf(stderr,"I don't know which side I'm on \n"); */
-/* 	 } */
-/*        } */
-/*      } */
-/* #endif */
      
 #ifdef MHD
      for (i=il+1; i<=iu; i++) {
@@ -342,8 +324,9 @@ void integrate_3d_ctu(DomainS *pD)
         for (i=il+1; i<=iu; i++) {
 	  
 	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
+
 #ifdef INNERB
-	 
+	  /*Save computing time by only adding source terms outside the inner hole*/
 	  diag = sqrt(x1*x1+x2*x2+x3*x3);
 	  if (diag > Rbound){
 #endif	
@@ -393,6 +376,7 @@ void integrate_3d_ctu(DomainS *pD)
       if (CoolingFunc != NULL){
         for (i=il+1; i<=iu; i++) {
 #ifdef INNERB
+	  /*Save computing time by only adding source terms outside the inner hole*/
 	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	  diag = sqrt(x1*x1+x2*x2+x3*x3);
 	  if (diag > Rbound){
@@ -556,9 +540,11 @@ void integrate_3d_ctu(DomainS *pD)
 
       for (i=il+1; i<=iu; i++) {
 #ifdef INNERB
+	  /*Save computing time by calculating the fluxes only outside the boundary*/
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + 3. * pG->dx1){
+	if (diag > Rbound ){
+/* + 3. * pG->dx1 */
 #endif	
         Ul_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wl[i],&Bxi[i]);
         Ur_x1Face[k][j][i] = Prim1D_to_Cons1D(&Wr[i],&Bxi[i]);
@@ -570,6 +556,7 @@ void integrate_3d_ctu(DomainS *pD)
           &x1Flux[k][j][i]);
 #ifdef INNERB
 	} else {
+	  /*elsewhere set flux to 0*/
 	  x1Flux[k][j][i].d=0;
 	  x1Flux[k][j][i].Mx=0;
 	  x1Flux[k][j][i].My=0;
@@ -632,25 +619,6 @@ void integrate_3d_ctu(DomainS *pD)
 
 
       lr_states(pG,W,Bxc,pG->dt,dx2,jl+1,ju-1,Wl,Wr,2);
-
-/* #ifdef INNERB */
-/*      for (j=jl+1; j<=ju; j++) { */
-/*        cc_pos(pG,i,j,k,&x1,&x2,&x3); */
-/*        diag = sqrt(x1*x1+x2*x2+x3*x3); */
-/*        if (diag > Rbound && diag < Rbound + pG->dx2){ */
-/* 	 cc_pos(pG,i,j+1,k,&x1,&x2,&x3); */
-/* 	 diagn = sqrt(x1*x1+x2*x2+x3*x3); */
-/* 	 if (diagn > Rbound) { */
-/* 	   Wl[j].d=W[j].d; */
-/* 	   fprintf(stderr, "j: %d has W:%f and initially Wl:%f \n", j, W[j].d, Wl[j].d); */
-/* 	 } else if (diagn < Rbound) { */
-/* 	   Wr[j].d=W[j].d; */
-/* 	   fprintf(stderr, "j: %d has W:%f and initially Wl:%f \n", i, W[j].d, Wr[j].d); */
-/* 	 } else {fprintf(stderr,"I don't know which side I'm on \n"); */
-/* 	 } */
-/*        } */
-/*      } */
-/* #endif */
 
 #ifdef MHD
 #ifdef CYLINDRICAL
@@ -719,6 +687,7 @@ void integrate_3d_ctu(DomainS *pD)
         for (j=jl+1; j<=ju; j++) {
           cc_pos(pG,i,j,k,&x1,&x2,&x3);
 #ifdef INNERB
+	  /*Save computing time by only adding source terms outside the inner hole*/
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound){
 #endif	
@@ -753,6 +722,7 @@ void integrate_3d_ctu(DomainS *pD)
       if (CoolingFunc != NULL){
         for (j=jl+1; j<=ju; j++) {
 #ifdef INNERB
+	  /*Save computing time by only adding source terms outside the inner hole*/
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound){
@@ -800,10 +770,11 @@ void integrate_3d_ctu(DomainS *pD)
 
       for (j=jl+1; j<=ju; j++) {
 #ifdef INNERB
-	x2Flux[k][j][i].d = 0.;
+	/*Save computing time by calculating the fluxes only outside the boundary*/
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + 3. * pG->dx2){
+	if (diag > Rbound){
+ /* + 3. * pG->dx2 */
 #endif	
         Ul_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wl[j],&Bxi[j]);
         Ur_x2Face[k][j][i] = Prim1D_to_Cons1D(&Wr[j],&Bxi[j]);
@@ -863,25 +834,6 @@ void integrate_3d_ctu(DomainS *pD)
         W[k] = Cons1D_to_Prim1D(&U1d[k],&Bxc[k]);
 	}
       lr_states(pG,W,Bxc,pG->dt,pG->dx3,kl+1,ku-1,Wl,Wr,3);
-
-/* #ifdef INNERB */
-/*      for (k=kl+1; k<=ku; k++) { */
-/*        cc_pos(pG,i,j,k,&x1,&x2,&x3); */
-/*        diag = sqrt(x1*x1+x2*x2+x3*x3); */
-/*        if (diag > Rbound && diag < Rbound + pG->dx3){ */
-/* 	 cc_pos(pG,i,j,k+1,&x1,&x2,&x3); */
-/* 	 diagn = sqrt(x1*x1+x2*x2+x3*x3); */
-/* 	 if (diagn > Rbound) { */
-/* 	   Wl[k].d=W[k].d; */
-/* 	   fprintf(stderr, "k: %d has W:%f and initially Wl:%f \n", k, W[k].d, Wl[k].d); */
-/* 	 } else if (diagn < Rbound) { */
-/* 	   Wr[k].d=W[k].d; */
-/* 	   fprintf(stderr, "k: %d has W:%f and initially Wl:%f \n", i, W[k].d, Wr[k].d); */
-/* 	 } else {fprintf(stderr,"I don't know which side I'm on \n"); */
-/* 	 } */
-/*        } */
-/*      } */
-/* #endif */
 
 #ifdef MHD
 #ifdef CYLINDRICAL
@@ -951,7 +903,7 @@ void integrate_3d_ctu(DomainS *pD)
         for (k=kl+1; k<=ku; k++) {
           cc_pos(pG,i,j,k,&x1,&x2,&x3);
 #ifdef INNERB
-
+	  /*Save computing time by only adding source terms outside the inner hole*/
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound){
 #endif	
@@ -987,6 +939,7 @@ void integrate_3d_ctu(DomainS *pD)
         for (k=kl+1; k<=ku; k++) {
           
 #ifdef INNERB
+	  /*Save computing time by only adding source terms outside the inner hole*/
 	  cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	  diag = sqrt(x1*x1+x2*x2+x3*x3);
 	  if (diag > Rbound){
@@ -1033,10 +986,11 @@ void integrate_3d_ctu(DomainS *pD)
 
       for (k=kl+1; k<=ku; k++) {
 #ifdef INNERB
-	x3Flux[k][j][i].d =0;
+	/*Save computing time by calculating the fluxes only outside the boundary*/
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + 3. * pG->dx3){
+	if (diag > Rbound){
+ /* + 3. * pG->dx3 */
 #endif	
         Ul_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wl[k],&Bxi[k]);
         Ur_x3Face[k][j][i] = Prim1D_to_Cons1D(&Wr[k],&Bxi[k]);
@@ -1145,9 +1099,10 @@ void integrate_3d_ctu(DomainS *pD)
         q2 = hdt/(r[i-1]*pG->dx2);
 #endif
 #ifdef INNERB
+	/*Only update interface states if outside the boundary*/
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + 1. * pG->dx1 ){
 #endif	
         Ul_x1Face[k][j][i].d -=q2*(x2Flux[k][j+1][i-1].d -x2Flux[k][j][i-1].d );
         Ul_x1Face[k][j][i].Mx-=q2*(x2Flux[k][j+1][i-1].Mz-x2Flux[k][j][i-1].Mz);
@@ -1343,7 +1298,7 @@ void integrate_3d_ctu(DomainS *pD)
         cc_pos(pG,i,j,k,&x1,&x2,&x3);
 #ifdef INNERB	
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + 1. * pG->dx1){
 #endif	
         phic = (*StaticGravPot)(x1, x2             ,x3);
         phir = (*StaticGravPot)(x1,(x2+0.5*pG->dx2),x3);
@@ -1465,7 +1420,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + 1. * pG->dx2){
 #endif	
 
 #ifdef CYLINDRICAL
@@ -1656,7 +1611,7 @@ void integrate_3d_ctu(DomainS *pD)
         cc_pos(pG,i,j,k,&x1,&x2,&x3);
 #ifdef INNERB
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + 1. * pG->dx2){
 #endif	
         phic = (*StaticGravPot)((x1            ),x2,x3);
         phir = (*StaticGravPot)((x1+0.5*pG->dx1),x2,x3);
@@ -1891,7 +1846,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + 1. * pG->dx3){
 #endif	
 #ifdef CYLINDRICAL
         rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
@@ -2082,7 +2037,7 @@ void integrate_3d_ctu(DomainS *pD)
         cc_pos(pG,i,j,k,&x1,&x2,&x3);
 #ifdef INNERB
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound){
+	if (diag > Rbound + 1. * pG->dx3){
 #endif	
         phic = (*StaticGravPot)((x1            ),x2,x3);
         phir = (*StaticGravPot)((x1+0.5*pG->dx1),x2,x3);
@@ -2583,7 +2538,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + 3. * pG->dx1){
+	if (diag > Rbound + 0. * pG->dx1){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta2[k][j][i-1],eta2[k][j][i]);
@@ -2628,7 +2583,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + 3. * pG->dx2){
+	if (diag > Rbound + 0. * pG->dx2){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k][j-1][i],eta1[k][j][i]);
@@ -2673,7 +2628,7 @@ void integrate_3d_ctu(DomainS *pD)
 #ifdef INNERB
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
-	if (diag > Rbound + 3. * pG->dx3){
+	if (diag > Rbound + 0. * pG->dx3){
 #endif	
 #ifdef H_CORRECTION
         etah = MAX(eta1[k-1][j][i],eta1[k][j][i]);
@@ -3276,10 +3231,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 6.*pG->dx1) {
+	  if (diag > Rbound + 4.*pG->dx1) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (6. * pG->dx1);
+	    fcorrect = (diag - Rbound) / (4. * pG->dx1);
 	    if (!(pG->U[k][j][i].d  >1e-17) && diag < 7e9) 
 	    /* if (k ==55 && j == 69 && i == 104) */
 	      fprintf(stderr, " (BEFORE SMOOTHING) My density at cell %d %d %d is %e,  \n", k, j, i, pG->U[k][j][i].d );
@@ -3322,10 +3277,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 6.*pG->dx2) {
+	  if (diag > Rbound + 4.*pG->dx2) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (6. * pG->dx2);
+	    fcorrect = (diag - Rbound) / (4. * pG->dx2);
 	  }
 #endif	
 #ifdef CYLINDRICAL
@@ -3366,10 +3321,10 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	cc_pos(pG,i,j,k,&x1,&x2,&x3);
 	diag = sqrt(x1*x1+x2*x2+x3*x3);
 	if (diag > Rbound) {
-	  if (diag > Rbound + 6.*pG->dx3) {
+	  if (diag > Rbound + 4.*pG->dx3) {
 	    fcorrect = 1.;
 	  } else {
-	    fcorrect = (diag - Rbound) / (6. * pG->dx3);
+	    fcorrect = (diag - Rbound) / (4. * pG->dx3);
 	  }
 #endif	
 	  pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d ) * fcorrect;
