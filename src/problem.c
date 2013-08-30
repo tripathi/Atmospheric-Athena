@@ -1,1 +1,1 @@
-prob/ifront.c
+prob/inner_boundary-1.c
