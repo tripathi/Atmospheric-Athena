@@ -35,9 +35,9 @@ static Real dl,pl,ul;
 const Real kb=1.38e-16;
 const Real mH = 1.67e-24;
 const Real Ggrav = 6.67e-8;
+static Real rho_c, Hor2, c_s, Rp, Rb;
 #ifdef MHD
 static Real bxl,byl,bzl;
-
 #endif /* MHD */
 
 /*==============================================================================
@@ -63,7 +63,8 @@ void problem(DomainS *pDomain)
   Real beta,bxr,byr,bzr;
 #endif /* MHD */
   Real dr,pr,ur;
-  Real rho_at,p_at,T_at,rho_c,p_c,Rp,Hor2,c_s,rho_H,Rb;
+  Real rho_at,p_at,T_at,p_c;
+/* Rp,Rb, rho_c, Hor2, c_s; */
   Real prprev,tempval;
 /* Read input parameters */
 
@@ -99,7 +100,6 @@ void problem(DomainS *pDomain)
 		    
   c_s = sqrt(kb*T_at/(2*mH));
   p_c = pow(rho_c,Gamma)*(c_s)*(c_s);
-  fprintf(stderr,"cs is %e, and rho_c is %e and my cell is %e\n",c_s,rho_c, pGrid->dx1);
 
 /* Initialize the grid */
 
@@ -161,7 +161,6 @@ void problem(DomainS *pDomain)
 
   }
   
-  fprintf(stderr,"%e is sheet rho\n",tempval);
 
 
   /* enroll gravity of planet */
@@ -219,7 +218,8 @@ void Userwork_in_loop(MeshS *pM)
 {
   Real x1, x2, x3, diag;
   int is,ie,js,je,ks,ke, nl, nd, i, j, k;
-  Real rho_at,p_at,T_at,rho_c,p_c,Rp,Hor2,c_s,rho_H,Rb, pr;
+  Real rho_at,p_at,T_at,p_c, pr;
+/* , rho_c, Hor2, c_s; */
   GridS *pGrid;
 
 
