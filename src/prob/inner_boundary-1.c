@@ -239,7 +239,7 @@ void Userwork_in_loop(MeshS *pM)
 	      diag = sqrt(x1*x1 + x2*x2 + x3*x3);
 	      
 	      
-	      if (diag < Rb ){
+	      if (diag <= Rb ){
 		pGrid->U[k][j][i].d  = rho_c*0.99;
 		pGrid->U[k][j][i].M1 = 0.0;
 		pGrid->U[k][j][i].M2 = 0.0;
@@ -249,7 +249,7 @@ void Userwork_in_loop(MeshS *pM)
 		pGrid->U[k][j][i].E = pr/Gamma_1;
 #endif
 		
-	      } else if (diag <= Rp){
+	      } else if (diag > Rb && diag<= Rb + 4. * pGrid->dx1){
 		pGrid->U[k][j][i].d  = rho_c*exp((1/diag-1/Rb)/Hor2);
 		pGrid->U[k][j][i].M1 =0.0;
 		pGrid->U[k][j][i].M2 = 0.0;
