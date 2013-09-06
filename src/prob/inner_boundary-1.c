@@ -118,6 +118,7 @@ void problem(DomainS *pDomain)
 	pGrid->U[k][j][i].d  = rho_at/drat;
 	pGrid->U[k][j][i].M1 = 0.0;
 	pGrid->U[k][j][i].M2 = 0.0;
+	pGrid->U[k][j][i].M3 = 0.0;
 	
 #ifdef ADIABATIC
 	pGrid->U[k][j][i].E = pow(rho_at,Gamma)*(c_s*c_s)/Gamma_1;  
