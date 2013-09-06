@@ -1,22 +1,21 @@
 #include "copyright.h"
 /*==============================================================================
- * FILE: hot_jupiter.c
+ * FILE: inner_boundary-1.c
  *
- * PURPOSE: Problem generator for shock-cloud problem; planar shock impacting
- *   a single spherical cloud.  Input parameters are:
- *      problem/Mach   = Mach number of incident shock
- *      problem/drat   = density ratio of cloud to ambient
- *      problem/beta   = ratio of Pgas/Pmag
- *      problem/iprob  = integer flag to determine problem
- *   The cloud radius is fixed at 1.0.  The center of the coordinate system
- *   defines the center of the cloud, and should be in the middle of the cloud.
- *   The shock is initially at x1=-2.0.  A typical grid domain should span
- *   x1 in [-3.0,7.0] , y and z in [-2.5,2.5] (see input file in /tst)
- *   Various test cases are possible:
- *     (iprob=1): B parallel to shock normal
- *     (iprob=2): B perpendicular to shock normal -- NOT YET IMPLEMENTED
- *   If the code is configured with nscalars>0, the cloud material is labeled
- *   with U[k][j][i].s[0]=1.
+ * PURPOSE: Problem generator for a planet with a hydrostatic atmosphere
+ *  Input parameters are:
+ *      problem/Mp      = planet mass
+ *      problem/Rsoft   = softening length for planet's grav. potential
+ *      problem/Xplanet = x-location of planet
+ *      problem/Yplanet = y-location of planet
+ *      problem/Zplanet = z-location of planet
+ *      problem/Rbound  = radius within which the density is constant
+ *      problem/Rp      = outer edge of planetary radius
+ *      problem/rho_at  = density of planetary atmosphere at Rp
+ *      problem/T_at    = temperature of planetary atmosphere at Rp
+ *      problem/drat    = density ratio between atmos. and ambient gas
+ *
+ *  Based off the template for shk_cloud
  *============================================================================*/
 
 #include <math.h>
@@ -27,25 +26,14 @@
 #include "globals.h"
 #include "prototypes.h"
 
-/* postshock flow variables are shared with IIB function */
 
 static Real Mp,Rsoft,Xplanet,Yplanet,Zplanet;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
-static Real dl,pl,ul;
 const Real kb=1.38e-16;
 const Real mH = 1.67e-24;
 const Real Ggrav = 6.67e-8;
 static Real rho_c, Hor2, c_s, Rp, Rb;
-#ifdef MHD
-static Real bxl,byl,bzl;
-#endif /* MHD */
 
-/*==============================================================================
- * PRIVATE FUNCTION PROTOTYPES:
- * shk_cloud_iib() - fixes BCs on L-x1 (left edge) of grid to postshock flow.
- *============================================================================*/
-
-void shk_cloud_iib(GridS *pGrid);
 
 /*=========================== PUBLIC FUNCTIONS ===============================*/
 /*----------------------------------------------------------------------------*/
@@ -55,46 +43,25 @@ void problem(DomainS *pDomain)
 {
   GridS *pGrid = pDomain->Grid;
   int i=0,j=0,k=0;
-  int is,ie,js,je,ks,ke,iprob;
+  int is,ie,js,je,ks,ke;
+  Real x1,x2,x3,diag;
+  Real drat;
+  Real pr;
+  Real rho_at,T_at, p_c;
 
-  Real x1,x2,x3,diag,rad,xshock;
-  Real Mach,drat;
-#ifdef MHD
-  Real beta,bxr,byr,bzr;
-#endif /* MHD */
-  Real dr,pr,ur;
-  Real rho_at,p_at,T_at,p_c;
-/* Rp,Rb, rho_c, Hor2, c_s; */
-  Real prprev,tempval;
 /* Read input parameters */
-
-  Mach = par_getd("problem","Mach");
-  drat = par_getd("problem","drat");
-  
-  rho_at = par_getd("problem","rho_at");
-  T_at =par_getd("problem","T_at");
-  Rp =par_getd("problem","Rp");
-  Rb = par_getd("problem","Rbound");
   Mp      = par_getd_def("problem","Mplanet",0.0);
+  Rsoft   = par_getd_def("problem","Rsoft",0.1);
   Xplanet = par_getd_def("problem","Xplanet",0.0);
   Yplanet = par_getd_def("problem","Yplanet",0.0);
   Zplanet = par_getd_def("problem","Zplanet",0.0);
-  Rsoft   = par_getd_def("problem","Rsoft",0.1);
-
-#ifdef MHD
-  beta = par_getd("problem","beta");
-#endif
+  Rb = par_getd("problem","Rbound");
+  Rp =par_getd("problem","Rp");
+  rho_at = par_getd("problem","rho_at");
+  T_at =par_getd("problem","T_at");
+  drat = par_getd("problem","drat");
   
-/* Set paramters in ambient medium ("R-state" for shock) */
-
-  dr = 1.0;
-  pr = 1.0/Gamma;
-  ur = 0.0;
-#ifdef INNERB
-  fprintf(stderr,"inner boundary is on!\n");
-#endif
-
-  /* set up parameters for central part of "planet" center is colder and denser?*/
+/* Set up parameters for central part of "planet" */
   Hor2=kb*T_at/(2*mH*Ggrav*Mp);
   rho_c= rho_at*exp(-1/Hor2*(1/Rp - 1/Rb));
 		    
@@ -102,7 +69,6 @@ void problem(DomainS *pDomain)
   p_c = pow(rho_c,Gamma)*(c_s)*(c_s);
 
 /* Initialize the grid */
-
   is = pGrid->is;  ie = pGrid->ie;
   js = pGrid->js;  je = pGrid->je;
   ks = pGrid->ks;  ke = pGrid->ke;
@@ -113,8 +79,7 @@ void problem(DomainS *pDomain)
         cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
         diag = sqrt(x1*x1 + x2*x2 + x3*x3);
 
-/* outside the planet */
-       
+	/* Outside the planet */
 	pGrid->U[k][j][i].d  = rho_at/drat;
 	pGrid->U[k][j][i].M1 = 0.0;
 	pGrid->U[k][j][i].M2 = 0.0;
@@ -122,14 +87,12 @@ void problem(DomainS *pDomain)
 	
 #ifdef ADIABATIC
 	pGrid->U[k][j][i].E = pow(rho_at,Gamma)*(c_s*c_s)/Gamma_1;  
-	  
-
 #endif
 #if (NSCALARS > 0)
 	pGrid->U[k][j][i].s[0] = 0.0;
 #endif
-     
 	
+	/* Within the inner boundary*/	
 	if (diag < Rb){
 	  pGrid->U[k][j][i].d  = rho_c*0.99;
 	  pGrid->U[k][j][i].M1 = 0.0;
@@ -139,15 +102,14 @@ void problem(DomainS *pDomain)
 #ifdef ADIABATIC
 	  pGrid->U[k][j][i].E = pr/Gamma_1;
 #endif
-
 	}else if (diag <= Rp) {
+
+	  /* Planet's atmosphere*/
           pGrid->U[k][j][i].d  = rho_c*exp((1/diag-1/Rb)/Hor2); 
-          pGrid->U[k][j][i].M1 =0.0;
+          pGrid->U[k][j][i].M1 = 0.0;
           pGrid->U[k][j][i].M2 = 0.0;
           pGrid->U[k][j][i].M3 = 0.0;
-	  prprev=pr;
 	  pr = pow(pGrid->U[k][j][i].d,Gamma)*(c_s*c_s);
-	  tempval = fmax(rho_at/drat*10,tempval);
 #ifdef ADIABATIC
 	  pGrid->U[k][j][i].E = pr/Gamma_1;
 #endif
@@ -156,10 +118,10 @@ void problem(DomainS *pDomain)
 #endif
 
         }
-
+	
       }
     }
-
+    
   }
   
 
@@ -219,8 +181,7 @@ void Userwork_in_loop(MeshS *pM)
 {
   Real x1, x2, x3, diag;
   int is,ie,js,je,ks,ke, nl, nd, i, j, k;
-  Real rho_at,p_at,T_at,p_c, pr;
-/* , rho_c, Hor2, c_s; */
+  Real pr;
   GridS *pGrid;
 
 
@@ -239,7 +200,7 @@ void Userwork_in_loop(MeshS *pM)
 	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
 	      diag = sqrt(x1*x1 + x2*x2 + x3*x3);
 	      
-	      
+	      /*Reset values within the boundary*/
 	      if (diag <= Rb ){
 		pGrid->U[k][j][i].d  = rho_c*0.99;
 		pGrid->U[k][j][i].M1 = 0.0;
@@ -249,7 +210,7 @@ void Userwork_in_loop(MeshS *pM)
 #ifdef ADIABATIC
 		pGrid->U[k][j][i].E = pr/Gamma_1;
 #endif
-		
+		/*also reset values up to 4 cells beyond Rb*/
 	      } else if (diag > Rb && diag<= Rb + 4. * pGrid->dx1){
 		pGrid->U[k][j][i].d  = rho_c*exp((1/diag-1/Rb)/Hor2);
 		pGrid->U[k][j][i].M1 =0.0;
@@ -292,46 +253,3 @@ static Real PlanetPot(const Real x1, const Real x2, const Real x3)
 }
 
 /*=========================== PRIVATE FUNCTIONS ==============================*/
-
-/*-----------------------------------------------------------------------------
- * shk_cloud_iib: sets boundary condition on left X boundary (iib)
- * Note quantities at this boundary are held fixed at the downstream state
- */
-
-void shk_cloud_iib(GridS *pGrid)
-{
-  int i=0,j=0,k=0;
-  int js,je,ks,ke;
-
-  js = pGrid->js; je = pGrid->je;
-  ks = pGrid->ks; ke = pGrid->ke;
-
-  for (k=ks; k<=ke; k++) {
-    for (j=js; j<=je; j++) {
-      for (i=1; i<=nghost; i++) {
-        pGrid->U[k][j][i].d  = dl;
-        pGrid->U[k][j][i].M1 = ul*dl;
-        pGrid->U[k][j][i].M2 = 0.0;
-        pGrid->U[k][j][i].M3 = 0.0;
-#ifdef MHD
-        pGrid->B1i[k][j][i] = bxl;
-        pGrid->B2i[k][j][i] = byl;
-        pGrid->B3i[k][j][i] = bzl;
-        pGrid->U[k][j][i].B1c = bxl;
-        pGrid->U[k][j][i].B2c = byl;
-        pGrid->U[k][j][i].B3c = bzl;
-#endif
-#ifdef ADIABATIC
-        pGrid->U[k][j][i].E = pl/Gamma_1
-#ifdef MHD
-          + 0.5*(bxl*bxl + byl*byl + bzl*bzl)
-#endif
-          + 0.5*dl*(ul*ul);
-#endif
-#if (NSCALARS > 0)
-        pGrid->U[k][j][i].s[0] = 0.0;
-#endif
-      }
-    }
-  }
-}
