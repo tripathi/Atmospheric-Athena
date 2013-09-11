@@ -62,7 +62,7 @@ void problem(DomainS *pDomain)
   drat = par_getd("problem","drat");
   
 /* Set up parameters for central part of "planet" */
-  Hor2=kb*T_at/(2*mH*Ggrav*Mp);
+  Hor2=kb*T_at/(mH*Ggrav*Mp);
   rho_c= rho_at*exp(-1/Hor2*(1/Rp - 1/Rb));
 		    
   c_s = sqrt(kb*T_at/(2*mH));
