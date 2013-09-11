@@ -3244,8 +3244,6 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	  rsf = ri[i+1]/r[i];  lsf = ri[i]/r[i];
 #endif
 	  pG->U[k][j][i].d  -= dtodx1*(rsf*x1Flux[k][j][i+1].d -lsf*x1Flux[k][j][i].d ) * fcorrect;
-	    if (k ==55 && j == 69 && i == 104)
-	      fprintf(stderr, " (after x SMOOTHING) My density at cell %d %d %d is %e, my RHS flux: %e, my LHS: %e, dtodx:%e, fcorrect: %f \n", k, j, i, pG->U[k][j][i].d, x1Flux[k][j][i+1].d, x1Flux[k][j][i].d, dtodx1, fcorrect );
 
 	  pG->U[k][j][i].M1 -= dtodx1*(rsf*x1Flux[k][j][i+1].Mx-lsf*x1Flux[k][j][i].Mx) * fcorrect;
 	  pG->U[k][j][i].M2 -= dtodx1*(SQR(rsf)*x1Flux[k][j][i+1].My-SQR(lsf)*x1Flux[k][j][i].My) * fcorrect;
@@ -3287,8 +3285,6 @@ the old value with the new value in the buffer zone. but the repetitive averagin
         dtodx2 = pG->dt/(r[i]*pG->dx2);
 #endif
         pG->U[k][j][i].d  -= dtodx2*(x2Flux[k][j+1][i].d -x2Flux[k][j][i].d ) * fcorrect;
-	    if (k ==55 && j == 69 && i == 104)
-	      fprintf(stderr, " (after y SMOOTHING) My density at cell %d %d %d is %e, my RHS flux: %e, my LHS: %e, dtodx:%e, fcorrect: %f \n", k, j, i, pG->U[k][j][i].d, x2Flux[k][j+1][i].d, x2Flux[k][j][i].d, dtodx2, fcorrect );
 
 
         pG->U[k][j][i].M1 -= dtodx2*(x2Flux[k][j+1][i].Mz-x2Flux[k][j][i].Mz) * fcorrect;
@@ -3328,9 +3324,6 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 	  }
 #endif	
 	  pG->U[k][j][i].d  -= dtodx3*(x3Flux[k+1][j][i].d -x3Flux[k][j][i].d ) * fcorrect;
-	    if (k ==55 && j == 69 && i == 104)
-	      fprintf(stderr, " (after z SMOOTHING) My density at cell %d %d %d is %e, my RHS flux: %e, my LHS: %e, dtodx:%e, fcorrect: %f \n", k, j, i, pG->U[k][j][i].d, x3Flux[k+1][j][i].d, x3Flux[k][j][i].d, dtodx3, fcorrect );
-
 	  pG->U[k][j][i].M1 -= dtodx3*(x3Flux[k+1][j][i].My-x3Flux[k][j][i].My) * fcorrect;
 	  pG->U[k][j][i].M2 -= dtodx3*(x3Flux[k+1][j][i].Mz-x3Flux[k][j][i].Mz) * fcorrect;
 	  pG->U[k][j][i].M3 -= dtodx3*(x3Flux[k+1][j][i].Mx-x3Flux[k][j][i].Mx) * fcorrect;
@@ -3344,9 +3337,6 @@ the old value with the new value in the buffer zone. but the repetitive averagin
 #endif
 #ifdef INNERB
 	  fcorrect = 0;
-	}
-	if (!(pG->U[k][j][i].d  >1e-17) && diag < 7e9) {
-	  fprintf(stderr, " (AFTER SMOOTHING) My density at cell %d %d %d is %e \n", k, j, i, pG->U[k][j][i].d ); 
 	}
 
 #endif
