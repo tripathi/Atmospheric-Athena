@@ -1,0 +1,150 @@
+<comment>
+problem = inner_boundary
+author  = kratter, tripathi
+journal =
+config  = --with-problem=inner_boundary-1
+
+<job>
+problem_id      = ibound      # problem ID: basename of output filenames
+maxout          = 3          # Output blocks number from 1 -> maxout
+num_domains     = 1          # number of Domains in Mesh
+
+<time>
+cour_no         = 0.4       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim            = 100000    # cycle limit
+tlim            = 2e10.       # time limit
+
+<output1>
+out_fmt = hst               # History data dump
+dt      = 1e6              # time increment between outputs
+
+<output2>
+out_fmt = vtk               # VTK data dump
+dt      = 0.01              # time increment between outputs
+
+
+<output3>
+out_fmt = bin      # bin image
+dt      = 0.01    # time step between outputs
+
+<output4>
+out_fmt = ppm      # ppm image
+dt      = 0.01     # time step between outputs
+out     = dyz
+id      = d
+palette = rainbow
+dmin    = 1.0      # min value for imaging color
+dmax    = 20.0     # max value for imaging color
+x1      = 0.0      # x3 value of slice
+
+#<output4>
+#out_fmt = ppm      # ppm image
+#dt      = 0.1	   # between outputs
+#out     = color
+#id      = color
+#usr_expr_flag = 1
+#palette = rainbow
+#dmin    = 0.0      # min value for imaging color
+#dmax    = 1.0      # max value for imaging color
+#x3      = 0.0      # x3 value of slice
+
+<domain1>
+level           = 0         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+x1min           = -.85e10      # minimum value of X
+x1max           = .85e10       # maximum value of X
+bc_ix1          = 2         # boundary condition flag for inner-I (X1) this one was 1 before for sp
+bc_ox1          = 2         # boundary condition flag for outer-I (X1) 
+NGrid_x1 	= 1
+AutoWithNProc 	= 0
+
+Nx2             = 128       # Number of zones in X2-direction
+x2min           = -.85e10       # minimum value of X2
+x2max           = .85e10       # maximum value of X2
+bc_ix2          = 2         # boundary condition flag for inner-J (X2)
+bc_ox2          = 2         # boundary condition flag for outer-J (X2)
+NGrid_x2	= 1
+
+Nx3             = 128        # Number of zones in X3-direction
+x3min           = -.85e10       # minimum value of X3
+x3max           = .85e10        # maximum value of X3
+bc_ix3          = 2         # boundary condition flag for inner-K (X3)
+bc_ox3          = 2         # boundary condition flag for outer-K (X3)
+NGrid_x3 	= 1
+
+
+<domain2>
+level           = 1         # refinement level this Domain (root=0)
+Nx1             = 32       # Number of zones in X1-direction
+Nx2             = 32        # Number of zones in X2-direction
+Nx3             = 32        # Number of zones in X3-direction
+iDisp           = 48       # i-displacement measured in cells of this level
+jDisp           = 48        # j-displacement measured in cells of this level
+kDisp           = 48        # k-displacement measured in cells of this level
+NGrid_x1	= 1
+NGrid_x2	= 1
+NGrid_x3	= 1
+
+<domain3>
+level           = 2         # refinement level this Domain (root=0)
+Nx1             = 48       # Number of zones in X1-direction
+Nx2             = 48        # Number of zones in X2-direction
+Nx3             = 48        # Number of zones in X3-direction
+iDisp           = 104        # i-displacement measured in cells of this level
+jDisp           = 104        # j-displacement measured in cells of this level
+kDisp           = 104        # k-displacement measured in cells of this level
+NGrid_x1	= 1
+NGrid_x2	= 1
+NGrid_x3	= 1
+
+<domain4>
+level           = 3         # refinement level this Domain (root=0)
+Nx1             = 64       # Number of zones in X1-direction
+Nx2             = 64        # Number of zones in X2-direction
+Nx3             = 64        # Number of zones in X3-direction
+iDisp           = 224        # i-displacement measured in cells of this level
+jDisp           = 224        # j-displacement measured in cells of this level
+kDisp           = 224        # k-displacement measured in cells of this level
+NGrid_x1	= 1
+NGrid_x2	= 1
+NGrid_x3	= 1
+
+<domain5>
+level           = 4         # refinement level this Domain (root=0)
+Nx1             = 96       # Number of zones in X1-direction
+Nx2             = 96        # Number of zones in X2-direction
+Nx3             = 96       # Number of zones in X3-direction
+iDisp           = 464        # i-displacement measured in cells of this level
+jDisp           = 464        # j-displacement measured in cells of this level
+kDisp           = 464        # k-displacement measured in cells of this level
+NGrid_x1	= 1
+NGrid_x2	= 1
+NGrid_x3	= 1
+
+<domain6>
+level           = 5         # refinement level this Domain (root=0)
+Nx1             = 128       # Number of zones in X1-direction
+Nx2             = 128        # Number of zones in X2-direction
+Nx3             = 128        # Number of zones in X3-direction
+iDisp           = 960        # i-displacement measured in cells of this level
+jDisp           = 960       # j-displacement measured in cells of this level
+kDisp           = 960        # k-displacement measured in cells of this level
+NGrid_x1	= 1
+NGrid_x2	= 1
+NGrid_x3	= 1
+
+
+<problem>
+
+gamma           = 1.000001   # gamma = C_p/C_v
+drat            = 1000.      # density ratio of 
+Mplanet 	= 1e30
+Xplanet 	= 0.0
+Yplanet 	= 0.0
+Zplanet 	= 0.0
+Rp		= 7.e9
+Rsoft 		= 1e8#0.01*1e10		#softening
+Rbound		= 6.e9		# dimensions of inner boundary
+T_at 		= 1000.		#isothermal initial temp
+rho_at 		= 1e-15	# edge of photosphere at Rp
+
