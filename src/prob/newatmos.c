@@ -25,19 +25,21 @@ void problem(DomainS *pDomain)
   int i=0,j=0,k=0;
   int is,ie,js,je,ks,ke,n;
   Real x1,x2,x3,rad;
-  Real G, M, cs, Rp, Rb, rho_atm, rho_c;
+  Real G, M, cs, Rp, Rb, rho_atm, rho_c, H;
 
   is = pGrid->is; ie = pGrid->ie;
   js = pGrid->js; je = pGrid->je;
   ks = pGrid->ks; ke = pGrid->ke;
-
+  
   G = 1.;
   M = 1.;
-  cs = 1.;
-  Rp = 4.;
-  Rb = 1.;
+  Rp = 1.;
+  H = .2 ; 
+  cs = sqrt(H/Gamma);
+  Rb = .4;
   rho_atm = 10.;
   rho_c = rho_atm/exp(G * M / cs /cs * (1/Rp - 1/Rb));
+
 
   fprintf(stderr, "Central: %f, Atmos : %f \n", rho_c, rho_atm);
 
@@ -57,19 +59,19 @@ void problem(DomainS *pDomain)
 	  {
 	    /* Inner constant */
 	    pGrid->U[k][j][i].d = rho_c;
-	    pGrid->U[k][j][i].E = rho_c * cs * cs;
+	    pGrid->U[k][j][i].E = rho_c * cs * cs / Gamma_1;
 	  }
 	else if ( rad > Rb && rad <= Rp) 
 	  {
 	    /* Atmosphere */
-	    pGrid->U[k][j][i].d = rho_c * exp(G * M / cs /cs * (1/rad - 1/Rb));    
-	    pGrid->U[k][j][i].E = pGrid->U[k][j][i].d * cs * cs;
+	    pGrid->U[k][j][i].d = rho_c * exp(G * M / Gamma/ cs /cs * (1/rad - 1/Rb));    
+	    pGrid->U[k][j][i].E = pGrid->U[k][j][i].d * cs * cs/ Gamma_1;
 	  }
 	else
 	  {
 	    /* Ambient gas */
 	    pGrid->U[k][j][i].d = .01;
-	    pGrid->U[k][j][i].E = rho_atm * cs * cs;
+	    pGrid->U[k][j][i].E = rho_atm * cs * cs / Gamma_1;
 	  }
       }
     }
@@ -129,7 +131,7 @@ void Userwork_in_loop(MeshS *pM)
   Real x1, x2, x3, rad;
   int is,ie,js,je,ks,ke, nl, nd, i, j, k;
   GridS *pGrid;
-  Real G, M, cs, Rp, Rb, rho_atm, rho_c;
+  Real G, M, cs, Rp, Rb, rho_atm, rho_c, H;
 
 
   for (nl=0; nl<(pM->NLevels); nl++){
@@ -143,9 +145,10 @@ void Userwork_in_loop(MeshS *pM)
 
 	G = 1.;
 	M = 1.;
-	cs = 1.;
-	Rp = 4.;
-	Rb = 1.;
+	Rp = 1.;
+	H = .2 ; 
+	cs = sqrt(H/Gamma);
+	Rb = .4;
 	rho_atm = 10.;
 	rho_c = rho_atm/exp(G * M / cs /cs * (1/Rp - 1/Rb));
   
@@ -159,7 +162,7 @@ void Userwork_in_loop(MeshS *pM)
 		{
 		  /* Inner constant */
 		  pGrid->U[k][j][i].d = rho_c;
-		  pGrid->U[k][j][i].E = rho_c * cs * cs;
+		  pGrid->U[k][j][i].E = rho_c * cs * cs/ (Gamma_1);
 		  pGrid->U[k][j][i].M1 = 0.0;
 		  pGrid->U[k][j][i].M2 = 0.0;
 		  pGrid->U[k][j][i].M3 = 0.0;
@@ -168,8 +171,8 @@ void Userwork_in_loop(MeshS *pM)
 	      else if ( rad > Rb && rad <= (Rb + 5. * pGrid->dx1) )
 		{
 		  /* Atmosphere */
-		  pGrid->U[k][j][i].d = rho_c * exp(G * M / cs /cs * (1/rad - 1/Rb));    
-		  pGrid->U[k][j][i].E = pGrid->U[k][j][i].d * cs * cs;
+		  pGrid->U[k][j][i].d = rho_c * exp(G * M / Gamma/ cs /cs * (1/rad - 1/Rb));    
+		  pGrid->U[k][j][i].E = pGrid->U[k][j][i].d * cs * cs / Gamma_1;
 		  pGrid->U[k][j][i].M1 = 0.0;
 		  pGrid->U[k][j][i].M2 = 0.0;
 		  pGrid->U[k][j][i].M3 = 0.0;
