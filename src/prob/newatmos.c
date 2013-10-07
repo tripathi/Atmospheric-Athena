@@ -4,7 +4,7 @@
  *  \brief Problem generator for a simple spherical hydrostatic atmosphere.
  *
  * PURPOSE: Problem generator for a simple spherical hydrostatic atmosphere.
- *
+ */
 /*============================================================================*/
 
 #include <math.h>
@@ -34,11 +34,11 @@ void problem(DomainS *pDomain)
   G = 1.;
   M = 1.;
   Rp = 1.;
-  H = .2 ; 
-  cs = sqrt(H/Gamma);
-  Rb = .4;
+  H = .3 ; 
+  Rb = .6;
+  cs = sqrt(H/Gamma/Rb/Rb);
   rho_atm = 10.;
-  rho_c = rho_atm/exp(G * M / cs /cs * (1/Rp - 1/Rb));
+  rho_c = rho_atm/exp(G * M / Gamma/ cs /cs * (1/Rp - 1/Rb));
 
 
   fprintf(stderr, "Central: %f, Atmos : %f \n", rho_c, rho_atm);
@@ -70,7 +70,7 @@ void problem(DomainS *pDomain)
 	else
 	  {
 	    /* Ambient gas */
-	    pGrid->U[k][j][i].d = .01;
+	    pGrid->U[k][j][i].d = 1.;
 	    pGrid->U[k][j][i].E = rho_atm * cs * cs / Gamma_1;
 	  }
       }
@@ -146,11 +146,11 @@ void Userwork_in_loop(MeshS *pM)
 	G = 1.;
 	M = 1.;
 	Rp = 1.;
-	H = .2 ; 
-	cs = sqrt(H/Gamma);
-	Rb = .4;
+	H = .3 ; 
+	Rb = .6;
+	cs = sqrt(H/Gamma/Rb/Rb);
 	rho_atm = 10.;
-	rho_c = rho_atm/exp(G * M / cs /cs * (1/Rp - 1/Rb));
+	rho_c = rho_atm/exp(G * M / Gamma/ cs /cs * (1/Rp - 1/Rb));
   
 	for (k=ks; k<=ke; k++) {
 	  for (j=js; j<=je; j++) {
@@ -197,7 +197,7 @@ static Real PlanetPot(const Real x1, const Real x2, const Real x3)
 {
   Real rad,phi=0.0;
   Real Ggrav=1;
-  Real Rsoft = .05;
+  Real Rsoft = .01;
   rad = sqrt(SQR(x1) + SQR(x2) + SQR(x3));
   
   phi = -1.0/(rad+Rsoft);
