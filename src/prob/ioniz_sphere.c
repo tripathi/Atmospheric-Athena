@@ -70,11 +70,12 @@ void problem(DomainS *pDomain)
   rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1/rp - 1/rin),powindex);
   rhoe= n_H * m_H;
 /* pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1./rp),powindex); */
-  fprintf(stderr, "Comparison with Xuening params: rho0: %e, rhoe : %e \n", rho0, rhoe);
+  /* fprintf(stderr, "Comparison with Xuening params: rho0: %e, rhop: %e,  rhoe : %e \n", rho0, rhop, rhoe); */
 
   /* integration constant */
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
+  /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 
   /* Power-law pressure and density */
   for (k=ks; k<=ke+1; k++) {
@@ -90,6 +91,8 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].d = rhoe; /*AT: Should be changed to indpt athinput file I.C. */
 	  myrho = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
 	  pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1;
+	  fprintf(stderr,"myrho: %e, cs2myrho: %e, rhoout: %e, csinsq: %e csoutsq %e \n",  myrho, pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/myrho, pGrid->U[k][j][i].E * Gamma_1/pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/ pGrid->U[k][j][i].d);
+	  /* fprintf(stderr, "rad/radout: %f, dens: %f, rhoout: %f, powindex %f energ: %f \n", rad/rout, pGrid->U[k][j][i].d, Gamma_1/Gamma*GM/K/rout + Cp, powindex, pGrid->U[k][j][i].E); */
 	} else {
 	  myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
 	  pGrid->U[k][j][i].d  = MIN(rho0,myrho);
