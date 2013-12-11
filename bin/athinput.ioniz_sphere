@@ -18,6 +18,7 @@ dt      =1e2             # time increment between outputs
 
 <output2>
 out_fmt = vtk      # bin image
+out     = prim
 dt      = 1.0e1    # time step between outputs
 
 <output3>
