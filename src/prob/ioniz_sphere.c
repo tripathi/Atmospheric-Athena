@@ -91,7 +91,7 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].d = rhoe; /*AT: Should be changed to indpt athinput file I.C. */
 	  myrho = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
 	  pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1;
-	  fprintf(stderr,"myrho: %e, cs2myrho: %e, rhoout: %e, csinsq: %e csoutsq %e \n",  myrho, pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/myrho, pGrid->U[k][j][i].E * Gamma_1/pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/ pGrid->U[k][j][i].d);
+	  /*	  fprintf(stderr,"myrho: %e, cs2myrho: %e, rhoout: %e, csinsq: %e csoutsq %e \n",  myrho, pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/myrho, pGrid->U[k][j][i].E * Gamma_1/pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/ pGrid->U[k][j][i].d);*/
 	  /* fprintf(stderr, "rad/radout: %f, dens: %f, rhoout: %f, powindex %f energ: %f \n", rad/rout, pGrid->U[k][j][i].d, Gamma_1/Gamma*GM/K/rout + Cp, powindex, pGrid->U[k][j][i].E); */
 	} else {
 	  myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
