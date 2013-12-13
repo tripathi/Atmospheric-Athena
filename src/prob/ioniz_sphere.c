@@ -59,7 +59,7 @@ void problem(DomainS *pDomain)
   rhop = np * m_H;
   Rsoft= pGrid->dx1;
 
-  rin = 0.6*rp;
+  rin = 0.5*rp;
   rreset = 0.75*rp;
   rout = rp;
     
@@ -70,8 +70,8 @@ void problem(DomainS *pDomain)
     ath_error("[sphere]: At least 5 cells needed for reconstruction");
   
 
-  rin  = rp - 5.0*pGrid->dx1; /*What I refer to as r0*/
-  rout = rp + 15.0*pGrid->dx1; 
+  /* rin  = rp - 5.0*pGrid->dx1; /\*What I refer to as r0*\/ */
+  /* rout = rp + 15.0*pGrid->dx1;  */
 
   powindex   = 1.0/Gamma_1;
 
@@ -80,7 +80,8 @@ void problem(DomainS *pDomain)
 
   /*Density at inner boundary */
   rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1/rp - 1/rin),powindex);
-  rhoe= n_H * m_H;
+  rhoe = pow(Gamma_1/Gamma*GM/K/(1.1*rp) + Cp,powindex);
+  /*  rhoe= n_H * m_H;*/
 /* pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1./rp),powindex); */
   /* fprintf(stderr, "Comparison with Xuening params: rho0: %e, rhop: %e,  rhoe : %e \n", rho0, rhop, rhoe); */
 
