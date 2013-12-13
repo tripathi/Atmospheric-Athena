@@ -18,7 +18,7 @@
 #define TII 1.0e4
 #define ALPHA4 2.59e-13
 
-static Real GM,K,Cp,rp,rin,rout,rho0,Rsoft;
+static Real GM,K,Cp,rp,rin,rout,rreset,rho0,Rsoft;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
 
 void problem(DomainS *pDomain)
@@ -58,6 +58,18 @@ void problem(DomainS *pDomain)
   GM = Ggrav * mp;
   rhop = np * m_H;
   Rsoft= pGrid->dx1;
+
+  rin = 0.6*rp;
+  rreset = 0.75*rp;
+  rout = rp;
+    
+
+  if ((rout - rreset) < 5.0*pGrid->dx1)
+    ath_error("[sphere]: Insufficient separation between reset and outer radii");
+  if ((rreset - rin) < 5.0*pGrid->dx1)
+    ath_error("[sphere]: At least 5 cells needed for reconstruction");
+  
+
   rin  = rp - 5.0*pGrid->dx1; /*What I refer to as r0*/
   rout = rp + 15.0*pGrid->dx1; 
 
@@ -181,7 +193,7 @@ void Userwork_in_loop(MeshS *pM)
 	      rad = sqrt(x1*x1 + x2*x2 + x3*x3);
 
 	      /*Reset values within the boundary*/
-	      if (rad <= rp) { /*AT: May need to change this to a smaller r*/
+	      if (rad <= rreset) { /*AT: May need to change this to a smaller r*/
 		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
 		myrho = MIN(myrho, rho0);
 		pGrid->U[k][j][i].d  = myrho;
