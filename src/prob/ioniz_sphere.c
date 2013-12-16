@@ -18,7 +18,7 @@
 #define TII 1.0e4
 #define ALPHA4 2.59e-13
 
-static Real GM,K,Cp,rp,rin,rout,rreset,rho0,Rsoft;
+static Real GM,K,Cp,rp,rreset,rho0,Rsoft;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
 
 void problem(DomainS *pDomain)
@@ -33,7 +33,8 @@ void problem(DomainS *pDomain)
 
   Real x1,x2,x3; /*For setting up atmos*/
   Real rad,myrho,rhop,powindex,Ggrav; /*For setting up atmos*/
-  Real rhoe, np, mp; /*For setting up atmos*/
+  Real rhoout, np, mp; /*For setting up atmos*/
+  Real rin, rout;
 
   /* Set up ionizing source at box edge. 
    * The user-input parameters are n_H (initial density),
@@ -61,7 +62,7 @@ void problem(DomainS *pDomain)
 
   rin = 0.5*rp;
   rreset = 0.75*rp;
-  rout = rp;
+  rout = 1.33*rp;
     
 
   if ((rout - rreset) < 5.0*pGrid->dx1)
@@ -80,13 +81,12 @@ void problem(DomainS *pDomain)
 
   /*Density at inner boundary */
   rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1/rp - 1/rin),powindex);
-  rhoe = pow(Gamma_1/Gamma*GM/K/(1.1*rp) + Cp,powindex);
-  /*  rhoe= n_H * m_H;*/
-/* pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1./rp),powindex); */
-  /* fprintf(stderr, "Comparison with Xuening params: rho0: %e, rhop: %e,  rhoe : %e \n", rho0, rhop, rhoe); */
 
   /* integration constant */
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
+
+  /*Density at atmosphere's edge*/
+  rhoout = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
 
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 
@@ -100,18 +100,15 @@ void problem(DomainS *pDomain)
 	pGrid->U[k][j][i].M2 = 0.0;
 	pGrid->U[k][j][i].M3 = 0.0;
 
-	if (rad > rout) {
-	  pGrid->U[k][j][i].d = rhoe; /*AT: Should be changed to indpt athinput file I.C. */
-	  myrho = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
-	  pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1;
-	  /*	  fprintf(stderr,"myrho: %e, cs2myrho: %e, rhoout: %e, csinsq: %e csoutsq %e \n",  myrho, pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/myrho, pGrid->U[k][j][i].E * Gamma_1/pow(Gamma_1/Gamma*GM/K/rout + Cp, powindex), pGrid->U[k][j][i].E * Gamma_1/ pGrid->U[k][j][i].d);*/
-	  /* fprintf(stderr, "rad/radout: %f, dens: %f, rhoout: %f, powindex %f energ: %f \n", rad/rout, pGrid->U[k][j][i].d, Gamma_1/Gamma*GM/K/rout + Cp, powindex, pGrid->U[k][j][i].E); */
+	if (rad <= rin){
+	  pGrid->U[k][j][i].d  = rho0;
+	} else if (rad >= rout){
+	  pGrid->U[k][j][i].d  = rhoout;
 	} else {
-	  myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
-	  pGrid->U[k][j][i].d  = MIN(rho0,myrho);
-	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
+	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
 	}
-	pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
+      pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
+      pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
       }
     }
   }
