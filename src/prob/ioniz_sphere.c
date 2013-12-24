@@ -80,13 +80,14 @@ void problem(DomainS *pDomain)
   K  = pow(rhop,-Gamma_1)*cs*cs;
 
   /*Density at inner boundary */
-  rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1/rp - 1/rin),powindex);
+  rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1.0/rp - 1.0/rin),powindex);
 
   /* integration constant */
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
   /*Density at atmosphere's edge*/
   rhoout = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
+  fprintf(stderr, "rhoout %e, rhoe:%e \n", rhoout/10000.);
 
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 
@@ -102,12 +103,14 @@ void problem(DomainS *pDomain)
 
 	if (rad <= rin){
 	  pGrid->U[k][j][i].d  = rho0;
-	} else if (rad >= rout){
-	  pGrid->U[k][j][i].d  = rhoout;
+	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
+	} else if (rad > rout){
+	  pGrid->U[k][j][i].d  = rhoout/10000.;
+	  pGrid->U[k][j][i].E  = K*pow(rhoout,Gamma)/Gamma_1;
 	} else {
 	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
+	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
 	}
-      pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
       pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
       }
     }
