@@ -62,7 +62,7 @@ void problem(DomainS *pDomain)
 
   rin = 0.5*rp;
   rreset = 0.75*rp;
-  rout = 1.33*rp;
+  rout = 1.*rp;
     
 
   if ((rout - rreset) < 5.0*pGrid->dx1)
