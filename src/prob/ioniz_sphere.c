@@ -87,7 +87,7 @@ void problem(DomainS *pDomain)
 
   /*Density at atmosphere's edge*/
   rhoout = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
-  fprintf(stderr, "rhoout %e, rhoe:%e \n", rhoout/10000.);
+  /* fprintf(stderr, "rhoout %e \n", rhoout/10000.); */
 
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 
