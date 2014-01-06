@@ -18,7 +18,8 @@
 #define TII 1.0e4
 #define ALPHA4 2.59e-13
 
-static Real GM,K,Cp,rp,rreset,rho0,Rsoft;
+static int radplanecount;
+static Real GM,K,Cp,rp,rreset,rho0,Rsoft, trad, flux;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
 
 void problem(DomainS *pDomain)
@@ -27,8 +28,7 @@ void problem(DomainS *pDomain)
   int i, is = pGrid->is, ie = pGrid->ie;
   int j, js = pGrid->js, je = pGrid->je;
   int k, ks = pGrid->ks, ke = pGrid->ke;
-  int radplanecount =0;
-  Real cs, n_H, m_H, flux;
+  Real cs, n_H, m_H;
   Real rho, pressure;
 
   Real x1,x2,x3; /*For setting up atmos*/
@@ -39,13 +39,16 @@ void problem(DomainS *pDomain)
   /* Set up ionizing source at box edge. 
    * The user-input parameters are n_H (initial density),
    * cs (initial sound speed in neutral gas), flux (ionizing flux,
-   * in units of photons per unit time per unit area).
+   * in units of photons per unit time per unit area), and trad
+   * (the onset time of radiation).
    */
+  trad = par_getd("problem", "trad");
   m_H = par_getd("ionradiation", "m_H");
   n_H = par_getd("problem","n_H");
   cs = par_getd("problem","cs");
   flux = par_getd("problem","flux");
 
+  radplanecount =0;
   
   /*Set up planet atmosphere.
    * User-input params are rp (planet radius),
@@ -120,14 +123,17 @@ void problem(DomainS *pDomain)
   /*   if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){ */
   /*     ath_pout(0,"On domain level %d, number %d: Adding radiator on root domain \n",  pDomain->Level, pDomain->DomNumber); */
   
-   if (radplanecount == par_geti("problem","nradplanes")) {
-      ath_error("Invalid number of radplanes specified in input file\n");
+   if (par_geti("problem","nradplanes") == radplanecount) {
+      ath_error("Zero radplanes specified in input file\n");
     }
-   if (radplanecount != par_geti("problem","nradplanes")) {
-      add_radplane_3d(pGrid, -1, flux);
+   if (par_geti("problem","nradplanes") != radplanecount) {
       radplanecount++;
       if (radplanecount != par_geti("problem","nradplanes")) {
-	ath_error("Invalid number of radplanes specified in input file\n");
+	ath_error("More than 1 radplane specified in input file. Unable to add requested radplane\n");
+      }
+      if (radplanecount == 1 && trad < TINY_NUMBER) {
+	add_radplane_3d(pGrid, -1, flux);
+	radplanecount = 0;
       }
     }
 /*   } */
@@ -209,6 +215,9 @@ void Userwork_in_loop(MeshS *pM)
       }
     }
   }
+
+  if (radplanecount == 1 && pM->time > trad) 
+      add_radplane_3d(pGrid, -1, flux);
   return;
 }
 
