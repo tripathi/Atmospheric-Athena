@@ -208,6 +208,7 @@ void Userwork_in_loop(MeshS *pM)
 		pGrid->U[k][j][i].M2 = 0.0;
 		pGrid->U[k][j][i].M3 = 0.0;
 		pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1; 
+		pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
 	      }
 	    }
 	  }
