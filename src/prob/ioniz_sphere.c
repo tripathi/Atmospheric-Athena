@@ -65,13 +65,8 @@ void problem(DomainS *pDomain)
 
   rin = 0.5*rp;
   rreset = 0.75*rp;
-  rout = 1.*rp;
     
 
-  if ((rout - rreset) < 5.0*pGrid->dx1)
-    ath_error("[sphere]: Insufficient separation between reset and outer radii");
-  if ((rreset - rin) < 5.0*pGrid->dx1)
-    ath_error("[sphere]: At least 5 cells needed for reconstruction");
   
 
   /* rin  = rp - 5.0*pGrid->dx1; /\*What I refer to as r0*\/ */
@@ -88,8 +83,18 @@ void problem(DomainS *pDomain)
   /* integration constant */
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
+  /*Outer (density matching) radius for ambient gas*/
+  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhop/10000, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin);
+
+
+  if ((rout - rreset) < 5.0*pGrid->dx1)
+    ath_error("[sphere]: Insufficient separation between reset and outer radii");
+  if ((rreset - rin) < 5.0*pGrid->dx1)
+    ath_error("[sphere]: At least 5 cells needed for reconstruction");
+
   /*Density at atmosphere's edge*/
-  rhoout = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex);
+  rhoout = rhop/10000;
+/* pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex); */
   /* fprintf(stderr, "rhoout %e \n", rhoout/10000.); */
 
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
@@ -108,7 +113,7 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].d  = rho0;
 	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
 	} else if (rad > rout){
-	  pGrid->U[k][j][i].d  = rhoout/10000.;
+	  pGrid->U[k][j][i].d  = rhoout;
 	  pGrid->U[k][j][i].E  = K*pow(rhoout,Gamma)/Gamma_1;
 	} else {
 	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
