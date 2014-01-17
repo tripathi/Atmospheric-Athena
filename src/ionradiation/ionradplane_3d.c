@@ -31,6 +31,7 @@
 
 #ifdef ION_RADPLANE
 
+/*AT: Not currently used, replaced by bvals_ionrad */
 /* Initialized number of radiation planes to zero */
 void ion_radplane_init_domain_3d(GridS *pG, DomainS *pD) {
 /*   int i, j, k; */
@@ -52,7 +53,7 @@ void ion_radplane_init_domain_3d(GridS *pG, DomainS *pD) {
 void add_radplane_3d(GridS *pGrid, int dir, Real flux) {
   MeshS *pMesh = pGrid->Mesh;
   int counter = 0;
-/*   (pMesh->radplanelist)->nradplane++; */
+  (pMesh->radplanelist)->nradplane++;
   (pMesh->radplanelist)->dir[counter] = dir;
   counter++;
   (pMesh->radplanelist)->flux_i = flux;
