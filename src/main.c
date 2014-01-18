@@ -536,21 +536,28 @@ int main(int argc, char *argv[])
     /* Note that we do the ionizing radiative transfer step first
        because it is capable of decreasing the time step relative to
        the value computed by Courant. */
-    clear_coarse_time();
-    for (nl=0; nl<(Mesh.NLevels); nl++){
-      for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
-        if (Mesh.Domain[nl][nd].Grid != NULL){
-	  (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
-	  bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
+
+    if (Mesh.radplanelist[0].nradplane > 0) {
+      printf("Entering ioniz loop at time %e \n", Mesh.time);
+
+      clear_coarse_time();
+      for (nl=0; nl<(Mesh.NLevels); nl++){
+	for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
+	  if (Mesh.Domain[nl][nd].Grid != NULL){
+	    (*IonRadTransfer)(&(Mesh.Domain[nl][nd]));
+	    bvals_mhd(&(Mesh.Domain[nl][nd]));/* Re-apply hydro bc's. */
+	  }
+	  if (nl==0) set_coarse_time();
 	}
-	if (nl==0) set_coarse_time();
       }
-    }
 
 /* With SMR, restrict solution from Child --> Parent grids  */
 /* after updating the fine grids' ionizing flux */
 #ifdef STATIC_MESH_REFINEMENT
     ionradRestrictCorrect(&Mesh);
+    }
+#else
+    }
 #endif
 
 

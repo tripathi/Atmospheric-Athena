@@ -137,6 +137,7 @@ void problem(DomainS *pDomain)
 	ath_error("More than 1 radplane specified in input file. Unable to add requested radplane\n");
       }
       if (radplanecount == 1 && trad < TINY_NUMBER) {
+	fprintf(stderr,"I'm in here  because trad is %g \n", trad);
 	add_radplane_3d(pGrid, -1, flux);
 	radplanecount = 0;
       }
@@ -222,8 +223,10 @@ void Userwork_in_loop(MeshS *pM)
     }
   }
 
-  if (radplanecount == 1 && pM->time > trad) 
-      add_radplane_3d(pGrid, -1, flux);
+  if (radplanecount == 1 && pM->time > trad)  {
+    add_radplane_3d(pGrid, -1, flux);
+    radplanecount = -999; /*To avoid entering this loop again*/
+  }
   return;
 }
 
