@@ -3,7 +3,7 @@ problem = Planar ionizating radiation
 
 <job>
 problem_id      = ifront     # problem ID: basename of output filenames
-maxout          = 2          # Output blocks number from 1 -> maxout
+maxout          = 3          # Output blocks number from 1 -> maxout
 num_domains     = 1          # number of Domains in Mesh
 
 <time>
@@ -17,10 +17,11 @@ dt      = 2.89e11              # time increment between outputs
 
 <output2>
 out_fmt = vtk      # bin image
+out     = cons
 dt      = 2.89e11    # time step between outputs
 
 <output3>
-out_fmt = rst      # Restart dump
+out_fmt = bin      # Restart dump
 dt      = 2.89e11      #time increment between outputs
 
 
@@ -29,7 +30,7 @@ level           = 0         # refinement level this Domain (root=0)
 Nx1             = 64        # Number of zones in X1-direction
 x1min           = -1.5e19   # minimum value of X
 x1max           = 1.5e19    # maximum value of X
-bc_ix1          = 2         # boundary condition flag for inner-I (X1)
+bc_ix1          = 1         # boundary condition flag for inner-I (X1)
 bc_ox1          = 2         # boundary condition flag for outer-I (X1)
 
 Nx2             = 64        # Number of zones in X2-direction
@@ -65,5 +66,9 @@ maxiter = 100
 <problem>
 n_H = 63.0
 cs = 5.74e4
-flux = 3.67e8
+flux = 3.67e9
 gamma = 1.666666666667
+nradplanes = 1 
+Bx = 0
+By = 0
+Bz = 0
