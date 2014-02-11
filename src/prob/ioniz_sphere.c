@@ -84,8 +84,8 @@ void problem(DomainS *pDomain)
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
   /*Outer (density matching) radius for ambient gas*/
-  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhop/10000, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin);
-
+  /* rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhop/10000, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); */
+  rout = rp;
 
   if ((rout - rreset) < 5.0*pGrid->dx1)
     ath_error("[sphere]: Insufficient separation between reset and outer radii");
@@ -96,7 +96,7 @@ void problem(DomainS *pDomain)
   rhoout = rhop/10000;
 /* pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex); */
   /* fprintf(stderr, "rhoout %e \n", rhoout/10000.); */
-
+  /* fprintf(stderr, "K : %e, Cp: %e rho0:%e \n", K, Cp, rho0); */
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 
   /* Power-law pressure and density */
@@ -114,7 +114,7 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
 	} else if (rad > rout){
 	  pGrid->U[k][j][i].d  = rhoout;
-	  pGrid->U[k][j][i].E  = K*pow(rhoout,Gamma)/Gamma_1;
+	  pGrid->U[k][j][i].E  = K*pow(rhop,Gamma)/Gamma_1;
 	} else {
 	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
 	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;

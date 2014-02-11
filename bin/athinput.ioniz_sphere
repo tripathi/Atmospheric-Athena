@@ -4,7 +4,7 @@ problem = Planar ionizating radiation
 
 <job>
 problem_id      = smr_exploding     # problem ID: basename of output filenames
-maxout          = 3          # Output blocks number from 1 -> maxout
+maxout          = 2          # Output blocks number from 1 -> maxout
 num_domains     = 1          # number of Domains in Mesh
 
 <time>
@@ -19,11 +19,11 @@ dt      =1e2             # time increment between outputs
 <output2>
 out_fmt = vtk      # bin image
 out     = prim
-dt      = 1.0e1    # time step between outputs
+dt      = 2.0e1    # time step between outputs
 
 <output3>
 out_fmt = bin      # bin image
-dt      = 1.0e1    # time step between outputs
+dt      = 2.0e1    # time step between outputs
 
 <domain1>
 level           = 0         # refinement level this Domain (root=0)
@@ -33,7 +33,7 @@ x1max           = 2.4e10    # maximum value of X
 bc_ix1          = 1         # boundary condition flag for inner-I (X1)
 bc_ox1          = 2         # boundary condition flag for outer-I (X1)
 NGrid_x1        = 1         # with MPI, number of Grids in X1 coordinate
-AutoWithNProc   = 1         # set to Nproc for auto domain decomposition
+AutoWithNProc   = 6         # set to Nproc for auto domain decomposition
 
 Nx2             = 256        # Number of zones in X2-direction
 x2min           = -2.4e10   # minimum value of X2
@@ -102,3 +102,4 @@ nradplanes = 1	#Ensure that this matches the number of calls to addradplane in i
 rp = 1.5e10
 mp = 1.0e30
 np = 6.0e8
+trad = 100000
