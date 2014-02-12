@@ -87,10 +87,10 @@ void problem(DomainS *pDomain)
   /* rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhop/10000, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); */
   rout = rp;
 
-  if ((rout - rreset) < 5.0*pGrid->dx1)
-    ath_error("[sphere]: Insufficient separation between reset and outer radii");
-  if ((rreset - rin) < 5.0*pGrid->dx1)
-    ath_error("[sphere]: At least 5 cells needed for reconstruction");
+  /* if ((rout - rreset) < 5.0*pGrid->dx1) */
+  /*   ath_error("[sphere]: Insufficient separation between reset and outer radii"); */
+  /* if ((rreset - rin) < 5.0*pGrid->dx1) */
+  /*   ath_error("[sphere]: At least 5 cells needed for reconstruction"); */
 
   /*Density at atmosphere's edge*/
   rhoout = rhop/10000;
