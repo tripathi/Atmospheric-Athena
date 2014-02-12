@@ -18,7 +18,7 @@
 #define TII 1.0e4
 #define ALPHA4 2.59e-13
 
-static int radplanecount;
+/* static int radplanecount; */
 static Real GM,K,Cp,rp,rreset,rho0,Rsoft, trad, flux;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
 
@@ -36,19 +36,20 @@ void problem(DomainS *pDomain)
   Real rhoout, np, mp; /*For setting up atmos*/
   Real rin, rout;
 
+  int radplanecount =0;
+
+
   /* Set up ionizing source at box edge. 
    * The user-input parameters are n_H (initial density),
    * cs (initial sound speed in neutral gas), flux (ionizing flux,
    * in units of photons per unit time per unit area), and trad
    * (the onset time of radiation).
    */
-  trad = par_getd("problem", "trad");
   m_H = par_getd("ionradiation", "m_H");
   n_H = par_getd("problem","n_H");
   cs = par_getd("problem","cs");
   flux = par_getd("problem","flux");
 
-  radplanecount =0;
   
   /*Set up planet atmosphere.
    * User-input params are rp (planet radius),
@@ -133,6 +134,7 @@ void problem(DomainS *pDomain)
     }
    if (par_geti("problem","nradplanes") != radplanecount) {
       radplanecount++;
+      trad = par_getd("problem", "trad");
       if (radplanecount != par_geti("problem","nradplanes")) {
 	ath_error("More than 1 radplane specified in input file. Unable to add requested radplane\n");
       }
@@ -140,6 +142,8 @@ void problem(DomainS *pDomain)
 	fprintf(stderr,"I'm in here  because trad is %g \n", trad);
 	add_radplane_3d(pGrid, -1, flux);
 	radplanecount = 0;
+      } else if (trad >= TINY_NUMBER){
+	ath_error("Delaying ionization not currently enabled for use with SMR + MPI \n");
       }
     }
 /*   } */
@@ -223,10 +227,10 @@ void Userwork_in_loop(MeshS *pM)
     }
   }
 
-  if (radplanecount == 1 && pM->time > trad)  {
-    add_radplane_3d(pGrid, -1, flux);
-    radplanecount = -999; /*To avoid entering this loop again*/
-  }
+  /* if (pM->time > trad)  { */
+  /*   add_radplane_3d(pGrid, -1, flux); */
+  /*   radplanecount = -999; /\*To avoid entering this loop again*\/ */
+  /* } */
   return;
 }
 
