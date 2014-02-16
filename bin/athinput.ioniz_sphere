@@ -3,7 +3,7 @@
 problem = Planar ionizating radiation
 
 <job>
-problem_id      = smr_exploding     # problem ID: basename of output filenames
+problem_id      = ioniz_sphere     # problem ID: basename of output filenames
 maxout          = 3          # Output blocks number from 1 -> maxout
 num_domains     = 4          # number of Domains in Mesh
 
