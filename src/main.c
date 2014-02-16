@@ -538,7 +538,7 @@ int main(int argc, char *argv[])
        the value computed by Courant. */
 
     if (Mesh.radplanelist[0].nradplane > 0) {
-      printf("Entering ioniz loop at time %e \n", Mesh.time);
+      /* printf("Entering ioniz loop at time %e \n", Mesh.time); */
 
       clear_coarse_time();
       for (nl=0; nl<(Mesh.NLevels); nl++){

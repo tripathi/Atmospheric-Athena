@@ -118,8 +118,8 @@ void init_mesh(MeshS *pM)
 
   numberradplanes = par_geti("problem","nradplanes");
   printf("nradplanes %d \n", numberradplanes);
-  (pM->radplanelist)->nradplane=0;
-  /* (pM->radplanelist)->nradplane = numberradplanes; */
+  (pM->radplanelist)->nradplane = numberradplanes;
+  /* (pM->radplanelist)->nradplane=0; */
   /* fprintf(stderr, "Initialize me %d \n", (pM->radplanelist)->nradplane); */
   (pM->radplanelist)->dir = (int*)calloc_1d_array(numberradplanes,sizeof(int));
   if ((pM->radplanelist)->dir == NULL)
