@@ -103,7 +103,7 @@ max_de_step = 10.0
 max_de_therm_step = 10.0
 max_dx_step = 10.0
 tfloor = 20.0
-tceil = 10e5
+tceil = 10e8
 maxiter = 100000000.
 
 <problem>
