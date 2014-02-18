@@ -128,7 +128,7 @@ void problem(DomainS *pDomain)
   /* Radiation originating from root domain edge */
   /*   if ((pDomain->Level == 0) && (pDomain->DomNumber==0)){ */
   /*     ath_pout(0,"On domain level %d, number %d: Adding radiator on root domain \n",  pDomain->Level, pDomain->DomNumber); */
-  
+#ifdef ION_RADIATION  
    if (par_geti("problem","nradplanes") == radplanecount) {
       ath_error("Zero radplanes specified in input file\n");
     }
@@ -145,7 +145,8 @@ void problem(DomainS *pDomain)
       } else if (trad >= TINY_NUMBER){
 	ath_error("Delaying ionization not currently enabled for use with SMR + MPI \n");
       }
-    }
+   }
+#endif
 /*   } */
 /*   else {ath_pout(0,"On domain level %d, number %d: Not adding a radiator plane\n", pDomain->Level, pDomain->DomNumber);} */
 
