@@ -14,10 +14,10 @@ tlim            = 1e4			 	 # time limit
 
 <output1>
 out_fmt = hst               # History data dump
-dt      =5e1             # time increment between outputs
+dt      = 5e1             # time increment between outputs
 
 <output2>
-out_fmt = vtk      # bin image
+out_fmt = vtk      #vtk image
 out     = prim
 dt      = 5.0e1    # time step between outputs
 
@@ -25,6 +25,14 @@ dt      = 5.0e1    # time step between outputs
 out_fmt = bin      # bin image
 out     = cons
 dt      = 1.0e2    # time step between outputs
+
+<output4>
+usr_expr_flag = 1
+out_fmt = vtk      # vtk image
+id      = flux
+out     = flux
+dt      = 5.0e1    # time step between outputs
+
 
 <domain1>
 level           = 0         # refinement level this Domain (root=0)
