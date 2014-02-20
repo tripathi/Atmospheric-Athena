@@ -21,6 +21,7 @@
 /* static int radplanecount; */
 static Real GM,K,Cp,rp,rreset,rho0,Rsoft, trad, flux;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
+static Real print_flux(const GridS *pG, const int i, const int j, const int k);
 
 void problem(DomainS *pDomain)
 {
@@ -180,6 +181,11 @@ void problem_read_restart(MeshS *pM, FILE *fp)
 
 ConsFun_t get_usr_expr(const char *expr)
 {
+#ifndef ION_RADIATION
+  fprintf(stdout, "Ion radiation not turned on. Cannot output flux. \n");
+#else
+  if(strcmp(expr,"flux")==0) return print_flux;
+#endif
   return NULL;
 }
 
@@ -248,3 +254,16 @@ static Real PlanetPot(const Real x1, const Real x2, const Real x3)
   Real rad = sqrt(SQR(x1)+SQR(x2)+SQR(x3));
   return -GM/(rad+Rsoft);
 }
+
+#ifdef ION_RADIATION
+/*----------------------------------------------------------------------------*/
+/*! \fn static print_flux(const Grid *pG,const int i,const int j,
+ *      const int k)
+ *  \brief Returns flux
+ */
+
+static Real print_flux(const GridS *pG, const int i, const int j, const int k)
+{
+  return (pG->EdgeFlux[k-pG->ks][j-pG->js][i-pG->is]);
+}
+#endif
