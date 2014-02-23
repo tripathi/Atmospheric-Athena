@@ -333,8 +333,10 @@ Real compute_chem_rates(DomainS *pDomain)
 	/* Get rate of change of neutral density */
 	nHdot[k][j][i] = 
 	  recomb_rate_coef(T) * time_unit * n_e * n_Hplus
-	  - ph_rate[k][j][i] * n_H
-	  - coll_ion_rate_coef(T) * time_unit * n_e * n_H;
+	  - ph_rate[k][j][i] * n_H;
+	
+	/* AT 2/23/14: Removing collisional ionization*/
+	/* - coll_ion_rate_coef(T) * time_unit * n_e * n_H; */
 
 	/* Check if the sign has flipped -- oscillatory overstability
 	   check */
@@ -475,13 +477,15 @@ Real compute_therm_rates(DomainS *pDomain)
 	   in cells with < COOLFRAC or > 1 - COOLFRAC ionization fraction, to
 	   avoid artificial over-cooling in mixed or transition cells. */
 	edot[k][j][i] = ph_rate[k][j][i] * e_gamma * n_H
-	  - osterbrock_cool_rate(T) * n_e*n_Hplus
+	  /* AT 2/23/14: Removing metal cooling*/
+	  /* - osterbrock_cool_rate(T) * n_e*n_Hplus */
 	  + recomb_cool_rate_coef(T) * time_unit * n_Hplus * n_e;
-	if ((n_Hplus / (n_H+n_Hplus) < COOLFRAC) || 
-	    (n_Hplus / (n_H+n_Hplus) > 1.0-COOLFRAC)) {
-	  edot[k][j][i] += ki_heat_rate() * time_unit * n_H
-	    - ki_cool_rate(T) * time_unit * n_H * n_H;
-	}
+	/* AT 2/23/14: Removing molecular terms*/
+	/* if ((n_Hplus / (n_H+n_Hplus) < COOLFRAC) ||  */
+	/*     (n_Hplus / (n_H+n_Hplus) > 1.0-COOLFRAC)) { */
+	/*   edot[k][j][i] += ki_heat_rate() * time_unit * n_H */
+	/*     - ki_cool_rate(T) * time_unit * n_H * n_H; */
+	/* } */
 
 	/* Compute thermal time step for this cell and find the
 	   min. Note that, if we're cooling, we need to take into
