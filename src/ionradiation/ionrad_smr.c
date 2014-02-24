@@ -64,7 +64,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 #endif
 
 
-  fprintf (stderr, "Level: %d Grid disp : %d \n", level, pGrid->Disp[0]);
+  /* fprintf (stderr, "Level: %d Grid disp : %d \n", level, pGrid->Disp[0]); */
 /*Find my parent grid overlap structure(s if MPI) to receive data from it*/
   for (npg=0; npg<(pGrid->NPGrid); npg++)
     {
@@ -124,7 +124,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 		{ 
 		  succtest[npg]= 1; 
 		  rcvd ++;
-		  fprintf(stderr, " Data received from parent w/id: %d for tag %d. I'm on level %d \n", pGrid->PGrid[npg].ID, pGrid->PGrid[npg].DomN + 100, level);
+		  /* fprintf(stderr, " Data received from parent w/id: %d for tag %d. I'm on level %d \n", pGrid->PGrid[npg].ID, pGrid->PGrid[npg].DomN + 100, level); */
 		  
 		} 
 	      else {
@@ -378,7 +378,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       }
 
       if(pCO->ionFlx[dim] != NULL) {
-	fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and sending data to i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost);
+	/* fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and sending data to i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost); */
 	for (k=pCO->ijks[2] - nghost; k<= pCO->ijke[2]+1 - nghost; k++) {
 	  for (j=pCO->ijks[1] - nghost; j<= pCO->ijke[1]+1 - nghost; j++) {
 	    indexarith = (k-(pCO->ijks[2]-nghost))*(pCO->ijke[1] - pCO->ijks[1] + 2)+j-(pCO->ijks[1]-nghost);
@@ -393,7 +393,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 	arrsize = (pCO->ijke[2] + 2 - pCO->ijks[2]) * (pCO->ijke[1] + 2 - pCO->ijks[1]);
 	/* fprintf(stderr, MAKE_RED "Sending array size %d with 2s: %d 2e: %d [SENT] \n" RESET_COLOR, arrsize, pCO->ijks[2], pCO->ijke[2]); */
       } else{
-	fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and didn't fill a buffer. For reference, I have i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost);
+	/* fprintf(stderr, MAKE_BLUE"I am %d (Level %d) and didn't fill a buffer. For reference, I have i: %d, j: %d - %d, k: %d -%d relative to my overlap index\n " RESET_COLOR, myID_Comm_world, level, fixed, pCO->ijks[1] - nghost, pCO->ijke[1] - nghost, pCO->ijks[2] - nghost, pCO->ijke[2] - nghost); */
       }
       break;
     }
@@ -451,7 +451,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       /*Send data to child grid*/
       ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Children, &send_rq[ncg]);
       
-      fprintf(stderr, "Sent data to child ID %d using tag %d. I'm on level %d \n", pCO->ID, tag3, level);
+      /* fprintf(stderr, "Sent data to child ID %d using tag %d. I'm on level %d \n", pCO->ID, tag3, level); */
       /* fprintf(stderr, "Left x: %d, right x:%d I sent my data for child %d of %d\n", pGrid->lx1_id, pGrid->rx1_id,ncg+1, pGrid->NCGrid);*/
 #endif
     }
