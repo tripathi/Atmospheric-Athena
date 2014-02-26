@@ -116,7 +116,7 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
 	} else if (rad > rout){
 	  pGrid->U[k][j][i].d  = rhoout;
-	  pGrid->U[k][j][i].E  = K*pow(rhop,Gamma)/Gamma_1;
+	  pGrid->U[k][j][i].E  = K*pow(rhop/60.,Gamma)/Gamma_1;
 	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d * 1.0e-4;
 	} else {
 	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
