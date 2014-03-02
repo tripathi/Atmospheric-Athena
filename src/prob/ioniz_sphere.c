@@ -35,7 +35,7 @@ void problem(DomainS *pDomain)
   Real x1,x2,x3; /*For setting up atmos*/
   Real rad,myrho,rhop,powindex,Ggrav; /*For setting up atmos*/
   Real rhoout, np, mp; /*For setting up atmos*/
-  Real rin, rout;
+  Real rin, rout, rhoedge;
 
   int radplanecount =0;
 
@@ -86,7 +86,8 @@ void problem(DomainS *pDomain)
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
   /*Outer (density matching) radius for ambient gas*/
-  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhop/60, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin);
+  rhoedge = rhop/10.;
+  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin);
   /* rout = rp; */
 
   /* if ((rout - rreset) < 5.0*pGrid->dx1) */
@@ -116,8 +117,8 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
 	} else if (rad > rout){
 	  pGrid->U[k][j][i].d  = rhoout;
-	  pGrid->U[k][j][i].E  = K*pow(rhop/60.,Gamma)/Gamma_1;
-	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d * 1.0e-4;
+	  pGrid->U[k][j][i].E  = K*pow(rhoedge,Gamma)/Gamma_1;
+	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d * 1.0e-4; /*Make the ambient background ionized*/
 	} else {
 	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
 	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
@@ -178,6 +179,7 @@ void problem_write_restart(MeshS *pM, FILE *fp)
 
 void problem_read_restart(MeshS *pM, FILE *fp)
 {
+  StaticGravPot = PlanetPot;
   return;
 }
 
