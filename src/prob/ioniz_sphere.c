@@ -179,6 +179,45 @@ void problem_write_restart(MeshS *pM, FILE *fp)
 
 void problem_read_restart(MeshS *pM, FILE *fp)
 {
+
+  Real mp, np, cs, Ggrav, rin, powindex, rhop, m_H;
+  int nl, nd;
+  GridS *pGrid;
+
+  rp  = par_getd_def("problem","rp",1.2e10);
+  mp  = par_getd_def("problem","mp",1.0e30);
+  np = par_getd_def("problem","np",6.0e8);
+  cs = par_getd("problem","cs");
+  m_H = par_getd("ionradiation", "m_H");
+
+  Ggrav = 6.67e-8;
+  GM = Ggrav * mp;
+
+
+  rin = 0.5*rp;
+  rreset = 0.75*rp;
+
+  powindex   = 1.0/Gamma_1;
+  rhop = np * m_H;
+  K  = pow(rhop,-Gamma_1)*cs*cs;
+  rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1.0/rp - 1.0/rin),powindex);
+  Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
+
+  for (nl=0; nl<(pM->NLevels); nl++){
+    for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
+      if (pM->Domain[nl][nd].Grid != NULL) {
+	pGrid = pM->Domain[nl][nd].Grid;          /* ptr to Grid */
+	Rsoft= pGrid->dx1;
+#ifdef ION_RADIATION  
+	if (par_geti("problem","nradplanes") == 1) {  
+	  flux = par_getd("problem","flux");
+	  add_radplane_3d(pGrid, -1, flux);
+	}
+#endif
+      }
+    }
+  }
+
   StaticGravPot = PlanetPot;
   return;
 }

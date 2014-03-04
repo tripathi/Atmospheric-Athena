@@ -265,7 +265,22 @@ void restart_grids(char *res_file, MeshS *pM)
       }}}
 #endif
 
-/* #ifdef ION_RADPLANE */
+#ifdef ION_RADPLANE
+
+/* Read the radiation flux */
+
+      fgets(line,MAXLEN,fp); /* Read the '\n' preceeding the next string */
+      fgets(line,MAXLEN,fp);
+      if(strncmp(line,"Edgeflux",8) != 0)
+        ath_error("[restart_grids]: Expected Edgeflux, found %s",line);
+      for (k=ks; k<=ke+1; k++) {
+        for (j=js; j<=je+1; j++) {
+          for (i=is; i<=ie+1; i++) {
+            fread(&(pG->EdgeFlux[k][j][i]),sizeof(Real),1,fp);
+          }
+        }
+      }
+
 /*   /\* Read list of radiator planes *\/ */
 /*   fgets(line,MAXLEN,fp);/\* Read the '\n' preceeding the next string *\/ */
 /*   fgets(line,MAXLEN,fp); */
@@ -277,7 +292,7 @@ void restart_grids(char *res_file, MeshS *pM)
 /*     fread(&flux,sizeof(Real),1,fp); */
 /*     add_radplane_3d(pG, dir, flux); */
 /*   } */
-/* #endif /\* ION_RADPLANE *\/ */
+#endif /* ION_RADPLANE */
 
 #if (NSCALARS > 0)
 /* Read any passively advected scalars */
@@ -704,15 +719,36 @@ void dump_restart(MeshS *pM, OutputS *pout)
       }
 #endif
 
-/* #ifdef ION_RADPLANE */
-/*   /\* Write out properties of radiator planes *\/ */
-/*   fprintf(fp,"\nRADIATOR PLANE LIST\n"); */
+#ifdef ION_RADPLANE
+
+/* Write the EdgeFlux */
+
+      fprintf(fp,"\Edgeflux\n");
+      for (k=ks; k<=ke+1; k++) {
+        for (j=js; j<=je+1; j++) {
+          for (i=is; i<=ie+1; i++) {
+            buf[nbuf++] = pG->EdgeFlux[k][j][i];
+            if ((nbuf+1) > bufsize) {
+              fwrite(buf,sizeof(Real),nbuf,fp);
+              nbuf = 0;
+            }
+          }
+        }
+      }
+      if (nbuf > 0) {
+        fwrite(buf,sizeof(Real),nbuf,fp);
+        nbuf = 0;
+      }
+
+
+  /* Write out properties of radiator planes */
+  /* fprintf(fp,"\nRADIATOR PLANE LIST\n"); */
 /*   fwrite(&(pG->nradplane),sizeof(int),1,fp); */
 /*   for (n=0; n<pG->nradplane; n++) { */
 /*     fwrite(&(pG->radplanelist[n].dir),sizeof(int),1,fp); */
 /*     fwrite(&(pG->radplanelist[n].flux),sizeof(Real),1,fp); */
 /*   } */
-/* #endif /\* ION_RADPLANE *\/ */
+#endif /* ION_RADPLANE */
 
 /* Write out passively advected scalars */
 
