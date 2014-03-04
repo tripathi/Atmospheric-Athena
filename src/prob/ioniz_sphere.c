@@ -203,20 +203,14 @@ void problem_read_restart(MeshS *pM, FILE *fp)
   rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1.0/rp - 1.0/rin),powindex);
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
-  for (nl=0; nl<(pM->NLevels); nl++){
-    for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
-      if (pM->Domain[nl][nd].Grid != NULL) {
-	pGrid = pM->Domain[nl][nd].Grid;          /* ptr to Grid */
-	Rsoft= pGrid->dx1;
+  Rsoft= pGrid->dx1;
 #ifdef ION_RADIATION  
-	if (par_geti("problem","nradplanes") == 1) {  
-	  flux = par_getd("problem","flux");
-	  add_radplane_3d(pGrid, -1, flux);
-	}
-#endif
-      }
-    }
+  if (par_geti("problem","nradplanes") == 1) {  
+    flux = par_getd("problem","flux");
+    (pM->radplanelist)->dir = -1;
+    (pM->radplanelist)->flux_i = flux;  
   }
+#endif
 
   StaticGravPot = PlanetPot;
   return;
