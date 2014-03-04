@@ -63,7 +63,7 @@ void problem(DomainS *pDomain)
   Ggrav = 6.67e-8;
   GM = Ggrav * mp;
   rhop = np * m_H;
-  Rsoft= pGrid->dx1;
+  Rsoft= 2e8;
 
   rin = 0.5*rp;
   rreset = 0.75*rp;
@@ -203,7 +203,7 @@ void problem_read_restart(MeshS *pM, FILE *fp)
   rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1.0/rp - 1.0/rin),powindex);
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
-  Rsoft= pGrid->dx1;
+  Rsoft= 2e8;
 #ifdef ION_RADIATION  
   if (par_geti("problem","nradplanes") == 1) {  
     flux = par_getd("problem","flux");
