@@ -827,7 +827,7 @@ printf("WorldID=%d Domain_CommID=%d\n",myID_Comm_world,myrank);
           } else {
             pCD->GData[n][m][l].ID_Comm_Parent = ranks[irank];
           }
-	  fprintf(stderr, "nl%d, nd%d, ID_Comm_world: %d, ID_Comm_Domain %d, ID_Comm_Parent %d \n", nl, nd, pD->GData[n][m][l].ID_Comm_world, pD->GData[n][m][l].ID_Comm_Domain, pD->GData[n][m][l].ID_Comm_Parent, n, m, l);
+	  /* fprintf(stderr, "nl%d, nd%d, ID_Comm_world: %d, ID_Comm_Domain %d, ID_Comm_Parent %d \n", nl, nd, pD->GData[n][m][l].ID_Comm_world, pD->GData[n][m][l].ID_Comm_Domain, pD->GData[n][m][l].ID_Comm_Parent, n, m, l); */
         }}}
       }
     }

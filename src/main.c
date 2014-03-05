@@ -90,8 +90,8 @@ int main(int argc, char *argv[])
 /*Added A. Tripathi 01/10/12*/
 #ifdef ION_RADIATION 
   VDFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
-  GridS *pGrid;
-  int j, k;
+  /* GridS *pGrid; */
+  /* int j, k; */
 #endif
   int nl,nd;
   char *definput = "athinput";  /* default input filename */

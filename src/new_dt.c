@@ -31,7 +31,6 @@
 
 void new_dt(MeshS *pM)
 {
-  int newvar =0;
   GridS *pGrid;
 #ifndef SPECIAL_RELATIVITY
   int i,j,k;
