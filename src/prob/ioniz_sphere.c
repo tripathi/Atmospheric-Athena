@@ -207,7 +207,7 @@ void problem_read_restart(MeshS *pM, FILE *fp)
 #ifdef ION_RADIATION  
   if (par_geti("problem","nradplanes") == 1) {  
     flux = par_getd("problem","flux");
-    (pM->radplanelist)->dir = -1;
+    (pM->radplanelist)->dir[0] = -1;
     (pM->radplanelist)->flux_i = flux;  
   }
 #endif
