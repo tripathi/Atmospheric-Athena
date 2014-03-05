@@ -70,7 +70,7 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
   DomainS *pD;
   GridS *pG;
   int sizei=0,sizej=0,sizek=0;
-  Real area1, area2, area3;
+  Real area1, area2, area3, maxdx;
 
   /* What's the smallest area a cell face can have? */
   /* Set the value based on the root domain since this*/
