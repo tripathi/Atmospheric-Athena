@@ -736,7 +736,6 @@ void set_energy_manually(GridS *pGrid)
 
 void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires, int sizei, int sizej, int sizek) {
   Real area1, area2, area3, maxdx;
-  int j, k;
 
   /* Read input values  */
   sigma_ph = par_getd("ionradiation", "sigma_ph");
