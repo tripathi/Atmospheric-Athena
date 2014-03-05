@@ -22,7 +22,7 @@
 #include "prototypes.h"
 #include "../prototypes.h"
 #include "ionrad.h"
-
+#include <math.h>
 
 #define RESET_COLOR "\e[m"
 #define MAKE_BLUE "\e[34m"
