@@ -89,10 +89,10 @@ Real min_area;                     /* Smallest cell face area */
 Real d_nlo;                        /* "Low" neutral density, defined
 				      as the value that gives an
 				      optical depth of MINOPTDEPTH */
-#ifdef MPI_PARALLEL
-DomainS *pD;
-int NGrid_x1, NGrid_x2, NGrid_x3;
-#endif
+/* #ifdef MPI_PARALLEL */
+/* DomainS *pD; */
+/* int NGrid_x1, NGrid_x2, NGrid_x3; */
+/* #endif */
 
 #if defined(MPI_PARALLEL) && defined(ION_RADPOINT)
 /* MPI buffer variables, used for point source radiation only.
@@ -151,10 +151,10 @@ extern Real min_area;              /* Smallest cell face area */
 extern Real d_nlo;                 /* "Low" neutral density, defined
 				      as the value that gives an
 				      optical depth of MINOPTDEPTH */
-#ifdef MPI_PARALLEL
-extern DomainS *pD;
-extern int NGrid_x1, NGrid_x2, NGrid_x3;
-#endif
+/* #ifdef MPI_PARALLEL */
+/* extern DomainS *pD; */
+/* extern int NGrid_x1, NGrid_x2, NGrid_x3; */
+/* #endif */
 #if defined(MPI_PARALLEL) && defined(ION_RADPOINT)
 #define INIT_MPI_BUFSIZE 32768
 extern int mpi_bufsize ;

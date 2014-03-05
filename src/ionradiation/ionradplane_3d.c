@@ -93,6 +93,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
   int i, j, k, ii;
   int s, e;
 #ifdef MPI_PARALLEL
+  int NGrid_x1, NGrid_x2, NGrid_x3;
   int n, nGrid=0;
   int myrank, nextproc, prevproc, err;
   int planesize;
@@ -151,6 +152,10 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
      upstream and downstream, how many processors are there in the
      direction of radiation propagation, how big is the interface with
      my neighbor? */
+  NGrid_x1 = pDomain->NGrid[0];
+  NGrid_x2 = pDomain->NGrid[1];
+  NGrid_x3 = pDomain->NGrid[2];
+
   for (k=0; k<NGrid_x3; k++) {
     for (j=0; j<NGrid_x2; j++) {
       for (i=0; i<NGrid_x1; i++) {

@@ -836,12 +836,14 @@ void ion_radtransfer_init_domain_3d(GridS *pGrid, DomainS *pDomain) {
 
   /*A Tripathi 06/01/12: CHECK to see if this is correct and/or necessary*/
   /* Store parallel grid information for internal use */
-#ifdef MPI_PARALLEL
-  pD = pDomain;
-  NGrid_x1 = pDomain->NGrid[0];
-  NGrid_x2 = pDomain->NGrid[1];
-  NGrid_x3 = pDomain->NGrid[2];
-#endif
+
+/*AT 3/5/14: Commenting out these calls to Ngrid. Local defs now in ionradplane_3d.c*/
+/* #ifdef MPI_PARALLEL */
+/*   pD = pDomain; */
+/*   NGrid_x1 = pDomain->NGrid[0]; */
+/*   NGrid_x2 = pDomain->NGrid[1]; */
+/*   NGrid_x3 = pDomain->NGrid[2]; */
+/* #endif */
 
   /* Store information specific to point sources and planes */
 #ifdef ION_RADPLANE
