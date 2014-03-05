@@ -70,6 +70,28 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
   DomainS *pD;
   GridS *pG;
   int sizei=0,sizej=0,sizek=0;
+  Real area1, area2, area3;
+
+  /* What's the smallest area a cell face can have? */
+  /* Set the value based on the root domain since this*/
+  /* is for check_range, which is run only for the root domain */
+  area1 = pM->dx[0] * pM->dx[1];
+  area2 = pM->dx[0] * pM->dx[2];
+  area3 = pM->dx[1] * pM->dx[2];
+  if (area1 < area2) {
+    if (area1 < area3) min_area = area1;
+    else min_area = area3;
+  } else {
+    if (area2 < area3) min_area = area2;
+    else min_area = area3;
+  }
+
+  /* What's the "low" neutral density, corresponding to the minimum
+     optical depth we care about? */
+  maxdx = pM->dx[0] > pM->dx[1] ? pM->dx[0] : pM->dx[1];
+  maxdx = maxdx > pM->dx[2] ? maxdx : pM->dx[1];
+  d_nlo = MINOPTDEPTH * m_H / (sigma_ph * maxdx);
+
 
 /* Cycle over all Grids on this processor to find maximum Nx1, Nx2, Nx3 */
   for (nl=0; nl<(pM->NLevels); nl++){

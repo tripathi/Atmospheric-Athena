@@ -735,7 +735,6 @@ void set_energy_manually(GridS *pGrid)
  */
 
 void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires, int sizei, int sizej, int sizek) {
-  Real area1, area2, area3, maxdx;
 
   /* Read input values  */
   sigma_ph = par_getd("ionradiation", "sigma_ph");
@@ -808,24 +807,6 @@ void ion_radtransfer_init_3d(GridS *pGrid, DomainS *pDomain, int ires, int sizei
   /*   } */
   /* } */
 
-
-  /* What's the smallest area a cell face can have? */
-  area1 = pGrid->dx1 * pGrid->dx2;
-  area2 = pGrid->dx1 * pGrid->dx3;
-  area3 = pGrid->dx2 * pGrid->dx3;
-  if (area1 < area2) {
-    if (area1 < area3) min_area = area1;
-    else min_area = area3;
-  } else {
-    if (area2 < area3) min_area = area2;
-    else min_area = area3;
-  }
-
-  /* What's the "low" neutral density, corresponding to the minimum
-     optical depth we care about? */
-  maxdx = pGrid->dx1 > pGrid->dx2 ? pGrid->dx1 : pGrid->dx2;
-  maxdx = maxdx > pGrid->dx3 ? maxdx : pGrid->dx2;
-  d_nlo = MINOPTDEPTH * m_H / (sigma_ph * maxdx);
 
   return;
 }
