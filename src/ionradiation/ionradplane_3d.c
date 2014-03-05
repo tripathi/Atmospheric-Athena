@@ -159,18 +159,18 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
   for (k=0; k<NGrid_x3; k++) {
     for (j=0; j<NGrid_x2; j++) {
       for (i=0; i<NGrid_x1; i++) {
-	if (pD->GData[k][j][i].ID_Comm_world == myID_Comm_world) {
+	if (pDomain->GData[k][j][i].ID_Comm_world == myID_Comm_world) {
 	  switch(dir) {
 	  case -1: case 1: {
 	    nGrid=NGrid_x1;
 	    myrank = lr > 0 ? i : nGrid - i - 1;
 	    planesize=pGrid->Nx[1]*pGrid->Nx[2];
 	    if ((i-lr >= 0) && (i-lr <= NGrid_x1-1))
-	      prevproc = pD->GData[k][j][i-lr].ID_Comm_world;
+	      prevproc = pDomain->GData[k][j][i-lr].ID_Comm_world;
 	    else
 	      prevproc = -1;
 	    if ((i+lr >= 0) && (i+lr <= NGrid_x1-1))
-	      nextproc = pD->GData[k][j][i+lr].ID_Comm_world;
+	      nextproc = pDomain->GData[k][j][i+lr].ID_Comm_world;
 	    else
 	      nextproc = -1;
 	    break;
@@ -180,11 +180,11 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 	    myrank = lr > 0 ? j : nGrid - j - 1;
 	    planesize=pGrid->Nx[0]*pGrid->Nx[1];
 	    if ((j-lr >= 0) && (j-lr <= NGrid_x2-1))
-	      prevproc = pD->GData[k][j-lr][i].ID_Comm_world;
+	      prevproc = pDomain->GData[k][j-lr][i].ID_Comm_world;
 	    else
 	      prevproc = -1;
 	    if ((j+lr >= 0) && (j+lr <= NGrid_x2-1))
-	      nextproc = pD->GData[k][j+lr][i].ID_Comm_world;
+	      nextproc = pDomain->GData[k][j+lr][i].ID_Comm_world;
 	    else
 	      nextproc = -1;
 	    break;
@@ -194,11 +194,11 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 	    myrank = lr > 0 ? k : nGrid - k - 1;
 	    planesize=pGrid->Nx[0]*pGrid->Nx[1];
 	    if ((k-lr >= 0) && (k-lr <= NGrid_x3-1))
-	      prevproc = pD->GData[k-lr][j][i].ID_Comm_world;
+	      prevproc = pDomain->GData[k-lr][j][i].ID_Comm_world;
 	    else
 	      prevproc = -1;
 	    if ((k+lr >= 0) && (k+lr <= NGrid_x2-1))
-	      nextproc = pD->GData[k+lr][j][i].ID_Comm_world;
+	      nextproc = pDomain->GData[k+lr][j][i].ID_Comm_world;
 	    else
 	      nextproc = -1;
 	    break;
