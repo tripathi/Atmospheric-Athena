@@ -459,7 +459,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 }
 
 
-/*Older function for prolonging on a single processor.  Has been modified since it's initial use, so don't trust.*/
+/* /\*Older function for prolonging on a single processor.  Has been modified since it's initial use, so don't trust.*\/ */
 /* void ionrad_prolongate(DomainS *pD) */
 /* { */
 /*   MeshS *pM = pD->Mesh; */
@@ -549,28 +549,6 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
 
 /* } */
 
-/* #ifdef MPI_PARALLEL */
-/* /\* Need to send to all children upon completion of coarse grid and receive by all fine grids*\/ */
-/* /\* Need to have call to this not from ionrad_3d.c in the finegrid case.  Instead it needs to be called even after the coarse.*\/ */
-/* /\*So maybe like - at end of every level, do a send.  And if not root domain, do a receive*\/ */
-/* /\*So if nparents != 0, then receive, and if nchildren !=0 then do a send*\/ */
-/* #endif */
+#endif /* STATIC_MESH_REFINEMENT */
 
-/* #endif */
 
-/*   /\* GridOvrlpS *pCO, *pPO; *\/ */
-/*   /\* int npg, ncg; *\/ */
-/*   /\* /\\* GridsDataS ***Ginfo = pD->GData; *\\/ *\/ */
-  
-/*   /\* fprintf(stderr, "---------\n Domain level: %d, number:%d, X-disp:%d, zones:%d, Nparents:%d, Nchild:%d \n", pD->Level, pD->DomNumber, pD->Disp[0], pD->Nx[0], pG->NPGrid,pG->NCGrid); *\/ */
-/*   /\* /\\* fprintf(stderr, "ID %d \n", Ginfo->ID_Comm_world); *\\/ *\/ */
-
-/*   /\* for (npg=0; npg<(pG->NPGrid); npg++){ *\/ */
-/*   /\*   pPO = (GridOvrlpS*)&(pG->PGrid[npg]); *\/ */
-/*   /\*   fprintf(stderr, "Parent: X:ijks %d ijke %d, ID:%d \n", pPO->ijks[0], pPO->ijke[0], pPO->ID); *\/ */
-/*   /\* } *\/ */
-
-/*   /\* for (ncg=0; ncg<(pG->NmyCGrid); ncg++){ *\/ */
-/*   /\*   pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);    /\\* ptr to child Grid overlap *\\/ *\/ */
-/*   /\*   fprintf(stderr, "Child: X:ijks %d ijke %d, ID:%d \n", pCO->ijks[0], pCO->ijke[0], pCO->ID); *\/ */
-/*   /\* } *\/ */
