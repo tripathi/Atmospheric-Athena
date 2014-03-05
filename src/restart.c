@@ -69,10 +69,10 @@ void restart_grids(char *res_file, MeshS *pM)
 #ifdef PARTICLES
   long p;
 #endif
-#ifdef ION_RADPLANE
-  int dir, nradplane;
-  Real flux;
-#endif
+/* #ifdef ION_RADPLANE */
+/*   int dir, nradplane; */
+/*   Real flux; */
+/* #endif */
 
 /* Open the restart file */
 
@@ -271,11 +271,11 @@ void restart_grids(char *res_file, MeshS *pM)
 
       fgets(line,MAXLEN,fp); /* Read the '\n' preceeding the next string */
       fgets(line,MAXLEN,fp);
-      if(strncmp(line,"Edgeflux",8) != 0)
+      if(strncmp(line,"EDGEFLUX",8) != 0)
         ath_error("[restart_grids]: Expected Edgeflux, found %s",line);
-      for (k=ks; k<=ke+1; k++) {
-        for (j=js; j<=je+1; j++) {
-          for (i=is; i<=ie+1; i++) {
+      for (k=ks-nghost; k<=ke-nghost+1; k++) {
+        for (j=js-nghost; j<=je-nghost+1; j++) {
+          for (i=is-nghost; i<=ie-nghost+1; i++) {
             fread(&(pG->EdgeFlux[k][j][i]),sizeof(Real),1,fp);
           }
         }
@@ -722,11 +722,10 @@ void dump_restart(MeshS *pM, OutputS *pout)
 #ifdef ION_RADPLANE
 
 /* Write the EdgeFlux */
-
-      fprintf(fp,"\Edgeflux\n");
-      for (k=ks; k<=ke+1; k++) {
-        for (j=js; j<=je+1; j++) {
-          for (i=is; i<=ie+1; i++) {
+      fprintf(fp,"\nEDGEFLUX\n");
+      for (k=ks-nghost; k<=ke-nghost+1; k++) {
+        for (j=js-nghost; j<=je-nghost+1; j++) {
+          for (i=is-nghost; i<=ie-nghost+1; i++) {
             buf[nbuf++] = pG->EdgeFlux[k][j][i];
             if ((nbuf+1) > bufsize) {
               fwrite(buf,sizeof(Real),nbuf,fp);
