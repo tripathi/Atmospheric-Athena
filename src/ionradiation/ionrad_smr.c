@@ -81,7 +81,7 @@ void ionrad_prolong_rcv(GridS *pGrid, int dim, int level, int domnumber)
 	/* tag1 = atoi(temp); */
 	/* tag2 = (level - 1)*1000000 + pPO->ID * 10000 + level * 100 + domnumber; */
 	/* fprintf(stderr, "rcvconcat: %d, powers:%d domno: %d, myid :%d \n", tag1, tag2, domnumber, myID_Comm_world); */
-	tag3 = pPO->DomN + 100;
+	tag3 = pPO->DomN + 257;
 
 	
 	/*AT 9/21/12: TO_DO: Insert case statement, so that arrsize is pulled from the correct indices*/
@@ -446,7 +446,7 @@ void ionrad_prolong_snd(GridS *pGrid, int dim, int level, int domnumber)
       /* 	tag2 = level*1000000 + myID_Comm_world * 10000 + (level+1) * 100 + pCO->ID; */
 	/* fprintf(stderr, "sndconcat: %d, powers:%d \n", tag1, tag2); */
 
-      tag3 = domnumber + 100;
+      tag3 = domnumber + 257;
 
       /*Send data to child grid*/
       ierr = MPI_Isend(pCO->ionFlx[dim], arrsize, MP_RL, pCO->ID, tag3, pMesh->Domain[level][domnumber].Comm_Children, &send_rq[ncg]);
