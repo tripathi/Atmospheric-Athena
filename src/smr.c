@@ -36,11 +36,23 @@
 static double **send_bufP= NULL; 
 static double **send_bufRC=NULL; 
 static double ***recv_bufP= NULL;
+
+#ifdef ION_RADIATION 
+static double **ion_send_bufRC=NULL; 
+#endif
+
 #ifdef MPI_PARALLEL
 static double ***recv_bufRC=NULL;
 static MPI_Request ***recv_rq=NULL;
 static MPI_Request  **send_rq=NULL;
+
+#ifdef ION_RADIATION
+static double ***ion_recv_bufRC=NULL;
+static MPI_Request ***ion_recv_rq=NULL;
+static MPI_Request  **ion_send_rq=NULL;
 #endif
+#endif /*MPI_PARALLEL*/
+
 static int maxND, *start_addrP;
 
 static ConsS ***GZ[3];
@@ -90,7 +102,7 @@ void ionradRestrictCorrect(MeshS *pM)
 #endif
   int nvarion = 2;
 
-  if (pM->nstep < 1) {fprintf(stderr, "In ionradrestrictcorrect \n");}
+  /* if (pM->nstep < 1) {fprintf(stderr, "In ionradrestrictcorrect \n");} */
 
 
 
@@ -119,10 +131,10 @@ void ionradRestrictCorrect(MeshS *pM)
         rbufN = ((nl-1) % 2);
         for (ncg=(pG->NmyCGrid); ncg<(pG->NCGrid); ncg++){
           mIndex = ncg - pG->NmyCGrid;
-          ierr = MPI_Irecv(&(recv_bufRC[rbufN][nd][mAddress]),
+          ierr = MPI_Irecv(&(ion_recv_bufRC[rbufN][nd][mAddress]),
             pG->CGrid[ncg].nWordsRC, MPI_DOUBLE, pG->CGrid[ncg].ID,
-            pG->CGrid[ncg].DomN, pM->Domain[nl-1][nd].Comm_Children,
-            &(recv_rq[nl-1][nd][mIndex]));
+            pG->CGrid[ncg].DomN+514, pM->Domain[nl-1][nd].Comm_Children,
+            &(ion_recv_rq[nl-1][nd][mIndex]));
           mAddress += pG->CGrid[ncg].nWordsRC;
         }
 
@@ -150,7 +162,7 @@ void ionradRestrictCorrect(MeshS *pM)
 
       if (ncg < pG->NmyCGrid) {
         pCO=(GridOvrlpS*)&(pG->CGrid[ncg]);
-        pRcv = (double*)&(send_bufRC[pCO->DomN][0]);
+        pRcv = (double*)&(ion_send_bufRC[pCO->DomN][0]);
       } else {
 
 #ifdef MPI_PARALLEL
@@ -159,7 +171,7 @@ void ionradRestrictCorrect(MeshS *pM)
  * in any order. */
 
         mCount = pG->NCGrid - pG->NmyCGrid;
-        ierr = MPI_Waitany(mCount,recv_rq[nl][nd],&mIndex,MPI_STATUS_IGNORE);
+        ierr = MPI_Waitany(mCount,ion_recv_rq[nl][nd],&mIndex,MPI_STATUS_IGNORE);
         if(mIndex == MPI_UNDEFINED){
           ath_error("[RestCorr]: Invalid request index nl=%i nd=%i\n",nl,nd);
         }
@@ -169,7 +181,7 @@ void ionradRestrictCorrect(MeshS *pM)
         mIndex += pG->NmyCGrid;
         for (i=pG->NmyCGrid; i<mIndex; i++) mAddress += pG->CGrid[i].nWordsRC;
         pCO=(GridOvrlpS*)&(pG->CGrid[mIndex]);
-        pRcv = (double*)&(recv_bufRC[rbufN][nd][mAddress]);
+        pRcv = (double*)&(ion_recv_bufRC[rbufN][nd][mAddress]);
 #else
 /* If not MPI_PARALLEL, and child Grid not on this processor, then error */
 
@@ -707,7 +719,7 @@ void ionradRestrictCorrect(MeshS *pM)
 /* Loop over all Domains and parent Grids.  Maxlevel grids skip straight to this
  * step to start the chain of communication.  Root (level=0) skips this step
  * since it has NPGrid=0.  If there is a parent Grid on this processor, it will
- * be first in the PGrid array, so it will be at start of send_bufRC */
+ * be first in the PGrid array, so it will be at start of ion_send_bufRC */
 
   for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
 
@@ -731,7 +743,7 @@ void ionradRestrictCorrect(MeshS *pM)
 /*--- Step 3a. Restrict conserved variables  ---------------------------------*/
 /* 1D/2D/3D problem: Conservative average of conserved variables in x1. */
 
-      pSnd = (double*)&(send_bufRC[nd][start_addr]);
+      pSnd = (double*)&(ion_send_bufRC[nd][start_addr]);
       
       for (k=kps; k<=kpe; k+=2) {
       for (j=jps; j<=jpe; j+=2) {
@@ -752,7 +764,7 @@ void ionradRestrictCorrect(MeshS *pM)
 /* 2D/3D problem: Add conservative average in x2 */
 
       if (pG->Nx[1] > 1) {
-        pSnd = (double*)&(send_bufRC[nd][start_addr]); /* restart pointer */
+        pSnd = (double*)&(ion_send_bufRC[nd][start_addr]); /* restart pointer */
         for (k=kps; k<=kpe; k+=2) {
         for (j=jps; j<=jpe; j+=2) {
         for (i=ips; i<=ipe; i+=2) {
@@ -773,7 +785,7 @@ void ionradRestrictCorrect(MeshS *pM)
 /* 3D problem: Add conservative average in x3 */
 
       if (pG->Nx[2] > 1) {
-        pSnd = (double*)&(send_bufRC[nd][start_addr]);  /* restart pointer */
+        pSnd = (double*)&(ion_send_bufRC[nd][start_addr]);  /* restart pointer */
         for (k=kps; k<=kpe; k+=2) {
         for (j=jps; j<=jpe; j+=2) {
         for (i=ips; i<=ipe; i+=2) {
@@ -793,7 +805,7 @@ void ionradRestrictCorrect(MeshS *pM)
       }
 
 /* reset pointer to beginning and normalize averages */
-      pSnd = (double*)&(send_bufRC[nd][start_addr]);  
+      pSnd = (double*)&(ion_send_bufRC[nd][start_addr]);  
       for (i=start_addr; i<(start_addr+nCons); i++) *(pSnd++) *= fact;
       cnt = nCons;
 
@@ -1152,9 +1164,9 @@ void ionradRestrictCorrect(MeshS *pM)
 
       if (npg >= pG->NmyPGrid){
         mIndex = npg - pG->NmyPGrid;
-        ierr = MPI_Isend(&(send_bufRC[nd][start_addr]), pG->PGrid[npg].nWordsRC,
-          MPI_DOUBLE, pG->PGrid[npg].ID, nd, pM->Domain[nl][nd].Comm_Parent,
-          &(send_rq[nd][mIndex]));
+        ierr = MPI_Isend(&(ion_send_bufRC[nd][start_addr]), pG->PGrid[npg].nWordsRC,
+          MPI_DOUBLE, pG->PGrid[npg].ID, nd+514, pM->Domain[nl][nd].Comm_Parent,
+          &(ion_send_rq[nd][mIndex]));
       }
 #endif /* MPI_PARALLEL */
 
@@ -1174,7 +1186,7 @@ void ionradRestrictCorrect(MeshS *pM)
 
       if (pG->NPGrid > pG->NmyPGrid) {
         mCount = pG->NPGrid - pG->NmyPGrid;
-        ierr = MPI_Waitall(mCount, send_rq[nd], MPI_STATUS_IGNORE);
+        ierr = MPI_Waitall(mCount, ion_send_rq[nd], MPI_STATUS_IGNORE);
       }
     }
   }
@@ -2969,6 +2981,12 @@ void SMR_init(MeshS *pM)
     (double**)calloc_2d_array(maxND,max_sendRC,sizeof(double))) == NULL)
     ath_error("[SMR_init]:Failed to allocate send_bufRC\n");
 
+#ifdef ION_RADIATION 
+  if((ion_send_bufRC =
+    (double**)calloc_2d_array(maxND,max_sendRC,sizeof(double))) == NULL)
+    ath_error("[SMR_init]:Failed to allocate ion_send_bufRC\n");
+#endif
+
 #ifdef MPI_PARALLEL
   if((recv_bufRC =
     (double***)calloc_3d_array(2,maxND,max_recvRC,sizeof(double))) == NULL)
@@ -2979,6 +2997,18 @@ void SMR_init(MeshS *pM)
   if((send_rq = (MPI_Request**)
     calloc_2d_array(maxND,maxCG,sizeof(MPI_Request))) == NULL)
     ath_error("[SMR_init]: Failed to allocate send MPI_Request array\n");
+
+#ifdef ION_RADIATION 
+  if((ion_recv_bufRC =
+    (double***)calloc_3d_array(2,maxND,max_recvRC,sizeof(double))) == NULL)
+    ath_error("[SMR_init]: Failed to allocate recv_bufRC\n");
+  if((ion_recv_rq = (MPI_Request***)
+    calloc_3d_array(pM->NLevels,maxND,maxCG,sizeof(MPI_Request))) == NULL)
+    ath_error("[SMR_init]: Failed to allocate recv MPI_Request array\n");
+  if((ion_send_rq = (MPI_Request**)
+    calloc_2d_array(maxND,maxCG,sizeof(MPI_Request))) == NULL)
+    ath_error("[SMR_init]: Failed to allocate send MPI_Request array\n");
+#endif /* ION_RADIATION*/
 #endif /* MPI_PARALLEL */
 
 #ifdef MHD
@@ -3287,7 +3317,7 @@ void ProCon(const ConsS Uim1,const ConsS Ui,  const ConsS Uip1,
   Vfail = 0;
   fail = 0;
 
-#endif SPECIAL_RELATIVITY
+#endif /*SPECIAL_RELATIVITY*/
 
 #endif /* FIRST_ORDER */
 }
