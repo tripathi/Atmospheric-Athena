@@ -87,8 +87,9 @@ void problem(DomainS *pDomain)
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
   /*Outer (density matching) radius for ambient gas*/
-  rhoedge = rhop/10.;
-  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin);
+  rhoedge = rhop;
+  rout = rp;
+/* 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); */
   /* rout = rp; */
 
   /* if ((rout - rreset) < 5.0*pGrid->dx1) */
@@ -97,7 +98,8 @@ void problem(DomainS *pDomain)
   /*   ath_error("[sphere]: At least 5 cells needed for reconstruction"); */
 
   /*Density at atmosphere's edge*/
-  rhoout = pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex)/10000.;
+  rhoout = rhop/10000.;
+/* pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex)/10000.; */
   /* fprintf(stderr, "rhoout %e \n", rhoout/10000.); */
   /* fprintf(stderr, "K : %e, Cp: %e rho0:%e \n", K, Cp, rho0); */
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
@@ -253,6 +255,9 @@ void Userwork_in_loop(MeshS *pM)
 	    for (i=is; i<=ie; i++) {
 	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
 	      rad = sqrt(x1*x1 + x2*x2 + x3*x3);
+
+	      if (pGrid->U[k][j][i].d < 0) fprintf(stderr, "Neg dens: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].d, k, j, i, rad, nl);
+	      if (pGrid->U[k][j][i].E < 0) fprintf(stderr, "Neg E: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].E, k, j, i, rad, nl);
 
 	      /*Reset values within the boundary*/
 	      if (rad <= rreset) { /*AT: May need to change this to a smaller r*/
