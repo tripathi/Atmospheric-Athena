@@ -479,7 +479,9 @@ Real compute_therm_rates(DomainS *pDomain)
 	edot[k][j][i] = ph_rate[k][j][i] * e_gamma * n_H
 	  /* AT 2/23/14: Removing metal cooling*/
 	  /* - osterbrock_cool_rate(T) * n_e*n_Hplus */
-	  + recomb_cool_rate_coef(T) * time_unit * n_Hplus * n_e;
+	  + recomb_cool_rate_coef(T) * time_unit * n_Hplus * n_e
+	  /* AT 3/13/14: Adding Lya cooling*/
+	  + lya_cool_rate(n_H, n_Hplus, T);
 	/* AT 2/23/14: Removing molecular terms*/
 	/* if ((n_Hplus / (n_H+n_Hplus) < COOLFRAC) ||  */
 	/*     (n_Hplus / (n_H+n_Hplus) > 1.0-COOLFRAC)) { */
