@@ -481,7 +481,7 @@ Real compute_therm_rates(DomainS *pDomain)
 	  /* - osterbrock_cool_rate(T) * n_e*n_Hplus */
 	  + recomb_cool_rate_coef(T) * time_unit * n_Hplus * n_e
 	  /* AT 3/13/14: Adding Lya cooling*/
-	  + lya_cool_rate(n_H, n_Hplus, T);
+	  + lya_cool_rate(n_H, n_e, T) * time_unit;
 	/* AT 2/23/14: Removing molecular terms*/
 	/* if ((n_Hplus / (n_H+n_Hplus) < COOLFRAC) ||  */
 	/*     (n_Hplus / (n_H+n_Hplus) > 1.0-COOLFRAC)) { */
