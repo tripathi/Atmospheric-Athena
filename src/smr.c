@@ -79,7 +79,7 @@ void ProFld(Real3Vect BGZ[][3][3], Real3Vect PFld[][3][3],
 static Real mcd_slope(const Real vl, const Real vc, const Real vr);
 #endif /* FIRST_ORDER */
 
-
+#ifdef ION_RADPLANE
 void ionradRestrictCorrect(MeshS *pM)
 {
   GridS *pG;
@@ -1194,7 +1194,7 @@ void ionradRestrictCorrect(MeshS *pM)
 
   } /* end loop over levels */
 }
-
+#endif /*ION_RADPLANE*/
 /*=========================== PUBLIC FUNCTIONS ===============================*/
 /*----------------------------------------------------------------------------*/
 /*! \fn void RestrictCorrect(MeshS *pM)
