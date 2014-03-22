@@ -51,6 +51,7 @@ Real dmc_cool_rate(Real x, Real T);
 Real osterbrock_cool_rate(Real T);
 Real ki_cool_rate(Real T);
 Real ki_heat_rate(void);
+Real lya_cool_rate(Real nh, Real nhplus, Real T);
 #endif /* ION_RADIATION */
 
 #ifdef ION_RADPLANE

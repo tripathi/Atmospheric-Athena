@@ -27,6 +27,8 @@
  *      of first two ionized states of O, N, and Ne, as taken from
  *      Osterbrock & Ferland 2006, in erg cm^3 s^-1
  *
+ * Added 03/13/14 by A. Tripathi:
+ * lya_cool_rate(nh, ne, T): Black (1981) Lya cooling rate, in erg cm^-3 s^-1
  */
 
 #include <math.h>
@@ -343,4 +345,9 @@ Real osterbrock_cool_rate(Real T) {
 
     return(cool);
   }
+}
+
+Real lya_cool_rate(Real nh, Real nhplus, Real T) {
+  /* Lya cooling rate from Black (1981) */
+  return(-7.5e-19*nhplus*nh*exp(-118348/T));
 }
