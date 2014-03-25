@@ -260,7 +260,15 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 	      flux = planeflux[(k-pGrid->ks)*pGrid->Nx[1]+j-pGrid->js];
 	    else
 #endif /* MPI_PARALLEL */
-	      flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed];
+	      if (pDomain->Level == 0){
+		if (pMesh->time <= 4e4) {
+		  flux = (pMesh->radplanelist)->flux_i * log1p(pMesh->time) / log1p(4e4);
+		} else  {
+		  flux = (pMesh->radplanelist)->flux_i;
+		}
+	      } else {
+		flux = pGrid->EdgeFlux[k-pGrid->ks][j-pGrid->js][fixed];
+	      }
 	    /* if (pDomain->Level >0 && flux > 1) */
 	    /*   fprintf(stderr,"Level: %d Input: k: %d j: %d, i:%d Here: %e Mesh: %e\n",pDomain->Level, k-pGrid->ks, j-pGrid->js, fixed, flux, (pMesh->radplanelist)->flux_i); */
 
