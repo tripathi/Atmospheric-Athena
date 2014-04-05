@@ -262,7 +262,7 @@ void get_ph_rate_plane(Real initflux, int dir, Real ***ph_rate, DomainS *pDomain
 #endif /* MPI_PARALLEL */
 	      if (pDomain->Level == 0){
 		/* if (pMesh->time <= 9e4) { */
-		flux = (pMesh->radplanelist)->flux_i*(5.*(erf((pMesh->time - 6e4)/4e4)+1)+0.1);
+		flux = (pMesh->radplanelist)->flux_i*(5.*(erf((pMesh->time - 1.2e5)/8e4)+1)+0.1);
 		  /* log1p(pMesh->time) / log1p(9e4); */
 		/* } else  { */
 		/*   flux = (pMesh->radplanelist)->flux_i; */
