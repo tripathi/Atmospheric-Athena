@@ -201,18 +201,15 @@ fi
 # PHYSICS FEATURE: ionizing radiative transfer
 #  --enable-ion-radiation
 
-AC_SUBST(ION_RADIATION_MODE)
-AC_ARG_ENABLE(ion-radiation, [  --enable-ion-radiation  do ionizing radiative transfer (default is no)],
+AC_SUBST(STELLAR_WIND_MODE)
+AC_ARG_ENABLE(stellar-wind, [  --enable-stellar-wind  stellar wind boundary condition (default is no)],
                                 ok=$enableval, ok=no)
 if test "$ok" = "yes"; then
-  ION_RADIATION_MODE="ION_RADIATION"
-  ION_RADIATION_MODE_USER="ON"
-  echo "Ionizing radiation enabled... increasing number of passive scalars by 1"
-  nscalars=$@<:@nscalars+1@:>@
-  NSCALARS=$nscalars
+  STELLAR_WIND_MODE="STELLAR_WIND"
+  STELLAR_WIND_MODE_USER="ON"
 else
-  ION_RADIATION_MODE="NO_ION_RADIATION"
-  ION_RADIATION_MODE_USER="OFF"
+  STELLAR_WIND_MODE="NO_STELLAR_WIND"
+  STELLAR_WIND_MODE_USER="OFF"
 fi
 
 #-------------------------------------------------------------------------------
@@ -228,6 +225,25 @@ if test "$ok" = "yes"; then
 else
   ION_PLANE_MODE="NO_ION_RADPLANE"
   ION_PLANE_MODE_USER="OFF"
+fi
+
+
+#-------------------------------------------------------------------------------
+# PHYSICS FEATURE: ionizing radiative transfer
+#  --enable-ion-radiation
+
+AC_SUBST(ION_RADIATION_MODE)
+AC_ARG_ENABLE(ion-radiation, [  --enable-ion-radiation  do ionizing radiative transfer (default is no)],
+                                ok=$enableval, ok=no)
+if test "$ok" = "yes"; then
+  ION_RADIATION_MODE="ION_RADIATION"
+  ION_RADIATION_MODE_USER="ON"
+  echo "Ionizing radiation enabled... increasing number of passive scalars by 1"
+  nscalars=$@<:@nscalars+1@:>@
+  NSCALARS=$nscalars
+else
+  ION_RADIATION_MODE="NO_ION_RADIATION"
+  ION_RADIATION_MODE_USER="OFF"
 fi
 
 #-------------------------------------------------------------------------------
@@ -380,7 +396,7 @@ AC_ARG_WITH(cflags,
 	[--with-cflags=DEBUG_MODE  Set debugging mode (opt,debug,profile)],
 	with_debug=$withval, with_debug="opt")
 if test "$with_debug" = "debug"; then
-  COMPILER_OPTS="-g -Wall -W -ansi -pedantic"
+  COMPILER_OPTS="-g -Wall -W -ansi -pedantic -Wno-unused-parameter -Wno-unused-variable"
   DEBUG_MODE="DEBUG"
 elif test "$with_debug" = "profile"; then
   COMPILER_OPTS="-O3 -pg"
@@ -637,6 +653,7 @@ echo "Viscosity:               $VISCOSITY_MODE_USER"
 echo "Thermal conduction:      $CONDUCTION_MODE_USER"
 echo "Particles:               $PARTICLES_USER"
 echo "Special Relativity:      $SPECIAL_RELATIVITY_MODE_USER"
+echo "Stellar wind: 	       $STELLAR_WIND_MODE_USER"
 echo "Ionizing radiation:      $ION_RADIATION_MODE_USER"
 echo "Plane parallel ioniz.:   $ION_PLANE_MODE_USER"
 echo ""
