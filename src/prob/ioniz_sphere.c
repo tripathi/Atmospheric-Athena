@@ -20,8 +20,9 @@
 #define ALPHA4 2.59e-13
 
 /* static int radplanecount; */
-static Real GM,K,Cp,rp,rreset,rho0,Rsoft, trad, flux;
+static Real GMstar, adist, GM,K,Cp,rp,rreset,rho0,Rsoft, trad, flux;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
+static Real TidalPot(const Real x1, const Real x2, const Real x3);
 static Real print_flux(const GridS *pG, const int i, const int j, const int k);
 
 void problem(DomainS *pDomain)
@@ -66,11 +67,15 @@ void problem(DomainS *pDomain)
   rhop = np * m_H;
   Rsoft= 0.01*rp;
 
+#ifdef SHEARING_BOX
+  adist = 7.48e11; /* .05AU in cm*/
+  GMstar = Ggrav * 1.99e33; /*Using 1 solar mass in g*/
+  Omega_0 = sqrt(GMstar / (pow(adist,3)));
+  qshear  = 1.5;
+#endif
+
   rin = 0.5*rp;
   rreset = 0.75*rp;
-    
-
-  
 
   /* rin  = rp - 5.0*pGrid->dx1; /\*What I refer to as r0*\/ */
   /* rout = rp + 15.0*pGrid->dx1;  */
@@ -127,7 +132,6 @@ void problem(DomainS *pDomain)
 	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
 	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
 	}
-
       }
     }
   }
@@ -159,6 +163,9 @@ void problem(DomainS *pDomain)
 
 /* enroll gravity of planet */
   StaticGravPot = PlanetPot;
+#ifdef SHEARING_BOX
+  ShearingBoxPot = TidalPot;
+#endif
 
   return;
 }
@@ -196,6 +203,12 @@ void problem_read_restart(MeshS *pM, FILE *fp)
   Ggrav = 6.67e-8;
   GM = Ggrav * mp;
 
+#ifdef SHEARING_BOX
+  adist = 7.48e11; /* .05AU in cm*/
+  GMstar = Ggrav * 1.99e33; /*Using 1 solar mass in g*/
+  Omega_0 = sqrt(GMstar / (pow(adist,3)));
+  qshear  = 1.5;
+#endif
 
   rin = 0.5*rp;
   rreset = 0.75*rp;
@@ -216,6 +229,10 @@ void problem_read_restart(MeshS *pM, FILE *fp)
 #endif
 
   StaticGravPot = PlanetPot;
+#ifdef SHEARING_BOX
+  ShearingBoxPot = TidalPot;
+#endif
+
   return;
 }
 
@@ -269,6 +286,8 @@ void Userwork_in_loop(MeshS *pM)
 		pGrid->U[k][j][i].M3 = 0.0;
 		pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1; 
 		pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
+
+
 	      }
 	    }
 	  }
@@ -295,13 +314,27 @@ void Userwork_after_loop(MeshS *pM)
 static Real PlanetPot(const Real x1, const Real x2, const Real x3)
 {
   Real rad = sqrt(SQR(x1)+SQR(x2)+SQR(x3));
-  Real adist = 7.48e11; /* .05AU in cm*/
-  Real GMstar = 6.67e-8 * 1.99e33; /*Using 1 solar mass in g*/
-  Real omega = sqrt(GMstar / (pow(adist,3)));
-  Real radstar = sqrt(SQR(x1+adist) + SQR(x2) + SQR(x3));
+  /* Real radstar = sqrt(SQR(x1+adist) + SQR(x2) + SQR(x3)); */
 
-  return -GM/(rad+Rsoft)-GMstar/radstar -.5*SQR(omega*radstar);
+  return -GM/(rad+Rsoft);
+/* -GMstar/radstar -.5*SQR(omega*radstar); */
 }
+
+/*------------------------------------------------------------------------------
+ *! \fn static Real TidalPot(const Real x1, const Real x2,const Real x3)
+ *  \brief tidal potential in shearing box
+ */
+
+static Real TidalPot(const Real x1, const Real x2, const Real x3)
+{
+  Real phi=0.0;
+#ifdef SHEARING_BOX
+  Real radstar2 = SQR(x1+adist) + SQR(x2) + SQR(x3); 
+  phi -= GMstar/sqrt(radstar2) + .5*SQR(Omega_0)*radstar2;
+#endif
+  return phi;
+}
+
 
 #ifdef ION_RADIATION
 /*----------------------------------------------------------------------------*/

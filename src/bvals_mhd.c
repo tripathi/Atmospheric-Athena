@@ -387,7 +387,8 @@ void bvals_mhd(DomainS *pD)
 /* shearing sheet BCs; function defined in problem generator.
  * Enroll outflow BCs if perdiodic BCs NOT selected.  This assumes the root
  * level grid is specified by the <domain1> block in the input file */
-#ifdef SHEARING_BOX
+#ifdef SHEARING_BOX 
+#ifndef ION_RADIATION
     BCFlag = par_geti_def("domain1","bc_ix1",0);
     get_myGridIndex(pD, myID_Comm_world, &myL, &myM, &myN);
     if (myL == 0 && BCFlag == 4) {
@@ -397,6 +398,7 @@ void bvals_mhd(DomainS *pD)
     if (myL == ((pD->NGrid[0])-1) && BCFlag == 4) {
       ShearingSheet_ox1(pD);
     }
+#endif
 #endif
 
   }
