@@ -37,7 +37,7 @@ void problem(DomainS *pDomain)
   Real x1,x2,x3; /*For setting up atmos*/
   Real rad,myrho,rhop,powindex,Ggrav; /*For setting up atmos*/
   Real rhoout, np, mp; /*For setting up atmos*/
-  Real rin, rout, rhoedge;
+  Real rin, rout, rhoedge, rmax;
 
   int radplanecount =0;
 
@@ -109,29 +109,31 @@ void problem(DomainS *pDomain)
   /* fprintf(stderr, "K : %e, Cp: %e rho0:%e \n", K, Cp, rho0); */
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 
+  rmax = 8.4e10;
+  
   /* Power-law pressure and density */
   for (k=ks; k<=ke+1; k++) {
     for (j=js; j<=je+1; j++) {
       for (i=is; i<=ie+1; i++) {
-	cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
-	rad = sqrt(x1*x1 + x2*x2 + x3*x3);
+	/* cc_pos(pGrid,i,j,k,&x1,&x2,&x3); */
+	/* rad = sqrt(x1*x1 + x2*x2 + x3*x3); */
 	pGrid->U[k][j][i].M1 = 0.0;
 	pGrid->U[k][j][i].M2 = 0.0;
 	pGrid->U[k][j][i].M3 = 0.0;
 
-	if (rad <= rin){
-	  pGrid->U[k][j][i].d  = rho0;
-	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
-	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
-	} else if (rad > rout){
+	/* if (rad <= rin){ */
+	/*   pGrid->U[k][j][i].d  = rho0; */
+	/*   pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1; */
+	/*   pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d; */
+	/* } else if (rad > rout){ */
 	  pGrid->U[k][j][i].d  = rhoout;
-	  pGrid->U[k][j][i].E  = K*pow(rhoedge,Gamma)/Gamma_1;
-	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d * 1.0e-4; /*Make the ambient background ionized*/
-	} else {
-	  pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
-	  pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1;
-	  pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
-	}
+	  pGrid->U[k][j][i].E  = rhoout * 2. * GM /rmax/Gamma_1;
+	/*   pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d * 1.0e-4; /\*Make the ambient background ionized*\/ */
+	/* } else { */
+	/*   pGrid->U[k][j][i].d = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex); */
+	/*   pGrid->U[k][j][i].E  = K*pow(pGrid->U[k][j][i].d,Gamma)/Gamma_1; */
+	/*   pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d; */
+	/* } */
       }
     }
   }
@@ -252,49 +254,49 @@ VOutFun_t get_usr_out_fun(const char *name){
 
 void Userwork_in_loop(MeshS *pM)
 {
-  Real x1,x2,x3,rad,myrho,powindex;
-  int is,ie,js,je,ks,ke, nl, nd, i, j, k;
-  GridS *pGrid;
+  /* Real x1,x2,x3,rad,myrho,powindex; */
+  /* int is,ie,js,je,ks,ke, nl, nd, i, j, k; */
+  /* GridS *pGrid; */
 
-  powindex=1.0/Gamma_1;
+  /* powindex=1.0/Gamma_1; */
 
-  for (nl=0; nl<(pM->NLevels); nl++){
-    for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
-      if (pM->Domain[nl][nd].Grid != NULL) {
-	pGrid = pM->Domain[nl][nd].Grid;          /* ptr to Grid */
+  /* for (nl=0; nl<(pM->NLevels); nl++){ */
+  /*   for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){ */
+  /*     if (pM->Domain[nl][nd].Grid != NULL) { */
+  /* 	pGrid = pM->Domain[nl][nd].Grid;          /\* ptr to Grid *\/ */
 
-	is = pGrid->is;  ie = pGrid->ie;
-	js = pGrid->js;  je = pGrid->je;
-	ks = pGrid->ks;  ke = pGrid->ke;
+  /* 	is = pGrid->is;  ie = pGrid->ie; */
+  /* 	js = pGrid->js;  je = pGrid->je; */
+  /* 	ks = pGrid->ks;  ke = pGrid->ke; */
 	
-	for (k=ks; k<=ke; k++) {
-	  for (j=js; j<=je; j++) {
-	    for (i=is; i<=ie; i++) {
-	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
-	      rad = sqrt(x1*x1 + x2*x2 + x3*x3);
+  /* 	for (k=ks; k<=ke; k++) { */
+  /* 	  for (j=js; j<=je; j++) { */
+  /* 	    for (i=is; i<=ie; i++) { */
+  /* 	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3); */
+  /* 	      rad = sqrt(x1*x1 + x2*x2 + x3*x3); */
 
-	      if (pGrid->U[k][j][i].d < 0) fprintf(stderr, "Neg dens: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].d, k, j, i, rad, nl);
-	      if (pGrid->U[k][j][i].E < 0) fprintf(stderr, "Neg E: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].E, k, j, i, rad, nl);
+  /* 	      if (pGrid->U[k][j][i].d < 0) fprintf(stderr, "Neg dens: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].d, k, j, i, rad, nl); */
+  /* 	      if (pGrid->U[k][j][i].E < 0) fprintf(stderr, "Neg E: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].E, k, j, i, rad, nl); */
 
-	      /*Reset values within the boundary*/
-	      if (rad <= rreset) { /*AT: May need to change this to a smaller r*/
-		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
-		myrho = MIN(myrho, rho0);
-		pGrid->U[k][j][i].d  = myrho;
-		pGrid->U[k][j][i].M1 = 0.0;
-		pGrid->U[k][j][i].M2 = 0.0;
-		pGrid->U[k][j][i].M3 = 0.0;
-		pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1; 
-		pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d;
+  /* 	      /\*Reset values within the boundary*\/ */
+  /* 	      if (rad <= rreset) { /\*AT: May need to change this to a smaller r*\/ */
+  /* 		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex); */
+  /* 		myrho = MIN(myrho, rho0); */
+  /* 		pGrid->U[k][j][i].d  = myrho; */
+  /* 		pGrid->U[k][j][i].M1 = 0.0; */
+  /* 		pGrid->U[k][j][i].M2 = 0.0; */
+  /* 		pGrid->U[k][j][i].M3 = 0.0; */
+  /* 		pGrid->U[k][j][i].E = K*pow(myrho,Gamma)/Gamma_1;  */
+  /* 		pGrid->U[k][j][i].s[0] = pGrid->U[k][j][i].d; */
 
 
-	      }
-	    }
-	  }
-	}
-      }
-    }
-  }
+  /* 	      } */
+  /* 	    } */
+  /* 	  } */
+  /* 	} */
+  /*     } */
+  /*   } */
+  /* } */
 
   /* if (pM->time > trad)  { */
   /*   add_radplane_3d(pGrid, -1, flux); */
