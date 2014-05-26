@@ -10,16 +10,16 @@ num_domains     = 1          # number of Domains in Mesh
 <time>
 cour_no         = 0.4		 # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim            = 10000000000000 	 # cycle limit
-tlim            = 1e5			 	 # time limit
+tlim            = 1e7			 	 # time limit
 
 <output1>
 out_fmt = rst               # History data dump
-dt      = 5e3             # time increment between outputs
+dt      = 5e5             # time increment between outputs
 
 <output2>
 out_fmt = vtk      #vtk image
 out     = prim
-dt      = 5.0e-1    # time step between outputs
+dt      = 5.0e4    # time step between outputs
 
 <output3>
 #out_fmt = bin      # bin image

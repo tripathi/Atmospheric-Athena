@@ -105,8 +105,8 @@ void problem(DomainS *pDomain)
   /* fprintf(stderr, "K : %e, Cp: %e rho0:%e \n", K, Cp, rho0); */
   /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
 #ifdef STELLAR_WIND
-
-fprintf(stderr, "K: %e, d: %e, P: %e \n", K,  rhoout/10000., K*pow(rhoout/10000.,Gamma));
+  fprintf (stderr, "hello\n");
+  fprintf(stderr, "BKD P:%e d:%e cs iso:%e\n", K*pow(rhoout,Gamma), rhoout, sqrt(K*pow(rhoout,Gamma) / rhoout));
 
   for (k=ks; k<=ke+1; k++) {
     for (j=js; j<=je+1; j++) {
@@ -126,7 +126,7 @@ fprintf(stderr, "K: %e, d: %e, P: %e \n", K,  rhoout/10000., K*pow(rhoout/10000.
 #endif
 
 #ifndef STELLAR_WIND
-
+  fprintf (stderr, "antihello\n");
   /* Power-law pressure and density */
   for (k=ks; k<=ke+1; k++) {
     for (j=js; j<=je+1; j++) {
@@ -341,18 +341,21 @@ void swind_iib(GridS *pGrid)
 {
   int i=0,j=0;
   int is,js,je,ks,ke,k;
-  Real Temp, kb, m_H;
+  Real Temp, kb, m_H, rhowind, vwind;
 
 
   Temp = 1e6;
   kb = 1.38e-16;
   m_H = 1.67e-24;
+  rhowind = 6./.05/.05*m_H;
+  vwind = 4e7; 
  
   ks = pGrid->ks; ke = pGrid->ke;
   js = pGrid->js; je = pGrid->je;
   is = pGrid->is;
 
-
+if (pGrid->time <1)
+  fprintf(stderr, "WIND P:%e d:%e v:4e7 ramP:%e\n", rhowind * Temp * kb/(m_H/2)/Gamma_1, rhowind, rhowind*4e7*4e7);
 
   for (k=ks; k<=ke; k++) {
     for (j=js; j<=je; j++) {
@@ -360,11 +363,17 @@ void swind_iib(GridS *pGrid)
 	/* if (pGrid->time >0) { */
 	/*   pGrid->U[k][j][is-i] = pGrid->U[k][j][is]; */
 	/* } else{ */
-	  pGrid->U[k][j][is-i].s[0] = 1e-4*6./.05/.05*m_H;
+	  pGrid->U[k][j][is-i].s[0] = 1e-4*rhowind;
 	/* } */
-        pGrid->U[k][j][is-i].d  =  6./.05/.05*m_H;
-        pGrid->U[k][j][is-i].M1 = 4e7 * pGrid->U[k][j][is-i].d;
-	pGrid->U[k][j][is-i].E  =  pGrid->U[k][j][is-i].d * Temp * kb/(m_H/2)/Gamma_1 + 0.5*(pGrid->U[k][j][is-i].M1*pGrid->U[k][j][is-i].M1)/pGrid->U[k][j][is-i].d;
+        pGrid->U[k][j][is-i].d  =  rhowind;
+        pGrid->U[k][j][is-i].M1 = vwind* rhowind;
+/*0.5*vwind *(erf((pGrid->time - 2e6)/1e6) +1) * rhowind; */
+	/* if (i==2 && j == js+1 && k == ks+1) */
+	/*   fprintf(stderr, "time:%e, v:%e \n", pGrid->time, 0.5*vwind*(erf((pGrid->time - 2e6)/1e6) +1)); */
+	/* pGrid->U[k][j][is-i].M2 =  pGrid->U[k][j][is].M2; */
+	/* pGrid->U[k][j][is-i].M3 =  pGrid->U[k][j][is].M3; */
+
+	pGrid->U[k][j][is-i].E  =  rhowind * Temp * kb/(m_H/2)/Gamma_1 + 0.5*(pGrid->U[k][j][is-i].M1*pGrid->U[k][j][is-i].M1)/pGrid->U[k][j][is-i].d;
       }
     }
   }
