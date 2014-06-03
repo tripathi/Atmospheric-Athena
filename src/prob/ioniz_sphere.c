@@ -201,7 +201,7 @@ void problem_read_restart(MeshS *pM, FILE *fp)
   rreset = 0.75*rp;
 
   powindex   = 1.0/Gamma_1;
-  rhop = np * m_H;
+  rhop = np * mu;
   K  = pow(rhop,-Gamma_1)*cs*cs;
   rho0= pow( pow(rhop,Gamma_1) - Gamma_1/Gamma*GM/K*(1.0/rp - 1.0/rin),powindex);
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
