@@ -30,7 +30,7 @@ void problem(DomainS *pDomain)
   int i, is = pGrid->is, ie = pGrid->ie;
   int j, js = pGrid->js, je = pGrid->je;
   int k, ks = pGrid->ks, ke = pGrid->ke;
-  Real cs, n_H, m_H;
+  Real cs, n_H, mu;
   Real rho, pressure;
 
   Real x1,x2,x3; /*For setting up atmos*/
@@ -47,7 +47,7 @@ void problem(DomainS *pDomain)
    * in units of photons per unit time per unit area), and trad
    * (the onset time of radiation).
    */
-  m_H = par_getd("ionradiation", "m_H");
+  mu = par_getd("ionradiation", "mu");
   n_H = par_getd("problem","n_H");
   cs = par_getd("problem","cs");
   flux = par_getd("problem","flux");
@@ -183,7 +183,7 @@ void problem_write_restart(MeshS *pM, FILE *fp)
 void problem_read_restart(MeshS *pM, FILE *fp)
 {
 
-  Real mp, np, cs, Ggrav, rin, powindex, rhop, m_H;
+  Real mp, np, cs, Ggrav, rin, powindex, rhop, mu;
   int nl, nd;
   GridS *pGrid;
 
@@ -191,7 +191,7 @@ void problem_read_restart(MeshS *pM, FILE *fp)
   mp  = par_getd_def("problem","mp",1.0e30);
   np = par_getd_def("problem","np",6.0e8);
   cs = par_getd("problem","cs");
-  m_H = par_getd("ionradiation", "m_H");
+  mu = par_getd("ionradiation", "mu");
 
   Ggrav = 6.67e-8;
   GM = Ggrav * mp;
