@@ -62,15 +62,14 @@ void problem(DomainS *pDomain)
   np = par_getd_def("problem","np",6.0e8);
 
   Ggrav = 6.67e-8;
+
+  /*Derived planet quantities*/
   GM = Ggrav * mp;
   rhop = np * mu;
   Rsoft= 0.01*rp;
 
   rin = 0.5*rp;
   rreset = 0.75*rp;
-    
-
-  
 
   /* rin  = rp - 5.0*pGrid->dx1; /\*What I refer to as r0*\/ */
   /* rout = rp + 15.0*pGrid->dx1;  */
@@ -87,10 +86,9 @@ void problem(DomainS *pDomain)
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
   /*Outer (density matching) radius for ambient gas*/
-  rhoedge = rhop;
-  rout = rp;
-/* 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); */
-  /* rout = rp; */
+  rhoedge = rhop/10;  /*Original atmos doesn't have factor of 10*/
+  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); /*Original atmos: rp*/
+
 
   /* if ((rout - rreset) < 5.0*pGrid->dx1) */
   /*   ath_error("[sphere]: Insufficient separation between reset and outer radii"); */
@@ -98,7 +96,7 @@ void problem(DomainS *pDomain)
   /*   ath_error("[sphere]: At least 5 cells needed for reconstruction"); */
 
   /*Density at atmosphere's edge*/
-  rhoout = rhop/10000.;
+  rhoout = rhoedge/10000.;
 /* pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex)/10000.; */
   /* fprintf(stderr, "rhoout %e \n", rhoout/10000.); */
   /* fprintf(stderr, "K : %e, Cp: %e rho0:%e \n", K, Cp, rho0); */
