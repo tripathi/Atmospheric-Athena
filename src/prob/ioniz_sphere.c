@@ -20,7 +20,7 @@
 #define ALPHA4 2.59e-13
 
 /* static int radplanecount; */
-static Real GM,K,Cp,rp,rreset,rho0,Rsoft, trad, flux;
+static Real GM,K,Cp,rp,rreset2,rho0,Rsoft, trad, flux;
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
 static Real print_flux(const GridS *pG, const int i, const int j, const int k);
 
@@ -69,7 +69,7 @@ void problem(DomainS *pDomain)
   Rsoft= 0.01*rp;
 
   rin = 0.5*rp;
-  rreset = 0.75*rp;
+  rreset2 = 0.5625*rp*rp; /*(0.75Rp)^2*/
 
   /* rin  = rp - 5.0*pGrid->dx1; /\*What I refer to as r0*\/ */
   /* rout = rp + 15.0*pGrid->dx1;  */
@@ -196,7 +196,7 @@ void problem_read_restart(MeshS *pM, FILE *fp)
 
 
   rin = 0.5*rp;
-  rreset = 0.75*rp;
+  rreset2 = 0.5625*rp*rp; /*(0.75Rp)^2*/
 
   powindex   = 1.0/Gamma_1;
   rhop = np * mu;
@@ -233,7 +233,7 @@ VOutFun_t get_usr_out_fun(const char *name){
 
 void Userwork_in_loop(MeshS *pM)
 {
-  Real x1,x2,x3,rad,myrho,powindex;
+  Real x1,x2,x3,rad2,myrho,powindex;
   int is,ie,js,je,ks,ke, nl, nd, i, j, k;
   GridS *pGrid;
 
@@ -252,13 +252,13 @@ void Userwork_in_loop(MeshS *pM)
 	  for (j=js; j<=je; j++) {
 	    for (i=is; i<=ie; i++) {
 	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
-	      rad = sqrt(x1*x1 + x2*x2 + x3*x3);
+	      rad2 = x1*x1 + x2*x2 + x3*x3;
 
 	      if (pGrid->U[k][j][i].d < 0) fprintf(stderr, "Neg dens: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].d, k, j, i, rad, nl);
 	      if (pGrid->U[k][j][i].E < 0) fprintf(stderr, "Neg E: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].E, k, j, i, rad, nl);
 
 	      /*Reset values within the boundary*/
-	      if (rad <= rreset) { /*AT: May need to change this to a smaller r*/
+	      if (rad2 <= rreset2) { /*AT: May need to change this to a smaller r*/
 		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
 		myrho = MIN(myrho, rho0);
 		pGrid->U[k][j][i].d  = myrho;
