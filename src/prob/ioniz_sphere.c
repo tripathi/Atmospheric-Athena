@@ -63,7 +63,7 @@ void problem(DomainS *pDomain)
 
   Ggrav = 6.67e-8;
   GM = Ggrav * mp;
-  rhop = np * m_H;
+  rhop = np * mu;
   Rsoft= 0.01*rp;
 
   rin = 0.5*rp;
