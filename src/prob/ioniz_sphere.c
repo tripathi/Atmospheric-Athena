@@ -89,6 +89,7 @@ void problem(DomainS *pDomain)
   rhoedge = rhop/10;  /*Original atmos doesn't have factor of 10*/
   rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); /*Original atmos: rp*/
 
+  /* fprintf(stderr, "Scales: rin: %e, rreset: %e, rp: %e, rout: %e \n", rin, sqrt(rreset2), rp, rout); */
 
   /* if ((rout - rreset) < 5.0*pGrid->dx1) */
   /*   ath_error("[sphere]: Insufficient separation between reset and outer radii"); */
@@ -259,7 +260,7 @@ void Userwork_in_loop(MeshS *pM)
 
 	      /*Reset values within the boundary*/
 	      if (rad2 <= rreset2) { /*AT: May need to change this to a smaller r*/
-		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad2,TINY_NUMBER) + Cp,powindex);
+		myrho = pow(Gamma_1/Gamma*GM/K/MAX(sqrt(rad2),TINY_NUMBER) + Cp,powindex);
 		myrho = MIN(myrho, rho0);
 		pGrid->U[k][j][i].d  = myrho;
 		pGrid->U[k][j][i].M1 = 0.0;
