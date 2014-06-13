@@ -254,12 +254,12 @@ void Userwork_in_loop(MeshS *pM)
 	      cc_pos(pGrid,i,j,k,&x1,&x2,&x3);
 	      rad2 = x1*x1 + x2*x2 + x3*x3;
 
-	      if (pGrid->U[k][j][i].d < 0) fprintf(stderr, "Neg dens: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].d, k, j, i, rad, nl);
-	      if (pGrid->U[k][j][i].E < 0) fprintf(stderr, "Neg E: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].E, k, j, i, rad, nl);
+	      if (pGrid->U[k][j][i].d < 0) fprintf(stderr, "Neg dens: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].d, k, j, i, rad2, nl);
+	      if (pGrid->U[k][j][i].E < 0) fprintf(stderr, "Neg E: %e at k:%d j:%d i:%d, rad: %f, lev:%d \n",pGrid->U[k][j][i].E, k, j, i, rad2, nl);
 
 	      /*Reset values within the boundary*/
 	      if (rad2 <= rreset2) { /*AT: May need to change this to a smaller r*/
-		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad,TINY_NUMBER) + Cp,powindex);
+		myrho = pow(Gamma_1/Gamma*GM/K/MAX(rad2,TINY_NUMBER) + Cp,powindex);
 		myrho = MIN(myrho, rho0);
 		pGrid->U[k][j][i].d  = myrho;
 		pGrid->U[k][j][i].M1 = 0.0;
