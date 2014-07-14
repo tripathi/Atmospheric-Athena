@@ -52,9 +52,6 @@
 #define @PARTICLES_ALGORITHM@
 #define @FEEDBACK_DEFINE@
 
-/* Enable stellar wind boundary condition*/
-#define @STELLAR_WIND_MODE@
-
 /* Ionizing radiative transfer: ION_RADIATION or NO_ION_RADIATION */
 #define @ION_RADIATION_MODE@
 
