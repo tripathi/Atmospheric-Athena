@@ -127,7 +127,7 @@ VDFun_t ion_radtransfer_init(MeshS *pM, int ires){
 	       optical depth we care about? */
 	    maxdx = pM->dx[0] > pM->dx[1] ? pM->dx[0] : pM->dx[1];
 	    maxdx = maxdx > pM->dx[2] ? maxdx : pM->dx[1];
-	    fprintf(stderr,"tau: %f mH: %e sigma:%e dx: %e \n", MINOPTDEPTH, m_H, sigma_ph, maxdx);
+	    /* fprintf(stderr,"tau: %f mH: %e sigma:%e dx: %e \n", MINOPTDEPTH, m_H, sigma_ph, maxdx); */
 	    d_nlo = MINOPTDEPTH * m_H / (sigma_ph * maxdx);
 	    counter = 5;
 	  }
