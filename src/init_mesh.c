@@ -117,7 +117,7 @@ void init_mesh(MeshS *pM)
     ath_error("[init_mesh]: malloc returned a NULL pointer\n");
 
   numberradplanes = par_geti("problem","nradplanes");
-  printf("nradplanes %d \n", numberradplanes);
+  /* printf("nradplanes %d \n", numberradplanes); */
   (pM->radplanelist)->nradplane = numberradplanes;
   /* (pM->radplanelist)->nradplane=0; */
   /* fprintf(stderr, "Initialize me %d \n", (pM->radplanelist)->nradplane); */

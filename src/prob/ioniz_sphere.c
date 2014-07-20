@@ -145,7 +145,7 @@ void problem(DomainS *pDomain)
 	ath_error("More than 1 radplane specified in input file. Unable to add requested radplane\n");
       }
       if (radplanecount == 1 && trad < TINY_NUMBER) {
-	fprintf(stderr,"I'm in here  because trad is %g \n", trad);
+	/* fprintf(stderr,"I'm in here  because trad is %g \n", trad); */
 	add_radplane_3d(pGrid, -1, flux);
 	radplanecount = 0;
       } else if (trad >= TINY_NUMBER){
