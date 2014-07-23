@@ -90,13 +90,13 @@ int main(int argc, char *argv[])
 /*Added A. Tripathi 01/10/12*/
 #ifdef ION_RADIATION 
   VDFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
-#ifdef MPI_PARALLEL
-  double timer1a, timer1b; /*For storing time for profiling*/
-  double mintimer1, maxtimer1, dtimer1;
-  double mintimer2, maxtimer2, dtimer2;
-  double mintimer3, maxtimer3, dtimer3;
-  int timererr1, timererr2;
-#endif /*MPI*/
+/* #ifdef MPI_PARALLEL */
+/*   double timer1a, timer1b; /\*For storing time for profiling*\/ */
+/*   double mintimer1, maxtimer1, dtimer1; */
+/*   double mintimer2, maxtimer2, dtimer2; */
+/*   double mintimer3, maxtimer3, dtimer3; */
+/*   int timererr1, timererr2; */
+/* #endif /\*MPI*\/ */
   /* GridS *pGrid; */
   /* int j, k; */
 #endif
@@ -540,10 +540,10 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef ION_RADIATION 
-#ifdef MPI_PARALLEL
-    /*Timer for profiling time spent in ionization routine*/
-    timer1a = MPI_Wtime();
-#endif
+/* #ifdef MPI_PARALLEL */
+/*     /\*Timer for profiling time spent in ionization routine*\/ */
+/*     timer1a = MPI_Wtime(); */
+/* #endif */
     /* Note that we do the ionizing radiative transfer step first
        because it is capable of decreasing the time step relative to
        the value computed by Courant. */
@@ -570,25 +570,25 @@ int main(int argc, char *argv[])
 #else
     }
 #endif
-#ifdef MPI_PARALLEL
-    /*Timer for profiling time spent in ionization routine*/
-    timer1b = MPI_Wtime();
-    dtimer1 = timer1b - timer1a;
-    timererr1 = MPI_Allreduce(&dtimer1, &mintimer1, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-    timererr2 = MPI_Allreduce(&dtimer1, &maxtimer1, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-    if (myID_Comm_world < 1) {
-      fprintf(stdout, "Ioniz timer1: min %f max %f local: %f \n", mintimer1, maxtimer1, timer1b - timer1a);
-    }
-#endif
+/* #ifdef MPI_PARALLEL */
+/*     /\*Timer for profiling time spent in ionization routine*\/ */
+/*     timer1b = MPI_Wtime(); */
+/*     dtimer1 = timer1b - timer1a; */
+/*     timererr1 = MPI_Allreduce(&dtimer1, &mintimer1, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD); */
+/*     timererr2 = MPI_Allreduce(&dtimer1, &maxtimer1, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD); */
+/*     if (myID_Comm_world < 1) { */
+/*       fprintf(stdout, "Ioniz timer1: min %f max %f local: %f \n", mintimer1, maxtimer1, timer1b - timer1a); */
+/*     } */
+/* #endif */
 
 #endif
 /*--- Step 9c. ---------------------------------------------------------------*/
 /* Loop over all Domains and call Integrator */
 
-#ifdef MPI_PARALLEL
-    /*Timer for profiling time spent in hydro*/
-    timer1a = MPI_Wtime();
-#endif
+/* #ifdef MPI_PARALLEL */
+/*     /\*Timer for profiling time spent in hydro*\/ */
+/*     timer1a = MPI_Wtime(); */
+/* #endif */
 
     for (nl=0; nl<(Mesh.NLevels); nl++){ 
       for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){  
@@ -612,38 +612,38 @@ int main(int argc, char *argv[])
     RestrictCorrect(&Mesh);
 #endif
 
-#ifdef MPI_PARALLEL
-    /*Timer for profiling time spent in hydro*/
-    timer1b = MPI_Wtime();
-    dtimer2 = timer1b - timer1a;
-    timererr1 = MPI_Allreduce(&dtimer2, &mintimer2, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-    timererr2 = MPI_Allreduce(&dtimer2, &maxtimer2, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-    if (myID_Comm_world < 1) {
-      fprintf(stdout, "Hydro timer2: min %f max %f local: %f \n", mintimer2, maxtimer2, timer1b - timer1a);
-    }
+/* #ifdef MPI_PARALLEL */
+/*     /\*Timer for profiling time spent in hydro*\/ */
+/*     timer1b = MPI_Wtime(); */
+/*     dtimer2 = timer1b - timer1a; */
+/*     timererr1 = MPI_Allreduce(&dtimer2, &mintimer2, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD); */
+/*     timererr2 = MPI_Allreduce(&dtimer2, &maxtimer2, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD); */
+/*     if (myID_Comm_world < 1) { */
+/*       fprintf(stdout, "Hydro timer2: min %f max %f local: %f \n", mintimer2, maxtimer2, timer1b - timer1a); */
+/*     } */
 
-#endif
+/* #endif */
 
 /*--- Step 9e. ---------------------------------------------------------------*/
 /* User work (defined in problem()) */
 
-#ifdef MPI_PARALLEL
-    /*Timer for profiling time spent in userworkinloop*/
-    timer1a = MPI_Wtime();
-#endif
+/* #ifdef MPI_PARALLEL */
+/*     /\*Timer for profiling time spent in userworkinloop*\/ */
+/*     timer1a = MPI_Wtime(); */
+/* #endif */
 
     Userwork_in_loop(&Mesh);
 
-#ifdef MPI_PARALLEL
-    /*Timer for profiling time spent in userworkinloop*/
-    timer1b = MPI_Wtime();
-    dtimer3 = timer1b - timer1a;
-    timererr1 = MPI_Allreduce(&dtimer3, &mintimer3, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-    timererr2 = MPI_Allreduce(&dtimer3, &maxtimer3, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-    if (myID_Comm_world < 1) {
-      fprintf(stdout, "Userwork timer3: min %f max %f local: %f \n", mintimer3, maxtimer3, timer1b - timer1a);
-    }
-#endif
+/* #ifdef MPI_PARALLEL */
+/*     /\*Timer for profiling time spent in userworkinloop*\/ */
+/*     timer1b = MPI_Wtime(); */
+/*     dtimer3 = timer1b - timer1a; */
+/*     timererr1 = MPI_Allreduce(&dtimer3, &mintimer3, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD); */
+/*     timererr2 = MPI_Allreduce(&dtimer3, &maxtimer3, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD); */
+/*     if (myID_Comm_world < 1) { */
+/*       fprintf(stdout, "Userwork timer3: min %f max %f local: %f \n", mintimer3, maxtimer3, timer1b - timer1a); */
+/*     } */
+/* #endif */
 
 /*--- Step 9f. ---------------------------------------------------------------*/
 /* Compute gravitational potential using new density, and add second-order
