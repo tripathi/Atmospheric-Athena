@@ -99,7 +99,7 @@ NGrid_x3 = 4
 <ionradiation>
 sigma_ph = 6.3e-18
 m_H = 1.67e-24
-mu = 8.4e-25
+mu = 1.67e-24
 e_gamma = 3.84e-12
 alpha_C = 1.0e-10
 k_B = 1.38e-16
