@@ -4,7 +4,7 @@ problem = Planar ionizating radiation
 
 <job>
 problem_id      = ioniz_sphere     # problem ID: basename of output filenames
-maxout          = 3          # Output blocks number from 1 -> maxout
+maxout          = 2          # Output blocks number from 1 -> maxout
 num_domains     = 4          # number of Domains in Mesh
 
 <time>
@@ -14,12 +14,12 @@ tlim            = 2e6			 	 # time limit
 
 <output1>
 out_fmt = rst               # History data dump
-dt      = 5e3             # time increment between outputs
+dt      = 1e4             # time increment between outputs
 
 <output2>
 out_fmt = vtk      #vtk image
 out     = prim
-dt      = 1.0e3    # time step between outputs
+dt      = 1.0e4    # time step between outputs
 
 <output3>
 #out_fmt = bin      # bin image
@@ -99,7 +99,7 @@ NGrid_x3 = 4
 <ionradiation>
 sigma_ph = 6.3e-18
 m_H = 1.67e-24
-mu = 1.67e-24
+mu = 8.4e-25
 e_gamma = 3.84e-12
 alpha_C = 1.0e-10
 k_B = 1.38e-16
