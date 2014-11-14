@@ -11,7 +11,7 @@
  *   at compile time.
  *
  * CONTAINS PUBLIC FUNCTIONS:
- * recomb_rate_coef(T): e- + H+ -> H rate coefficient in cm^-3 s^-1
+ * recomb_rate_coef(T): e- + H+ -> H rate coefficient in cm^3 s^-1
  * coll_ion_rate_coef(T): collisional H ionization rate coefficient in
  *      cm^3 s^-1
  * recomb_cool_rate_coef(T): radiative recombination cooling rate
