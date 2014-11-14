@@ -316,13 +316,16 @@ void Userwork_after_loop(MeshS *pM)
 static Real PlanetPot(const Real x1, const Real x2, const Real x3)
 {
   Real rad = sqrt(SQR(x1)+SQR(x2)+SQR(x3));
-  /* Real adist = 7.48e11; /\* .05AU in cm*\/ */
-  /* Real GMstar = 6.67e-8 * 1.99e33; /\*Using 1 solar mass in g*\/ */
-  /* Real omega = sqrt(GMstar / (pow(adist,3))); */
-  /* Real radstar = sqrt(SQR(x1+adist) + SQR(x2) + SQR(x3)); */
+#ifndef SHEARING_BOX
+  Real adist = 7.48e11; /* .05AU in cm*/
+  Real GMstar = 6.67e-8 * 1.99e33; /*Using 1 solar mass in g*/
+  Real omega = sqrt(GMstar / (pow(adist,3)));
+  Real radstar = sqrt(SQR(x1+adist) + SQR(x2) + SQR(x3));
+  return -GM/(rad+Rsoft)-GMstar/radstar -.5*SQR(omega*radstar); 
+#else 
+  return -GM/(rad+Rsoft)
+#endif
 
-  return -GM/(rad+Rsoft);
-  /*GMstar/radstar -.5*SQR(omega*radstar); */
 }
 
 /*------------------------------------------------------------------------------
