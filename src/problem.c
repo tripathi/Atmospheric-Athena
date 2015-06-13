@@ -1,1 +1,1 @@
-prob/ifront.c
+prob/ioniz_sphere.c
