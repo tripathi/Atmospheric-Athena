@@ -4,3 +4,26 @@ Atmospheric Athena:
 
 What is Atmospheric Athena?
   Atmospheric Athena is a code intended to simulate hydrodynamic escape from close-in giant planets in 3D.  It uses the Athena hydrodynamics code v4.1 (Stone et al. 2008) with a new ionizing radiative transfer implementation based on Krumholz et al, 2007, to self-consistently model photoionization driven winds from the planet.  The code is fully compatible with static mesh refinement and MPI parallelization.  It can handle arbitrary planet potentials and stellar initial conditions.  The physical system that the code models and the equations that it solves are fully described in Tripathi, Kratter, Murray-Clay, & Krumholz, submitted 2015.
+
+Files of note in this repository
+  * Mass loss input file: *tst/massloss/athinput.ioniz_sphere_hires*
+  * Mass loss problem file: *src/prob/ioniz_sphere.c*
+  * Ionization front test input file: *tst/ionradiation/athinput.ifront*
+  * Ionization front problem file: *src/prob/ifront.c*
+
+Configuring and Running
+-----------------------
+Adapted from the `Athena Tutorial <https://trac.princeton.edu/Athena/wiki/AthenaDocsTut>`_
+
+1. Clean up files from the last compilation.
+::
+  make clean
+2. Configure the file with desired options.  For our 3D mass loss simulations, we used:
+::
+  ./configure --with-problem=ioniz_sphere --with-gas=hydro --enable-ion-radiation --enable-ion-plane --with-flux=roe --enable-mpi --enable-h-correction --enable-smr
+3. Compile. This will create the /bin directory, if it does not already exist. 
+::
+  make all
+4. Run, using the appropriate input file.  If using MPI, use ``mpirun`` and specify the number of processors
+::
+  bin/athena -i tst/massloss/athinput.ioniz_sphere_hires
