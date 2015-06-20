@@ -112,6 +112,7 @@ void init_mesh(MeshS *pM)
   pM->outfilename = par_gets("job","problem_id");
 
 #ifdef ION_RADPLANE
+  /*Initialize the planar ionizing radiation source*/
   pM->radplanelist=(Radplane*)calloc(1,sizeof(Radplane));
   if ((pM->radplanelist) == NULL)
     ath_error("[init_mesh]: malloc returned a NULL pointer\n");
@@ -119,8 +120,6 @@ void init_mesh(MeshS *pM)
   numberradplanes = par_geti("problem","nradplanes");
   printf("nradplanes %d \n", numberradplanes);
   (pM->radplanelist)->nradplane = numberradplanes;
-  /* (pM->radplanelist)->nradplane=0; */
-  /* fprintf(stderr, "Initialize me %d \n", (pM->radplanelist)->nradplane); */
   (pM->radplanelist)->dir = (int*)calloc_1d_array(numberradplanes,sizeof(int));
   if ((pM->radplanelist)->dir == NULL)
     ath_error("[init_mesh]: malloc returned a NULL pointer\n");
