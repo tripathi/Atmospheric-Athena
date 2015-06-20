@@ -20,7 +20,6 @@
 #define ALPHA4 2.59e-13
 
 /* static int radplanecount; */
-/* static Real GM,K,Cp,rp,rreset2,rho0,Rsoft, trad, flux; */
 static Real GMstar, adist, GM,K,Cp,rp,rreset2,rho0,Rsoft, trad, flux;
 static Real TidalPot(const Real x1, const Real x2, const Real x3);
 static Real PlanetPot(const Real x1, const Real x2, const Real x3);
@@ -70,6 +69,7 @@ void problem(DomainS *pDomain)
   rhop = np * mu;
   Rsoft= 0.01*rp;
 
+  /* For use in trying to add the Coriolis force - Not yet working */
 #ifdef SHEARING_BOX
   adist = 7.48e11; /* .05AU in cm*/
   GMstar = Ggrav * 1.99e33; /*Using 1 solar mass in g*/
@@ -77,10 +77,11 @@ void problem(DomainS *pDomain)
   qshear = 0;
 #endif
 
-  rin = 0.5*rp;
-  rreset2 = 0.5625*rp*rp; /*(0.75Rp)^2*/
+  /* Inner radii - change accordingly */
+  rin = 0.5*rp; /* Radius within which the profile is constant */
+  rreset2 = 0.5625*rp*rp; /* Reset radius^2 - within which the profile is fixed */
 
-  /* rin  = rp - 5.0*pGrid->dx1; /\*What I refer to as r0*\/ */
+  /* rin  = rp - 5.0*pGrid->dx1;  */
   /* rout = rp + 15.0*pGrid->dx1;  */
 
   powindex   = 1.0/Gamma_1;
@@ -95,10 +96,9 @@ void problem(DomainS *pDomain)
   Cp = pow(rho0,Gamma_1) - (Gamma_1/Gamma)*GM/K/rin;
 
   /*Outer (density matching) radius for ambient gas*/
-  rhoedge = rhop/10;  /*Original atmos doesn't have factor of 10*/
-  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); /*Original atmos: rp*/
+  rhoedge = rhop/10;  
+  rout = 1./(Gamma/Gamma_1/GM*K*(pow(rhoedge, Gamma_1) - pow(rho0, Gamma_1)) + 1./rin); 
 
-  /* fprintf(stderr, "Scales: rin: %e, rreset: %e, rp: %e, rout: %e \n", rin, sqrt(rreset2), rp, rout); */
 
   /* if ((rout - rreset) < 5.0*pGrid->dx1) */
   /*   ath_error("[sphere]: Insufficient separation between reset and outer radii"); */
@@ -107,10 +107,7 @@ void problem(DomainS *pDomain)
 
   /*Density at atmosphere's edge*/
   rhoout = rhoedge/10000.;
-/* pow(Gamma_1/Gamma*GM/K/rout + Cp,powindex)/10000.; */
-  /* fprintf(stderr, "rhoout %e \n", rhoout/10000.); */
-  /* fprintf(stderr, "K : %e, Cp: %e rho0:%e \n", K, Cp, rho0); */
-  /* fprintf(stderr, "K : %f, Cp: %f powindex: %f, rho_out: %f\n", K, Cp, powindex, (Gamma_1/Gamma*GM/K/rout + Cp)); */
+
 
   /* Power-law pressure and density */
   for (k=ks; k<=ke+1; k++) {
@@ -207,6 +204,7 @@ void problem_read_restart(MeshS *pM, FILE *fp)
   Ggrav = 6.67e-8;
   GM = Ggrav * mp;
 
+  /*For use when trying to implement the Coriolis force (not yet working)*/
 #ifdef SHEARING_BOX
  adist = 7.48e11; /* .05AU in cm*/
  GMstar = Ggrav * 1.99e33; /*Using 1 solar mass in g*/
@@ -256,6 +254,8 @@ VOutFun_t get_usr_out_fun(const char *name){
 
 void Userwork_in_loop(MeshS *pM)
 {
+  /*Use this function to fix the profile within rreset, at each timestep*/
+
   Real x1,x2,x3,rad2,myrho,powindex;
   int is,ie,js,je,ks,ke, nl, nd, i, j, k;
   GridS *pGrid;

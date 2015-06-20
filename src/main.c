@@ -12,6 +12,9 @@
  *  I. Parrish, & A. Skinner.  See also the F90 version developed by JF Hawley
  *  & JB Simon.
  *
+ *  This version modified to include planar ionizing radiation, compatible with
+ *  SMR & MPI, as per A. Tripathi, K. Kratter, R. Murray-Clay & M. Krumholz, 2015.
+ *
  *  History:
  * - v1.0 [Feb 2003] - 1D adiabatic and isothermal MHD
  * - v1.1 [Sep 2003] - bug fixes in eigensystems
@@ -21,6 +24,8 @@
  * - v3.2 [Sep 2009] - viscosity, resistivity, conduction, particles, special
  *                     relativity, cylindrical coordinates
  * - v4.0 [Jul 2010] - static mesh refinement with MPI
+ * - v4.1 [Jan 2011] - algorithm extensions for special relativity hydrodynamics
+ *                     and MHD, as well as various bug fixes
  *
  * See the GNU General Public License for usage restrictions. 
  *									        
@@ -44,6 +49,8 @@ static char *athena_version = "version 4.0 - 01-Jul-2010";
 #include "athena.h"
 #include "globals.h"
 #include "prototypes.h"
+/* To enable floating point exception handling, */
+/* uncomment the next two lines & line 120. */
 /* #define _GNU_SOURCE */
 /* #include <fenv.h> */
 
@@ -90,8 +97,6 @@ int main(int argc, char *argv[])
 /*Added A. Tripathi 01/10/12*/
 #ifdef ION_RADIATION 
   VDFun_t IonRadTransfer; /* function pointer to ionization, set at runtime */
-  /* GridS *pGrid; */
-  /* int j, k; */
 #endif
   int nl,nd;
   char *definput = "athinput";  /* default input filename */
@@ -111,6 +116,7 @@ int main(int argc, char *argv[])
 
   int iquit=0;  /* quit signal sent to ath_sig_act, our system signal handler */
 
+  /* To enable floating point exception handling, use: */
   /* int myret = feenableexcept(FE_ALL_EXCEPT); */
   /* if(myret==-1) printf(stderr,"My check for NaNs doesn't work! \n"); */
 
@@ -352,7 +358,7 @@ int main(int argc, char *argv[])
   init_particle(&Mesh);
 #endif
 #ifdef ION_RADIATION
-  ion_radtransfer_init_domain(&Mesh); /*Note - FIX for MPI and SMR*/
+  ion_radtransfer_init_domain(&Mesh); 
 #endif
 /*--- Step 5. ----------------------------------------------------------------*/
 /* Set initial conditions, either by reading from restart or calling problem
@@ -538,9 +544,7 @@ int main(int argc, char *argv[])
        the value computed by Courant. */
 
     if (Mesh.radplanelist[0].nradplane > 0) {
-      /* printf("Entering ioniz loop at time %e \n", Mesh.time); */
-
-      clear_coarse_time();
+      clear_coarse_time(); /*Used to synchronize radiation time step across levels*/
       for (nl=0; nl<(Mesh.NLevels); nl++){
 	for (nd=0; nd<(Mesh.DomainsPerLevel[nl]); nd++){
 	  if (Mesh.Domain[nl][nd].Grid != NULL){
@@ -551,7 +555,7 @@ int main(int argc, char *argv[])
 	}
       }
 
-/* With SMR, restrict solution from Child --> Parent grids  */
+/* With SMR, restrict hydro variables from Child --> Parent grids  */
 /* after updating the fine grids' ionizing flux */
 #ifdef STATIC_MESH_REFINEMENT
     ionradRestrictCorrect(&Mesh);

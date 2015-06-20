@@ -8,6 +8,8 @@
  *   between child and parent Grids, and initializes data needed for restriction
  *   flux-correction, and prolongation steps.
  *
+ *   Initializes variables needs for SMR of planar ionizing radiation
+ *
  * CONTAINS PUBLIC FUNCTIONS: 
  * - init_grid()
  *
@@ -236,8 +238,9 @@ void init_grid(MeshS *pM)
       }
 #endif /* CYLINDRICAL */
 
-      /*Allocate and initialize array of edge fluxes*/
+
 #ifdef ION_RADPLANE
+      /*Allocate and initialize array of edge fluxes*/
       nrad1 = pG->Nx[0] + 1;
       nrad2 = pG->Nx[1] + 1;
       nrad3 = pG->Nx[2] + 1;

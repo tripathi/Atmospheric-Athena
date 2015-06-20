@@ -15,6 +15,8 @@
  * - Prolongate(): sets BC on fine Grid by prolongation (interpolation) of
  *     coarse Grid solution into fine grid ghost zones
  * - SMR_init(): allocates memory for send/receive buffers
+ * - ionradRestrictCorrect(): similar to RestrictCorrect, but only restricts
+ *    energy and neutral density (first passive scalar)
  *
  * PRIVATE FUNCTION PROTOTYPES: 
  * - ProCon() - prolongates conserved variables

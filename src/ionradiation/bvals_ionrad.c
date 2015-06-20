@@ -2,11 +2,11 @@
 /*============================================================================*/
 /*! \file bvals_ionrad.c
  *  \brief Sets boundary conditions (quantities in ghost zones) 
- *   for the fluxes on each edge of a Grid.
+ *   for the ionizing fluxes on each edge of a Grid.
  *
  * PURPOSE: Sets boundary conditions (quantities in ghost zones) 
  *   for the fluxes on each edge of a Grid.  See comments at start of
- *   bvals_mhd.c for more details.  MPI is NOT implemented here.
+ *   bvals_mhd.c for more details.  2-sided MPI boundaries are NOT implemented here.
  * The only BC functions implemented here are for
  * Outflow boundary conditions
  *
