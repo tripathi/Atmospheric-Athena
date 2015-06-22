@@ -27,3 +27,18 @@ Adapted from the `Athena Tutorial <https://trac.princeton.edu/Athena/wiki/Athena
 4. Run, using the appropriate input file.  If using MPI, use ``mpirun`` and specify the number of processors
 ::
   bin/athena -i tst/massloss/athinput.ioniz_sphere_hires
+  
+Copyright
+---------
+This work is a modified version of `Athena <https://trac.princeton.edu/Athena/>`_ (v4.1), extended to included ionizing radiative transfer, compatible with static mesh refinement and MPI parallelization.  The original Athena copyright can be found in copyright.h.  For our modification:
+
+AUTHORS: 
+Anjali Tripathi
+Mark R. Krumholz
+
+Copyright 2015 Anjali Tripathi, Mark R. Krumholz
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License v2 or later as published by the Free Software Foundation.
+  
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  
