@@ -1,0 +1,8 @@
+<map id="ion_radtransfer_init" name="ion_radtransfer_init">
+<area shape="rect" id="node2" href="$ionrad__3d_8c.html#abba524666887766bab37cbdce84fff43" title="ion_radtransfer_init_3d" alt="" coords="190,56,349,83"/>
+<area shape="rect" id="node5" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="563,81,639,108"/>
+<area shape="rect" id="node7" href="$ionrad__3d_8c.html#a8451c992bbb89f0710c17d5c24580071" title="ion_radtransfer_3d" alt="" coords="203,157,336,184"/>
+<area shape="rect" id="node3" href="$par_8c.html#ac234e8c1085523fa6adcd6d4f48281b5" title="Return a Real value. " alt="" coords="419,5,493,32"/>
+<area shape="rect" id="node4" href="$ath__array_8c.html#aaa55b7239bfb912dcdaaf2190ee20b65" title="Construct 3D array = array[nt][nr][nc]. " alt="" coords="398,56,514,83"/>
+<area shape="rect" id="node6" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="689,81,765,108"/>
+</map>

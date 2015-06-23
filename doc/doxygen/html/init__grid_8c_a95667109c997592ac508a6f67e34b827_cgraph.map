@@ -1,0 +1,12 @@
+<map id="init_grid" name="init_grid">
+<area shape="rect" id="node2" href="$init__mesh_8c.html#aa16d281ef7a56861fdf7da0f960086ef" title="Searches GData[][][] array to find i,j,k components of block being updated on this processor..." alt="" coords="123,5,247,32"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="297,107,373,133"/>
+<area shape="rect" id="node5" href="$ath__array_8c.html#aaa55b7239bfb912dcdaaf2190ee20b65" title="Construct 3D array = array[nt][nr][nc]. " alt="" coords="127,107,243,133"/>
+<area shape="rect" id="node6" href="$ath__array_8c.html#a4d57e00d6537d3b632f67ab9501b589c" title="Construct 1D array = array[nc]. " alt="" coords="127,157,243,184"/>
+<area shape="rect" id="node7" href="$ath__log_8c.html#a4d9be5e0a6376ae96b3de9d9bb754c10" title="Output variable argument string to &quot;output log file&quot;. " alt="" coords="149,208,222,235"/>
+<area shape="rect" id="node8" href="$init__grid_8c.html#ae1fa17ee25bb3c608dbb32c932ef14bf" title="Checks for overlap of cubes, and returns overlap coords. " alt="" coords="133,259,237,285"/>
+<area shape="rect" id="node9" href="$ath__array_8c.html#aceb098d6337498964a6febb39f5ae163" title="Construct 2D array = array[nr][nc]. " alt="" coords="127,309,243,336"/>
+<area shape="rect" id="node10" href="$ath__array_8c.html#aa639a50b59af0bc55505fe267a0ec5a1" title="Free memory used by 3D array. " alt="" coords="133,360,238,387"/>
+<area shape="rect" id="node11" href="$ath__array_8c.html#af06c93640c785f8ca376b21222b5593b" title="Free memory used by 1D array. " alt="" coords="133,411,238,437"/>
+<area shape="rect" id="node4" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="422,107,498,133"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="free_2d_array" name="free_2d_array">
+<area shape="rect" id="node2" href="$prototypes_8h.html#a0c052773606e15004e3f3d255814246c" title="Output 2D PGM image. " alt="" coords="315,5,407,32"/>
+<area shape="rect" id="node5" href="$prototypes_8h.html#a3b937585b40185f0397235b20baa21c7" title="Output PPM image. " alt="" coords="315,56,407,83"/>
+<area shape="rect" id="node6" href="$output__tab_8c.html#a7b2f43b41a5cfe0e0c6910e128d24731" title="Writes 2D data. Note x/y&#45;coordinate is just i/j&#45;index. " alt="" coords="160,107,267,133"/>
+<area shape="rect" id="node8" href="$linear__wave2d_8c.html#a1b323f47153f1975b64382e0ffac6b73" title="problem" alt="" coords="178,157,249,184"/>
+<area shape="rect" id="node9" href="$par__strat2d_8c.html#aabe841510e006adbae496120b49eb8ae" title="Multi&#45;species NSH equilibrium. " alt="" coords="174,208,253,235"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#a9034e0a0c277e481597e9a0709908edb" title="Initializes data output. " alt="" coords="457,56,541,83"/>
+<area shape="rect" id="node4" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="589,56,640,83"/>
+<area shape="rect" id="node7" href="$prototypes_8h.html#a6847490e314cc9dc2ab5b75e0d74fe3a" title="Open file, call 1D/2D/3D writer; called by data_ouput. " alt="" coords="319,107,404,133"/>
+<area shape="rect" id="node10" href="$par__strat2d_8c.html#a71dc3ce55c0e0d718a2b55080d4fc1eb" title="problem" alt="" coords="326,208,397,235"/>
+</map>

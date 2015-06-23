@@ -1,0 +1,51 @@
+<map id="init_output" name="init_output">
+<area shape="rect" id="node2" href="$par_8c.html#a789945c886abda300582ff5511c0a029" title="Return integer *name in *block if it exists, else use the integer def as a default value..." alt="" coords="151,711,247,738"/>
+<area shape="rect" id="node3" href="$par_8c.html#ad7ff0f7b4cee0ec0751000359a117093" title="Return 0 or 1 if a block/name exists. " alt="" coords="327,458,403,484"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="862,888,938,915"/>
+<area shape="rect" id="node7" href="$ath__log_8c.html#af21347278c9b783a269474386c4289c5" title="Foutput variable argument string to &quot;error log file&quot;. " alt="" coords="707,1395,779,1422"/>
+<area shape="rect" id="node8" href="$par_8c.html#a0f36a2890d652e2c2ca86d72c91cc8cf" title="Return double *name in *block if it exists, else use the double def as a default value. " alt="" coords="149,863,249,890"/>
+<area shape="rect" id="node10" href="$par_8c.html#ac234e8c1085523fa6adcd6d4f48281b5" title="Return a Real value. " alt="" coords="161,1420,236,1447"/>
+<area shape="rect" id="node11" href="$par_8c.html#a40b778a24bb0d47d69a023ec5c3276e7" title="Return a string. " alt="" coords="162,1471,235,1498"/>
+<area shape="rect" id="node12" href="$par_8c.html#a5951ebb5008d962e7625020fe177b66b" title="Return string *name in *block if it exists, else use the string *def as a default value..." alt="" coords="149,458,249,484"/>
+<area shape="rect" id="node14" href="$ath__log_8c.html#a4d9be5e0a6376ae96b3de9d9bb754c10" title="Output variable argument string to &quot;output log file&quot;. " alt="" coords="162,1522,235,1548"/>
+<area shape="rect" id="node15" href="$blast_8c.html#a8b8cabb1061d5399fb492be89de213ff" title="get_usr_out_fun" alt="" coords="139,1572,258,1599"/>
+<area shape="rect" id="node16" href="$dump__binary_8c.html#aefcd88676b809ca0437c8bcf63dff9a3" title="Function to write an unformatted dump of the field variables. " alt="" coords="316,559,415,586"/>
+<area shape="rect" id="node23" href="$dump__history_8c.html#a04359dca00afaaa4174cea334622a472" title="Function to write dumps of scalar &quot;history&quot; variables in a formatted table. " alt="" coords="314,762,417,788"/>
+<area shape="rect" id="node24" href="$dump__tab_8c.html#a884b64ef77f0588a8f520a8fb146d0b3" title="Output CONSERVED variables. " alt="" coords="307,812,424,839"/>
+<area shape="rect" id="node25" href="$prototypes_8h.html#a0c8423a9f51dd688b5867e611120ba0e" title="Writes a restart file, including problem&#45;specific data from a user defined function. " alt="" coords="315,1066,415,1092"/>
+<area shape="rect" id="node30" href="$dump__vtk_8c.html#aaf11bcf5455df27a5dd663a00be350d2" title="Writes VTK dump (all variables). " alt="" coords="325,508,405,535"/>
+<area shape="rect" id="node34" href="$dump__tab_8c.html#a6d6e54eb309d62f1cdf145fc184b07bb" title="Output PRIMITIVE variables. " alt="" coords="308,660,423,687"/>
+<area shape="rect" id="node35" href="$par_8c.html#ac03bbd5713f3a93db722aea8d1c1b5c0" title="Return an integer. " alt="" coords="163,1623,234,1650"/>
+<area shape="rect" id="node36" href="$blast_8c.html#a4575c4cdbf2965a9857c45970d736676" title="get_usr_expr" alt="" coords="149,1674,249,1700"/>
+<area shape="rect" id="node37" href="$output_8c.html#a555d443c202637d44d9d1529c2de0748" title="function for accessing palettes stored stored in structure RGB. " alt="" coords="164,1268,233,1295"/>
+<area shape="rect" id="node38" href="$output__pdf_8c.html#ab8f7ef8a651b07524b87ef0f4f9b0262" title="Outputs PDFs. " alt="" coords="323,1408,408,1435"/>
+<area shape="rect" id="node39" href="$output__pgm_8c.html#a0c052773606e15004e3f3d255814246c" title="Output 2D PGM image. " alt="" coords="319,1724,411,1751"/>
+<area shape="rect" id="node45" href="$output__ppm_8c.html#a3b937585b40185f0397235b20baa21c7" title="Output PPM image. " alt="" coords="319,1662,411,1688"/>
+<area shape="rect" id="node46" href="$output__vtk_8c.html#acc6eeb793b57379cbfd79e0fc7ba0415" title="Writes VTK file (single variable). " alt="" coords="701,52,785,79"/>
+<area shape="rect" id="node47" href="$output__tab_8c.html#a6847490e314cc9dc2ab5b75e0d74fe3a" title="Open file, call 1D/2D/3D writer; called by data_ouput. " alt="" coords="156,1116,241,1143"/>
+<area shape="rect" id="node6" href="$par_8c.html#a92384b69c20d713c9e3f9f45234765a5" title="Set or add an integer. " alt="" coords="513,914,583,940"/>
+<area shape="rect" id="node5" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="987,888,1063,915"/>
+<area shape="rect" id="node9" href="$par_8c.html#aca86a680715a5deb34d96dc9d4279edd" title="Set or add a double. " alt="" coords="511,964,585,991"/>
+<area shape="rect" id="node13" href="$par_8c.html#a38fb6cd1c2178aea355f342578f7796d" title="Set or add a string. " alt="" coords="329,407,402,434"/>
+<area shape="rect" id="node17" href="$ath__array_8c.html#aaa55b7239bfb912dcdaaf2190ee20b65" title="Construct 3D array = array[nt][nr][nc]. " alt="" coords="490,407,606,434"/>
+<area shape="rect" id="node18" href="$convert__var_8c.html#ae7dfb4da1bb433bf329ddd2a7a6fefb0" title="Wrapper for the Cons1D_to_Prim1D function, works for both NEWTONIAN and SPECIAL_RELATIVITY. " alt="" coords="495,559,601,586"/>
+<area shape="rect" id="node20" href="$ath__files_8c.html#a4c77811377d9605b4a52b830515b2a62" title="Creates descriptive output filenames. " alt="" coords="505,863,591,890"/>
+<area shape="rect" id="node21" href="$cc__pos_8c.html#a9204d609430c459b0ace484b66dca353" title="given i,j,k returns cell&#45;centered x1,x2,x3 " alt="" coords="516,660,580,687"/>
+<area shape="rect" id="node22" href="$ath__array_8c.html#aa639a50b59af0bc55505fe267a0ec5a1" title="Free memory used by 3D array. " alt="" coords="495,508,601,535"/>
+<area shape="rect" id="node19" href="$convert__var_8c.html#a168e092d771134a92ff8be7e624d51d9" title="Cons1D_to_Prim1D: NEWTONIAN VERSION. " alt="" coords="673,559,813,586"/>
+<area shape="rect" id="node26" href="$ath__array_8c.html#a4d57e00d6537d3b632f67ab9501b589c" title="Construct 1D array = array[nc]. " alt="" coords="685,1066,801,1092"/>
+<area shape="rect" id="node27" href="$par_8c.html#a0a1296aa610308e1d4cb8c334a1d0c57" title="Debugging aid: print out the current status of all Blocks/Pars. " alt="" coords="507,1116,589,1143"/>
+<area shape="rect" id="node28" href="$blast_8c.html#a2c334369ab621e9815591c76ccfb5fc7" title="problem_write_restart" alt="" coords="473,1167,623,1194"/>
+<area shape="rect" id="node29" href="$ath__array_8c.html#af06c93640c785f8ca376b21222b5593b" title="Free memory used by 1D array. " alt="" coords="495,1268,601,1295"/>
+<area shape="rect" id="node31" href="$prototypes_8h.html#adc247edf6c1491b0e19b381226c6f8d3" title="Return 1 if the machine is big endian (e.g. Sun, PowerPC) return 0 if not (e.g. Intel) ..." alt="" coords="491,306,605,332"/>
+<area shape="rect" id="node32" href="$cyladvect_8c.html#a4ec45a57f5d76595f6cf26073b4f06d8" title="Density. " alt="" coords="529,204,567,231"/>
+<area shape="rect" id="node33" href="$prototypes_8h.html#a5c0bff1ac57f176dc5832b458c1c1d2e" title="Swap bytes, code stolen from NEMO. " alt="" coords="505,255,591,282"/>
+<area shape="rect" id="node40" href="$output_8c.html#ad325f75a98f9a852c646dd2cb718b036" title="Creates 2D array of output data with two dimensions equal to Grid and one dimension reduced according..." alt="" coords="509,1775,587,1802"/>
+<area shape="rect" id="node43" href="$prototypes_8h.html#a718dc1d943fd0fe9c5c310f308c6fb0e" title="Return the min and max of a 2D array using registers Works on data of type float, not Real..." alt="" coords="510,1674,586,1700"/>
+<area shape="rect" id="node44" href="$ath__array_8c.html#ae39760c22be8cfd70c88f547dd054596" title="Free memory used by 2D array. " alt="" coords="495,1724,601,1751"/>
+<area shape="rect" id="node41" href="$factor_8c.html#aed56ef6f009a8e702fec350845ee562f" title="factor" alt="" coords="715,1748,771,1775"/>
+<area shape="rect" id="node42" href="$ath__array_8c.html#aceb098d6337498964a6febb39f5ae163" title="Construct 2D array = array[nr][nc]. " alt="" coords="685,1674,801,1700"/>
+<area shape="rect" id="node48" href="$output__tab_8c.html#ac5b86c52635cd5bd633669a4d9a1b6a1" title="Writes 3D data. Note x/y/z&#45;coordinate is just i/j/k&#45;index. " alt="" coords="312,863,419,890"/>
+<area shape="rect" id="node49" href="$output__tab_8c.html#a7b2f43b41a5cfe0e0c6910e128d24731" title="Writes 2D data. Note x/y&#45;coordinate is just i/j&#45;index. " alt="" coords="312,1586,419,1612"/>
+<area shape="rect" id="node50" href="$output__tab_8c.html#a199ae0fb6e5e332fd277907b622bb959" title="Writes 1D data. Note x&#45;coordinate is just i&#45;index. " alt="" coords="312,1192,419,1219"/>
+</map>

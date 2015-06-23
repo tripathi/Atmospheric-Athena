@@ -1,0 +1,9 @@
+<map id="vecpot2b3i" name="vecpot2b3i">
+<area shape="rect" id="node2" href="$utils_8c.html#a4842f2539d6c98ad02aa6c047fd6d90e" title="f1" alt="" coords="154,5,193,32"/>
+<area shape="rect" id="node3" href="$utils_8c.html#a76f6de8c38432426a75980fbd39d86b6" title="f2" alt="" coords="154,56,193,83"/>
+<area shape="rect" id="node4" href="$cc__pos_8c.html#a9204d609430c459b0ace484b66dca353" title="given i,j,k returns cell&#45;centered x1,x2,x3 " alt="" coords="141,107,205,133"/>
+<area shape="rect" id="node5" href="$utils_8c.html#a0c355d966fd1ec1aeb9a64bf10a9553f" title="RETURNS THE INTEGRAL OF THE FUNCTION func FROM a TO b. " alt="" coords="145,157,202,184"/>
+<area shape="rect" id="node6" href="$utils_8c.html#a2bb742f07e587da602b911f7d1ed7092" title="THIS ROUTINE COMPUTES THE nTH STAGE OF REFINEMENT OF AN EXTENDED TRAPEZOIDAL RULE. " alt="" coords="263,132,321,159"/>
+<area shape="rect" id="node7" href="$utils_8c.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="254,183,330,209"/>
+<area shape="rect" id="node8" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="379,183,455,209"/>
+</map>

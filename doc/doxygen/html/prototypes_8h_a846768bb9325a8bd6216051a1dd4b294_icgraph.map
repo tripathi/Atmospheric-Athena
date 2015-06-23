@@ -1,0 +1,6 @@
+<map id="minmax3" name="minmax3">
+<area shape="rect" id="node2" href="$output__tab_8c.html#ac5b86c52635cd5bd633669a4d9a1b6a1" title="Writes 3D data. Note x/y/z&#45;coordinate is just i/j/k&#45;index. " alt="" coords="131,5,237,32"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#a6847490e314cc9dc2ab5b75e0d74fe3a" title="Open file, call 1D/2D/3D writer; called by data_ouput. " alt="" coords="285,5,371,32"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#a9034e0a0c277e481597e9a0709908edb" title="Initializes data output. " alt="" coords="419,5,503,32"/>
+<area shape="rect" id="node5" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="552,5,603,32"/>
+</map>

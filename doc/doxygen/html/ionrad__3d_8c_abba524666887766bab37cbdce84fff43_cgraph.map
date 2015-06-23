@@ -1,0 +1,6 @@
+<map id="ion_radtransfer_init_3d" name="ion_radtransfer_init_3d">
+<area shape="rect" id="node2" href="$par_8c.html#ac234e8c1085523fa6adcd6d4f48281b5" title="Return a Real value. " alt="" coords="235,5,309,32"/>
+<area shape="rect" id="node3" href="$ath__array_8c.html#aaa55b7239bfb912dcdaaf2190ee20b65" title="Construct 3D array = array[nt][nr][nc]. " alt="" coords="214,56,330,83"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="379,56,455,83"/>
+<area shape="rect" id="node5" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="505,56,581,83"/>
+</map>

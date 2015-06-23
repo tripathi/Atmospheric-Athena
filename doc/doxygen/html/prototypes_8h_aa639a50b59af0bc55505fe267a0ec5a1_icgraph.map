@@ -1,0 +1,10 @@
+<map id="free_3d_array" name="free_3d_array">
+<area shape="rect" id="node2" href="$prototypes_8h.html#aefcd88676b809ca0437c8bcf63dff9a3" title="Function to write an unformatted dump of the field variables. " alt="" coords="315,56,413,83"/>
+<area shape="rect" id="node5" href="$prototypes_8h.html#aaf11bcf5455df27a5dd663a00be350d2" title="Writes VTK dump (all variables). " alt="" coords="324,107,404,133"/>
+<area shape="rect" id="node6" href="$prototypes_8h.html#a95667109c997592ac508a6f67e34b827" title="Initializes most variables in the Grid structure. " alt="" coords="469,145,539,172"/>
+<area shape="rect" id="node7" href="$output__tab_8c.html#ac5b86c52635cd5bd633669a4d9a1b6a1" title="Writes 3D data. Note x/y/z&#45;coordinate is just i/j/k&#45;index. " alt="" coords="160,5,267,32"/>
+<area shape="rect" id="node9" href="$field__loop_8c.html#a1b323f47153f1975b64382e0ffac6b73" title="problem" alt="" coords="178,208,249,235"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#a9034e0a0c277e481597e9a0709908edb" title="Initializes data output. " alt="" coords="462,69,546,96"/>
+<area shape="rect" id="node4" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="595,108,645,135"/>
+<area shape="rect" id="node8" href="$prototypes_8h.html#a6847490e314cc9dc2ab5b75e0d74fe3a" title="Open file, call 1D/2D/3D writer; called by data_ouput. " alt="" coords="321,5,407,32"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="dump_history_enroll" name="dump_history_enroll">
+<area shape="rect" id="node2" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="202,5,278,32"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#a38f8cb947bb5fc0f4c63f5de8aa704dd" title="This is really strdup(), but strdup is not available in ANSI (&#45;pendantic or &#45;ansi will leave it undef..." alt="" coords="197,56,283,83"/>
+<area shape="rect" id="node3" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="331,5,407,32"/>
+<area shape="rect" id="node5" href="$ath__log_8c.html#af21347278c9b783a269474386c4289c5" title="Foutput variable argument string to &quot;error log file&quot;. " alt="" coords="333,56,405,83"/>
+</map>

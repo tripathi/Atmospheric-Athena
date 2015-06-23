@@ -1,0 +1,6 @@
+<map id="output_pdf" name="output_pdf">
+<area shape="rect" id="node2" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="143,5,219,32"/>
+<area shape="rect" id="node4" href="$ath__files_8c.html#a4c77811377d9605b4a52b830515b2a62" title="Creates descriptive output filenames. " alt="" coords="139,56,224,83"/>
+<area shape="rect" id="node5" href="$ath__log_8c.html#af21347278c9b783a269474386c4289c5" title="Foutput variable argument string to &quot;error log file&quot;. " alt="" coords="145,107,217,133"/>
+<area shape="rect" id="node3" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="273,5,349,32"/>
+</map>

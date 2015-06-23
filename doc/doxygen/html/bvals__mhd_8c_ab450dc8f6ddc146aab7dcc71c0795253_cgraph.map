@@ -1,0 +1,8 @@
+<map id="bvals_mhd" name="bvals_mhd">
+<area shape="rect" id="node2" href="$par_8c.html#a789945c886abda300582ff5511c0a029" title="Return integer *name in *block if it exists, else use the integer def as a default value..." alt="" coords="156,56,252,83"/>
+<area shape="rect" id="node7" href="$init__mesh_8c.html#aa16d281ef7a56861fdf7da0f960086ef" title="Searches GData[][][] array to find i,j,k components of block being updated on this processor..." alt="" coords="142,107,266,133"/>
+<area shape="rect" id="node3" href="$par_8c.html#ad7ff0f7b4cee0ec0751000359a117093" title="Return 0 or 1 if a block/name exists. " alt="" coords="315,5,391,32"/>
+<area shape="rect" id="node6" href="$par_8c.html#a92384b69c20d713c9e3f9f45234765a5" title="Set or add an integer. " alt="" coords="319,56,388,83"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="441,56,517,83"/>
+<area shape="rect" id="node5" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="566,56,642,83"/>
+</map>

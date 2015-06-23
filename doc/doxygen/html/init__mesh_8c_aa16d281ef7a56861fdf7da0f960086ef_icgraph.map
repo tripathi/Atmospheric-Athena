@@ -1,0 +1,6 @@
+<map id="get_myGridIndex" name="get_myGridIndex">
+<area shape="rect" id="node2" href="$prototypes_8h.html#adf4dacdf2a70d9423bc50e7ea57b1056" title="Calls appropriate functions to set ghost zones. " alt="" coords="191,5,278,32"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#a73fd08ad3c131672ff0473236faee5e2" title="Sets function pointers for physical boundaries during initialization, allocates memory for send/recei..." alt="" coords="179,56,290,83"/>
+<area shape="rect" id="node5" href="$prototypes_8h.html#a95667109c997592ac508a6f67e34b827" title="Initializes most variables in the Grid structure. " alt="" coords="200,107,269,133"/>
+<area shape="rect" id="node3" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="339,56,389,83"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="factor" name="factor">
+<area shape="rect" id="node2" href="$prototypes_8h.html#ad1fb22dcff9bacfd6155bb3881d56ffa" title="Creates 2D array of output data with two dimensions equal to Grid and one dimension reduced according..." alt="" coords="110,81,189,108"/>
+<area shape="rect" id="node9" href="$prototypes_8h.html#ac58eef44023b7a584cc3ed74b3c01bbe" title="Creates 1D array of output data with one dimensions equal to Grid and two dimensions reduced accordin..." alt="" coords="110,157,189,184"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#a0c052773606e15004e3f3d255814246c" title="Output 2D PGM image. " alt="" coords="406,5,498,32"/>
+<area shape="rect" id="node6" href="$prototypes_8h.html#a3b937585b40185f0397235b20baa21c7" title="Output PPM image. " alt="" coords="406,56,498,83"/>
+<area shape="rect" id="node7" href="$output__tab_8c.html#a7b2f43b41a5cfe0e0c6910e128d24731" title="Writes 2D data. Note x/y&#45;coordinate is just i/j&#45;index. " alt="" coords="237,107,344,133"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#a9034e0a0c277e481597e9a0709908edb" title="Initializes data output. " alt="" coords="561,56,645,83"/>
+<area shape="rect" id="node5" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="693,56,744,83"/>
+<area shape="rect" id="node8" href="$prototypes_8h.html#a6847490e314cc9dc2ab5b75e0d74fe3a" title="Open file, call 1D/2D/3D writer; called by data_ouput. " alt="" coords="409,107,495,133"/>
+<area shape="rect" id="node10" href="$output__tab_8c.html#a199ae0fb6e5e332fd277907b622bb959" title="Writes 1D data. Note x&#45;coordinate is just i&#45;index. " alt="" coords="237,157,344,184"/>
+<area shape="rect" id="node11" href="$cylnewtmri_8c.html#a5ced9a902bba3a9c41dd4fa8fcee6da1" title="out_ktab" alt="" coords="254,208,327,235"/>
+<area shape="rect" id="node12" href="$cylnewtmri_8c.html#a8b8cabb1061d5399fb492be89de213ff" title="get_usr_out_fun" alt="" coords="393,208,511,235"/>
+</map>

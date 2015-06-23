@@ -1,0 +1,22 @@
+<map id="calloc_1d_array" name="calloc_1d_array">
+<area shape="rect" id="node2" href="$prototypes_8h.html#a73fd08ad3c131672ff0473236faee5e2" title="Sets function pointers for physical boundaries during initialization, allocates memory for send/recei..." alt="" coords="734,23,845,50"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#a95667109c997592ac508a6f67e34b827" title="Initializes most variables in the Grid structure. " alt="" coords="755,74,824,101"/>
+<area shape="rect" id="node5" href="$prototypes_8h.html#a916f9c7c3347abd0ff4e1acc00cd0f27" title="General initialization of the nested mesh hierarchy. " alt="" coords="578,125,657,151"/>
+<area shape="rect" id="node6" href="$prototypes_8h.html#a367c7c18ff1c30281f2abce33710663e" title="Allocates memory for send/receive buffers. " alt="" coords="751,175,827,202"/>
+<area shape="rect" id="node7" href="$ionradiation_2prototypes_8h.html#abb47f0369d28202d72c6991984069202" title="ionrad_prolong_rcv" alt="" coords="177,226,313,253"/>
+<area shape="rect" id="node10" href="$ionradiation_2prototypes_8h.html#a97f6c5f19c5f6ef1ed7630d0332801d2" title="ionrad_prolong_snd" alt="" coords="175,277,315,303"/>
+<area shape="rect" id="node11" href="$prototypes_8h.html#ac58eef44023b7a584cc3ed74b3c01bbe" title="Creates 1D array of output data with one dimensions equal to Grid and two dimensions reduced accordin..." alt="" coords="206,327,285,354"/>
+<area shape="rect" id="node17" href="$cshock1d_8c.html#a1b323f47153f1975b64382e0ffac6b73" title="problem" alt="" coords="210,378,281,405"/>
+<area shape="rect" id="node18" href="$par__strat2d_8c.html#aabe841510e006adbae496120b49eb8ae" title="Multi&#45;species NSH equilibrium. " alt="" coords="206,429,285,455"/>
+<area shape="rect" id="node20" href="$streaming2d__multi_8c.html#a92489854922d320bc791b15da1210c12" title="problem_read_restart" alt="" coords="171,479,320,506"/>
+<area shape="rect" id="node21" href="$restart_8c.html#a0c8423a9f51dd688b5867e611120ba0e" title="Writes a restart file, including problem&#45;specific data from a user defined function. " alt="" coords="385,505,485,531"/>
+<area shape="rect" id="node3" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="893,150,944,177"/>
+<area shape="rect" id="node8" href="$ionradiation_2prototypes_8h.html#a2da2a7febd547c7c66b9c9a884ebedf9" title="ion_radtransfer_3d" alt="" coords="368,226,501,253"/>
+<area shape="rect" id="node9" href="$ionradiation_2prototypes_8h.html#a10b4b3c5a48625ba99109629eff909e2" title="ion_radtransfer_init" alt="" coords="549,226,685,253"/>
+<area shape="rect" id="node12" href="$output__tab_8c.html#a199ae0fb6e5e332fd277907b622bb959" title="Writes 1D data. Note x&#45;coordinate is just i&#45;index. " alt="" coords="381,302,488,329"/>
+<area shape="rect" id="node15" href="$cylnewtmri_8c.html#a5ced9a902bba3a9c41dd4fa8fcee6da1" title="out_ktab" alt="" coords="398,353,471,379"/>
+<area shape="rect" id="node13" href="$prototypes_8h.html#a6847490e314cc9dc2ab5b75e0d74fe3a" title="Open file, call 1D/2D/3D writer; called by data_ouput. " alt="" coords="575,302,660,329"/>
+<area shape="rect" id="node14" href="$prototypes_8h.html#a9034e0a0c277e481597e9a0709908edb" title="Initializes data output. " alt="" coords="747,302,831,329"/>
+<area shape="rect" id="node16" href="$cylnewtmri_8c.html#a8b8cabb1061d5399fb492be89de213ff" title="get_usr_out_fun" alt="" coords="558,353,677,379"/>
+<area shape="rect" id="node19" href="$par__strat2d_8c.html#a71dc3ce55c0e0d718a2b55080d4fc1eb" title="problem" alt="" coords="399,429,470,455"/>
+</map>

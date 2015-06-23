@@ -1,0 +1,8 @@
+<map id="par_geti_def" name="par_geti_def">
+<area shape="rect" id="node2" href="$prototypes_8h.html#adf4dacdf2a70d9423bc50e7ea57b1056" title="Calls appropriate functions to set ghost zones. " alt="" coords="181,5,267,32"/>
+<area shape="rect" id="node3" href="$main_8c.html#a0ddf1224851353fc92bfbff6f499fa97" title="Athena main program. " alt="" coords="347,81,397,108"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#a916f9c7c3347abd0ff4e1acc00cd0f27" title="General initialization of the nested mesh hierarchy. " alt="" coords="185,107,263,133"/>
+<area shape="rect" id="node5" href="$prototypes_8h.html#a9034e0a0c277e481597e9a0709908edb" title="Initializes data output. " alt="" coords="182,157,266,184"/>
+<area shape="rect" id="node6" href="$cpaw1d_8c.html#a1b323f47153f1975b64382e0ffac6b73" title="problem" alt="" coords="189,208,259,235"/>
+<area shape="rect" id="node7" href="$par__strat2d_8c.html#a92489854922d320bc791b15da1210c12" title="problem_read_restart" alt="" coords="149,259,299,285"/>
+</map>

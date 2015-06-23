@@ -1,0 +1,8 @@
+<map id="compute_therm_rates" name="compute_therm_rates">
+<area shape="rect" id="node2" href="$ionrad__chemistry_8c.html#ac8b8c48ad950a348d2158bc6bfbfa181" title="osterbrock_cool_rate" alt="" coords="213,5,360,32"/>
+<area shape="rect" id="node3" href="$ionrad__chemistry_8c.html#aed067639a8335f9596856e1777f7fb54" title="recomb_cool_rate_coef" alt="" coords="206,56,367,83"/>
+<area shape="rect" id="node4" href="$ionrad__chemistry_8c.html#abb5eb0f7f20a17a774e4ba2176048d51" title="ki_heat_rate" alt="" coords="239,107,335,133"/>
+<area shape="rect" id="node5" href="$ionrad__chemistry_8c.html#ae420744c1c8ac4ddbfc5679b3ff02d41" title="ki_cool_rate" alt="" coords="240,157,333,184"/>
+<area shape="rect" id="node6" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="249,208,325,235"/>
+<area shape="rect" id="node7" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="417,208,493,235"/>
+</map>

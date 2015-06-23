@@ -1,0 +1,7 @@
+<map id="SMR_init" name="SMR_init">
+<area shape="rect" id="node2" href="$ath__array_8c.html#a4d57e00d6537d3b632f67ab9501b589c" title="Construct 1D array = array[nc]. " alt="" coords="131,5,247,32"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="297,81,373,108"/>
+<area shape="rect" id="node5" href="$ath__array_8c.html#aceb098d6337498964a6febb39f5ae163" title="Construct 2D array = array[nr][nc]. " alt="" coords="131,107,247,133"/>
+<area shape="rect" id="node6" href="$ath__array_8c.html#aaa55b7239bfb912dcdaaf2190ee20b65" title="Construct 3D array = array[nt][nr][nc]. " alt="" coords="131,157,247,184"/>
+<area shape="rect" id="node4" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="422,81,498,108"/>
+</map>

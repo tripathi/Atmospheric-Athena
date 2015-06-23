@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['d',['d',['../struct_cons__s.html#a2eafcab8b3e69332ce8085cd3244d3be',1,'Cons_s::d()'],['../struct_prim__s.html#a2eafcab8b3e69332ce8085cd3244d3be',1,'Prim_s::d()'],['../struct_cons1_d__s.html#a2eafcab8b3e69332ce8085cd3244d3be',1,'Cons1D_s::d()'],['../struct_prim1_d__s.html#a2eafcab8b3e69332ce8085cd3244d3be',1,'Prim1D_s::d()']]],
+  ['d_5fnlo',['d_nlo',['../ionrad_8h.html#a47f767f93487793e15e1a607a0ea398d',1,'ionrad.h']]],
+  ['dat_5ffmt',['dat_fmt',['../struct_output__s.html#a83e8ce80cdc0bc48bcec6fa99835a33d',1,'Output_s']]],
+  ['der',['der',['../struct_output__s.html#afd35027ea2adb6738a0b9f5c09632e19',1,'Output_s']]],
+  ['dir',['dir',['../struct_radplane__s.html#a744ada6b7d0c97d4de495a1d2c49266a',1,'Radplane_s']]],
+  ['disp',['Disp',['../struct_grids_data__s.html#acbc331285873adb10034600d5d6f542f',1,'GridsData_s::Disp()'],['../struct_grid__s.html#acbc331285873adb10034600d5d6f542f',1,'Grid_s::Disp()'],['../struct_domain__s.html#acbc331285873adb10034600d5d6f542f',1,'Domain_s::Disp()']]],
+  ['dmax',['dmax',['../struct_output__s.html#a12be9e87de16285cfec7a30d9edf3f1f',1,'Output_s']]],
+  ['dmin',['dmin',['../struct_output__s.html#a6d8f024629a4e3d518aa4546a7d1664e',1,'Output_s']]],
+  ['domain',['Domain',['../struct_mesh__s.html#a76e0fd54e8206809eaabcaae2161523a',1,'Mesh_s']]],
+  ['domainsperlevel',['DomainsPerLevel',['../struct_mesh__s.html#a6a1af527f15b71f40fea1aa09caf4b97',1,'Mesh_s']]],
+  ['domn',['DomN',['../struct_grid_ovrlp__s.html#a95934f812c40e5fb398e5028663157ec',1,'GridOvrlp_s']]],
+  ['domnumber',['DomNumber',['../struct_domain__s.html#a48cf726d7e4d74bf014f00909761197d',1,'Domain_s']]],
+  ['downsamp',['downsamp',['../streaming2d__single_8c.html#a9a61364776daa55c1a82352d608eb22c',1,'downsamp():&#160;streaming2d_single.c'],['../streaming3d__single_8c.html#a9a61364776daa55c1a82352d608eb22c',1,'downsamp():&#160;streaming3d_single.c']]],
+  ['dpar_5fthresh',['dpar_thresh',['../par__strat2d_8c.html#a6d8388087928e4f101aeeafc6cedc96a',1,'dpar_thresh():&#160;par_strat2d.c'],['../par__strat3d_8c.html#a6d8388087928e4f101aeeafc6cedc96a',1,'dpar_thresh():&#160;par_strat3d.c']]],
+  ['dt',['dt',['../struct_grid__s.html#a319338052382e93ff055ea16408a678a',1,'Grid_s::dt()'],['../struct_mesh__s.html#a319338052382e93ff055ea16408a678a',1,'Mesh_s::dt()'],['../struct_output__s.html#a319338052382e93ff055ea16408a678a',1,'Output_s::dt()']]],
+  ['dx',['dx',['../struct_domain__s.html#a7c298001af6d3df2af292f796cb3c616',1,'Domain_s::dx()'],['../struct_mesh__s.html#a7c298001af6d3df2af292f796cb3c616',1,'Mesh_s::dx()']]],
+  ['dx1',['dx1',['../struct_grid__s.html#a64e192c657a8824a0676995e2605ceb5',1,'Grid_s']]],
+  ['dx2',['dx2',['../struct_grid__s.html#a0f22583b5466f325be53113e9a63e389',1,'Grid_s']]],
+  ['dx3',['dx3',['../struct_grid__s.html#afe24806ff19b30e817d21f610652d227',1,'Grid_s']]]
+];

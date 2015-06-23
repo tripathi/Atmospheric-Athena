@@ -1,0 +1,6 @@
+<map id="par_getd_def" name="par_getd_def">
+<area shape="rect" id="node2" href="$par_8c.html#ad7ff0f7b4cee0ec0751000359a117093" title="Return 0 or 1 if a block/name exists. " alt="" coords="155,5,231,32"/>
+<area shape="rect" id="node5" href="$par_8c.html#aca86a680715a5deb34d96dc9d4279edd" title="Set or add a double. " alt="" coords="157,56,230,83"/>
+<area shape="rect" id="node3" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="281,5,357,32"/>
+<area shape="rect" id="node4" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="406,5,482,32"/>
+</map>

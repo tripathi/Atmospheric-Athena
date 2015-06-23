@@ -1,0 +1,10 @@
+<map id="avg3d" name="avg3d">
+<area shape="rect" id="node2" href="$utils_8c.html#ac2465b6a2d2bea8e64ad9608640efddc" title="fz" alt="" coords="125,56,163,83"/>
+<area shape="rect" id="node5" href="$utils_8c.html#a0c355d966fd1ec1aeb9a64bf10a9553f" title="RETURNS THE INTEGRAL OF THE FUNCTION func FROM a TO b. " alt="" coords="313,56,370,83"/>
+<area shape="rect" id="node9" href="$cc__pos_8c.html#a9204d609430c459b0ace484b66dca353" title="given i,j,k returns cell&#45;centered x1,x2,x3 " alt="" coords="112,157,176,184"/>
+<area shape="rect" id="node3" href="$utils_8c.html#af6974f21181f84c8d2b7d2d47aeaa54a" title="fy" alt="" coords="225,5,263,32"/>
+<area shape="rect" id="node4" href="$utils_8c.html#a27f2274fbd47877df7d263c63f6969a7" title="fx" alt="" coords="322,5,361,32"/>
+<area shape="rect" id="node6" href="$utils_8c.html#a2bb742f07e587da602b911f7d1ed7092" title="THIS ROUTINE COMPUTES THE nTH STAGE OF REFINEMENT OF AN EXTENDED TRAPEZOIDAL RULE. " alt="" coords="428,31,487,57"/>
+<area shape="rect" id="node7" href="$utils_8c.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="419,81,495,108"/>
+<area shape="rect" id="node8" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="545,81,621,108"/>
+</map>

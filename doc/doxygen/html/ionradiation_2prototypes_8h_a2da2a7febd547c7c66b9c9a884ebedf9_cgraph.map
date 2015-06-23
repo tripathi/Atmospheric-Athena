@@ -1,0 +1,21 @@
+<map id="ion_radtransfer_3d" name="ion_radtransfer_3d">
+<area shape="rect" id="node2" href="$ionrad__smr_8c.html#abb47f0369d28202d72c6991984069202" title="ionrad_prolong_rcv" alt="" coords="195,492,331,518"/>
+<area shape="rect" id="node4" href="$prototypes_8h.html#ab4a402b1bd69e8f49435ee8fe45ecce6" title="Terminate execution and output error message Uses variable&#45;length argument lists provided in &lt;stdarg..." alt="" coords="598,314,674,341"/>
+<area shape="rect" id="node6" href="$ionrad__3d_8c.html#a923d8ce905963d3b34a987c0564c24f3" title="apply_temp_floor" alt="" coords="201,86,325,113"/>
+<area shape="rect" id="node7" href="$ionrad__3d_8c.html#ad03e5f8f53f916d2747db74e7b72ea8d" title="apply_neutral_floor" alt="" coords="195,137,331,164"/>
+<area shape="rect" id="node8" href="$ionrad__3d_8c.html#a6605b9c2989ad2fb4287f0f5d33f3ac8" title="save_energy_and_x" alt="" coords="191,188,334,214"/>
+<area shape="rect" id="node9" href="$ionrad__3d_8c.html#a45fffa607502069ce546e821ee12a02e" title="ph_rate_init" alt="" coords="217,238,309,265"/>
+<area shape="rect" id="node10" href="$ionradplane__3d_8c.html#a2b72a10a7d9edd317e3367dea81adba8" title="get_ph_rate_plane" alt="" coords="401,618,535,645"/>
+<area shape="rect" id="node11" href="$ionrad__3d_8c.html#a1e1f15a6d9146fe0c84dbcaee65514b4" title="compute_chem_rates" alt="" coords="187,542,338,569"/>
+<area shape="rect" id="node13" href="$ionrad__3d_8c.html#a88e8302c66ac0572de302300cd6bab2d" title="compute_therm_rates" alt="" coords="187,340,339,366"/>
+<area shape="rect" id="node16" href="$ionrad__3d_8c.html#a571221d092876f253862ff6fd9c062f6" title="ionization_update" alt="" coords="199,441,326,468"/>
+<area shape="rect" id="node17" href="$ionrad__3d_8c.html#a4d9092c62bba5a8b8af520685f707d0e" title="check_range" alt="" coords="419,10,517,37"/>
+<area shape="rect" id="node18" href="$ionrad__3d_8c.html#ae7dd31a63e3fcef8899d652babef632d" title="compute_dt_hydro" alt="" coords="402,112,534,138"/>
+<area shape="rect" id="node19" href="$ionrad__smr_8c.html#a97f6c5f19c5f6ef1ed7630d0332801d2" title="ionrad_prolong_snd" alt="" coords="193,390,333,417"/>
+<area shape="rect" id="node20" href="$ath__log_8c.html#a4d9be5e0a6376ae96b3de9d9bb754c10" title="Output variable argument string to &quot;output log file&quot;. " alt="" coords="226,644,299,670"/>
+<area shape="rect" id="node3" href="$ath__array_8c.html#a4d57e00d6537d3b632f67ab9501b589c" title="Construct 1D array = array[nc]. " alt="" coords="410,466,526,493"/>
+<area shape="rect" id="node5" href="$ath__log_8c.html#ad4fe019acf86bdfb9ab014b2f3ab10da" title="Open error file if needed and return a pointer to file. " alt="" coords="723,314,799,341"/>
+<area shape="rect" id="node12" href="$ionrad__chemistry_8c.html#a48328205ff6fe2550dd68a07b565d091" title="recomb_rate_coef" alt="" coords="403,517,533,544"/>
+<area shape="rect" id="node14" href="$ionrad__chemistry_8c.html#aed067639a8335f9596856e1777f7fb54" title="recomb_cool_rate_coef" alt="" coords="387,416,549,442"/>
+<area shape="rect" id="node15" href="$ionrad__chemistry_8c.html#ae9b4be5bcb4d680962e461d3c06463d5" title="lya_cool_rate" alt="" coords="417,365,519,392"/>
+</map>
