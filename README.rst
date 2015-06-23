@@ -11,6 +11,8 @@ Files of note in this repository
   * Ionization front test input file: *tst/ionradiation/athinput.ifront*
   * Ionization front problem file: *src/prob/ifront.c*
 
+Detailed Doxygen documentation can be found in doc/doxygen/html/index.html.
+
 Configuring and Running
 -----------------------
 Adapted from the `Athena Tutorial <https://trac.princeton.edu/Athena/wiki/AthenaDocsTut>`_
@@ -27,6 +29,8 @@ Adapted from the `Athena Tutorial <https://trac.princeton.edu/Athena/wiki/Athena
 4. Run, using the appropriate input file.  If using MPI, use ``mpirun`` and specify the number of processors
 ::
   bin/athena -i tst/massloss/athinput.ioniz_sphere_hires
+
+For more detailed running instructions, refer to the `Athena documentation <https://trac.princeton.edu/Athena/wiki/AthenaDocs>`_.
   
 Copyright
 ---------
