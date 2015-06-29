@@ -3,7 +3,7 @@ Atmospheric Athena:
 3D Atmospheric escape model with ionizing radiative transfer
 
 What is Atmospheric Athena?
-  Atmospheric Athena is a code intended to simulate hydrodynamic escape from close-in giant planets in 3D.  It uses the `Athena hydrodynamics code <https://trac.princeton.edu/Athena/>`_ (v4.1) with a new ionizing radiative transfer implementation based on `Krumholz et al, 2007 <http://arxiv.org/abs/astro-ph/0606539>`_, to self-consistently model photoionization driven winds from the planet.  The code is fully compatible with static mesh refinement and MPI parallelization.  It can handle arbitrary planet potentials and stellar initial conditions.  The physical system that the code models and the equations that it solves are fully described in Tripathi, Kratter, Murray-Clay, & Krumholz, 2015.
+  Atmospheric Athena is a code intended to simulate hydrodynamic escape from close-in giant planets in 3D.  It uses the `Athena hydrodynamics code <https://trac.princeton.edu/Athena/>`_ (v4.1) with a new ionizing radiative transfer implementation based on `Krumholz et al, 2007 <http://arxiv.org/abs/astro-ph/0606539>`_, to self-consistently model photoionization driven winds from the planet.  The code is fully compatible with static mesh refinement and MPI parallelization.  It can handle arbitrary planet potentials and stellar initial conditions.  The physical system that the code models and the equations that it solves are fully described in `Tripathi, Kratter, Murray-Clay, & Krumholz, 2015 <http://arxiv.org/abs/1506.06759>`_.
 
 Files of note in this repository
   * Mass loss input file: *tst/massloss/athinput.ioniz_sphere_hires*
