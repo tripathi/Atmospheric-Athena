@@ -321,9 +321,10 @@ static Real PlanetPot(const Real x1, const Real x2, const Real x3)
   Real GMstar = 6.67e-8 * 1.99e33; /*Using 1 solar mass in g*/
   Real omega = sqrt(GMstar / (pow(adist,3)));
   Real radstar = sqrt(SQR(x1+adist) + SQR(x2) + SQR(x3));
-  return -GM/(rad+Rsoft)-GMstar/radstar -.5*SQR(omega*radstar); 
+  Real rcentrif = sqrt(SQR(x1+adist) + SQR(x2));
+  return -GM/(rad+Rsoft)-GMstar/radstar -.5*SQR(omega*rcentrif);
 #else 
-  return -GM/(rad+Rsoft)
+  return -GM/(rad+Rsoft);
 #endif
 
 }
@@ -338,7 +339,8 @@ static Real TidalPot(const Real x1, const Real x2, const Real x3)
   Real phi=0.0;
 #ifdef SHEARING_BOX
   Real radstar2 = SQR(x1+adist) + SQR(x2) + SQR(x3);
-  phi -= GMstar/sqrt(radstar2) + .5*SQR(Omega_0)*radstar2;
+  Real rcentrif2 = SQR(x1+adist) + SQR(x2);
+  phi -= GMstar/sqrt(radstar2) + .5*SQR(Omega_0)*rcentrif2;
 #endif
   return phi;
 }
